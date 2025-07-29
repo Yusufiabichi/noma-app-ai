@@ -28,41 +28,79 @@ Agricultural productivity in many African regions is challenged by delayed or in
 
 ## 🧠 Tech Stack
 
-| Component        | Technology                     |
-|------------------|-------------------------------|
-| **Mobile App**   | React Native                   |
-| **Backend**      | Node.js, Express.js, Supabase  |
-| **ML Framework** | TensorFlow / TensorFlow lite   |
-| **Model Type**   | CNN for image classification   |
-| **Data Storage** | MongoDB                        |
-| **Deployment**   | Google Cloud, On-device        |
+| Component           | Technology                     |
+|---------------------|--------------------------------|
+| **Mobile App**      | React Native, Tailwind, Figma                   
+| **Backend**         | Node.js, Express.js, Supabase  
+| **ML Framework**    | TensorFlow / TensorFlow lite, PyTorch, Python, FastAPI (for model inference)
+| **Model Type**      | CNN for image classification   
+| **APIs**            | Google Maps, WeatherStack, Market APIs                        
+| **Data Storage**    | MongoDB                        
+| **Offline Storage** | SQLite, RealmDB, LocalStorage  
+| **Voice**           | Google Speech, Mozilla TTS, custom language models
+| **Deployment**      | Google Cloud, On-device        
 
----
+
 
 ## 📁 Project Structure
 
 nomaapp-ai/
 ├── README.md
-├── .gitignore
 ├── LICENSE
-├── app/
-│ ├── main.py # Backend API
-│ ├── model/
-│ │ ├── pest_disease_model.pkl
-│ │ └── predict.py # Inference script
-│ ├── static/
-│ └── templates/
-├── mobile/
-│ ├── android/
-│ ├── ios/
-│ └── assets/
-├── data/
-│ └── labeled_images/ # Image dataset
-├── notebooks/
-│ └── model_training.ipynb # Jupyter notebook for training
+├── .gitignore
 ├── docs/
-│ └── system_design.md
-└── requirements.txt
+│   └── development_plan.md
+├── frontend/
+│   ├── mobile-app/
+│   │   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── screens/
+│   │   └── App.js
+│   └── web-dashboard/
+│       ├── src/
+│       ├── public/
+│       ├── components/
+│       ├── pages/
+│       └── index.js
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── server.js
+│   └── config/
+│       ├── db.js
+│       └── env/
+├── ai-models/
+│   ├── training-data/
+│   ├── notebooks/
+│   ├── models/
+│   └── inference-api/
+│       └── predict.py
+├── data/
+│   ├── cache/
+│   └── mock/
+├── gps-mapping/
+│   ├── maps/
+│   ├── api/
+│   └── geolocation-utils.js
+├── marketplace/
+│   ├── shop/
+│   ├── payments/
+│   ├── vendors/
+│   └── insurance/
+├── voice-support/
+│   ├── hausa/
+│   ├── yoruba/
+│   ├── igbo/
+│   └── utils/
+└── tests/
+    ├── unit/
+    ├── integration/
+    └── e2e/
+
 
 
 
@@ -90,11 +128,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) *(coming soon)* for full guidelines.
 
 ---
 
+🙌 Support or Partner?
+If you're an agritech investor, NGO, or tech enthusiast looking to support or collaborate, open an issue or reach out via email.
+
+
 ## 📬 Contact
 
 Interested in contributing, collaborating, or learning more?
 
-- Email: **team@nomaapp.ai**
+- Email: **yusufiabichi@yahoo.com**
 - Website: [www.nomaapp.ai](http://www.nomaapp.ai) *(Coming Soon)*
 
 ---
