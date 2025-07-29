@@ -30,14 +30,73 @@ Agricultural productivity in many African regions is challenged by delayed or in
 
 | Component        | Technology                     |
 |------------------|-------------------------------|
-| **Mobile App**   | Flutter / React Native         |
-| **Backend**      | Python + FastAPI / Flask       |
-| **ML Framework** | TensorFlow / PyTorch           |
+| **Mobile App**   | React Native                   |
+| **Backend**      | Node.js, Express.js, Supabase  |
+| **ML Framework** | TensorFlow / TensorFlow lite   |
 | **Model Type**   | CNN for image classification   |
-| **Data Storage** | Firebase / PostgreSQL          |
-| **Deployment**   | Google Cloud / AWS / On-device |
+| **Data Storage** | MongoDB                        |
+| **Deployment**   | Google Cloud, On-device        |
 
 ---
 
 ## 📁 Project Structure
 
+nomaapp-ai/
+├── README.md
+├── .gitignore
+├── LICENSE
+├── app/
+│ ├── main.py # Backend API
+│ ├── model/
+│ │ ├── pest_disease_model.pkl
+│ │ └── predict.py # Inference script
+│ ├── static/
+│ └── templates/
+├── mobile/
+│ ├── android/
+│ ├── ios/
+│ └── assets/
+├── data/
+│ └── labeled_images/ # Image dataset
+├── notebooks/
+│ └── model_training.ipynb # Jupyter notebook for training
+├── docs/
+│ └── system_design.md
+└── requirements.txt
+
+
+
+---
+
+## 📄 License
+
+This project is licensed under the **Apache License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributors who are passionate about agriculture, AI, and social impact.
+
+To get started:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature-name`)
+3. Commit your changes
+4. Push to the branch (`git push origin feature/your-feature-name`)
+5. Open a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) *(coming soon)* for full guidelines.
+
+---
+
+## 📬 Contact
+
+Interested in contributing, collaborating, or learning more?
+
+- Email: **team@nomaapp.ai**
+- Website: [www.nomaapp.ai](http://www.nomaapp.ai) *(Coming Soon)*
+
+---
+
+> NomaApp AI is committed to supporting African farmers through innovative, accessible technology. Let's grow better — together. 🌾
