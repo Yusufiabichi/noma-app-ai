@@ -1,13 +1,13 @@
-import './App.css'
+import React from 'react'
+import './index.css'
+import { HeroSection } from './components/HeroSection.jsx'
 
 function App() {
-  
-
   return (
-    <>
-      <div><h1 className='text-3xl font-bold underline'>NomaApp's Landing Page</h1></div>
-    </>
-  )
+    <div className="min-h-screen bg-purple-600 flex items-center justify-center">
+      <HeroSection/>
+    </div>
+  );
 }
 
 export default App
