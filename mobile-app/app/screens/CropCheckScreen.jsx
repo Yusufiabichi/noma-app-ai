@@ -1,10 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 
 export default function CropCheckScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>📷 Take a photo of your crop to check for diseases</Text>
+      <Text style={styles.text}>Take a photo of your crop to check for diseases</Text>
+      <TouchableOpacity style={styles.checkButton}
+      onPress={()=> navigation.navigate('CheckResult')}>
+        <MaterialCommunityIcons name="camera" size={22} color="#fff" style={{ marginRight: 8 }} />
+        <Text style={styles.checkButtonText}>Check my crop</Text>
+      </TouchableOpacity>
     </View>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 
-export default function CheckResultScreen() {
+export default function CheckResult() {
   return (
     <ScrollView style={styles.container}>
       {/* Analysis Results Card */}

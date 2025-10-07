@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import BottomTab from '../components/BottomTab'
 
 export default function HomeScreen({ navigation }) {
 
@@ -48,7 +49,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.card}
-           onPress= {()=> navigation.navigate('')}>
+           onPress= {()=> navigation.navigate('/')}>
           <MaterialIcons name="pest-control" size={30} color="#c62828" />
           <Text style={styles.cardText}>Pest & Disease Guide</Text>
         </TouchableOpacity>
@@ -60,25 +61,7 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}
-        onPress={()=> navigation.navigate('Home')}>
-          <FontAwesome5 name="seedling" size={22} color="#2e7d32" />
-          <Text style={styles.navText}>Crops</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}
-        onPress={()=> navigation.navigate('Community')}>
-          <MaterialIcons name="forum" size={22} color="#2e7d32" />
-          <Text style={styles.navText}>Community</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}
-        onPress={()=> navigation.navigate('Profile')}>
-          <FontAwesome5 name="user-circle" size={22} color="#2e7d32" />
-          <Text style={styles.navText}>You</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomTab/>
     </SafeAreaView>
   );
 }
