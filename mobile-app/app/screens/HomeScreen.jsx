@@ -1,8 +1,49 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { Component } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import BottomTab from '../components/BottomTab'
+// import MapView from 'react-native-maps'
+
+const { width, height } = Dimensions.get('window')
+
+const SCREEN_HEIGHT = height
+const SCREEN_WIDTH = width
+const ASPECT_RATIO = width / height
+const LATITUDE_DELTA = 0.0922
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
+
+// class MapComponent extends Component {
+//   constructor(){
+//     super()
+//     this.state = {
+//       initialPosition: {
+//         latitude: 0,
+//         longitute: 0,
+//         latitudeDelta: 0,
+//         longitudeDelta: 0,
+//       },
+//     }
+//   }
+// }
+
+// componentDidMount();{
+//   navigator.geolocation.getCurrentPosition((position) => {
+//     let lat = parseFloat(position.coords.latitude)
+//     let long = parseFloat(position.coords.longitude)
+
+//     let initialRegion = {
+//       latitude: lat,
+//       longitute: long,
+//       latitudeDelta: LATITUDE_DELTA,
+//       longitudeDelta: LONGITUDE_DELTA,
+//     }
+
+//     this.setState({initialPosition: initialRegion})
+//   },
+//   (error) => alert(JSON.stringify(error)),
+//   {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000});
+// }
 
 export default function HomeScreen({ navigation }) {
 
@@ -15,6 +56,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.weatherTop}>
           <MaterialCommunityIcons name="map-marker" size={20} color="#fff" />
           <Text style={styles.locationText}>Kano, Nigeria</Text>
+          <Text style={styles.locationText}>Lang. EN</Text>
         </View>
         
         <View style={styles.weatherDetails}>
@@ -35,11 +77,11 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.checkButtonText}>Check my crop</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.checkButton}
+      {/* <TouchableOpacity style={styles.checkButton}
       onPress={()=> navigation.navigate('Welcome')}>
         <MaterialCommunityIcons name="camera" size={22} color="#fff" style={{ marginRight: 8 }} />
         <Text style={styles.checkButtonText}>Welcome screen</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Feature Cards */}
       <View style={styles.cardRow}>
@@ -157,13 +199,18 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#00A300",
   },
   cardText: {
     marginTop: 10,
+    marginLeft: 5,
+    marginRight: 5,
     fontSize: 14,
     fontWeight: "500",
     textAlign: "center",
-    color: "#2e7d32",
+    color: "#000",
   },
 
   // Bottom Navigation

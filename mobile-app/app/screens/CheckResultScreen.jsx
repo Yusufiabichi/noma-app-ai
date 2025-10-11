@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 
-export default function CheckResult() {
+export default function CheckResultScreen() {
   return (
     <ScrollView style={styles.container}>
       {/* Analysis Results Card */}
@@ -16,7 +16,7 @@ export default function CheckResult() {
         </View>
 
         {/* Recommended Treatment */}
-        <Text style={styles.sectionTitle}>✅ Recommended Treatment</Text>
+        <Text style={styles.sectionTitle}>Recommended Treatment</Text>
         <View style={styles.listBox}>
           <Text style={styles.listItem}>1. Remove affected leaves immediately</Text>
           <Text style={styles.listItem}>2. Apply copper-based fungicide</Text>
