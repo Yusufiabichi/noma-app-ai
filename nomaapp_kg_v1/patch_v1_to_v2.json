@@ -1,0 +1,54 @@
+{
+  "patch_from": "1.0.0",
+  "patch_to": "1.1.0",
+  "adds": [
+    {
+      "disease": {
+        "id": "rice_blast_001",
+        "crop": "rice",
+        "disease_name": "rice_blast",
+        "display_name_en": "Rice Blast",
+        "display_name_ha": "cizon shinkafa",
+        "symptoms": [
+          "spindle-shaped lesions with brown borders",
+          "neck rot near panicle"
+        ],
+        "severity_thresholds": {
+          "mild": "<10% tillers",
+          "moderate": "10-30%",
+          "severe": ">30%"
+        },
+        "non_chemical_controls": [
+          "balanced fertilizer",
+          "water management",
+          "resistant varieties"
+        ],
+        "weather_constraints": {
+          "avoid_spray_if": { "rain_forecast_within_hours": 12 }
+        },
+        "expert_trigger": ["model_confidence < 0.7"],
+        "metadata_json": {
+          "validated_by": ["agr_004"],
+          "source": "patch_add"
+        }
+      }
+    }
+  ],
+  "updates": [
+    {
+      "id": "cc_emamectin_001",
+      "field_updates": {
+        "rate_per_ha_value": 140.0,
+        "rate_for_15l_value": 1.8,
+        "metadata_note": "Adjusted per pilot feedback"
+      }
+    }
+  ],
+  "deletes": [
+    {
+      "id": "cc_chlorothalonil_001",
+      "reason": "Outdated entry for prototype; replace in next full KG"
+    }
+  ]
+}
+ 

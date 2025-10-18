@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "description": "Simple on-device ruleset for ranking recommendations and escalation.",
+  "config": { "confidence_threshold": 0.7, "severe_threshold": "severe" },
+  "rules": [
+    {
+      "name": "low_confidence_escalate",
+      "if": { "<": [{ "var": "confidence" }, 0.7] },
+      "then": { "action": "escalate", "reason": "low_confidence" }
+    },
+    {
+      "name": "non_chemical_first",
+      "if": {
+        "and": [
+          { "<=": [{ "var": "severity_level" }, 2] },
+          { ">=": [{ "var": "confidence" }, 0.5] }
+        ]
+      },
+      "then": { "action": "recommend_non_chemical_first" }
+    },
+    {
+      "name": "filter_chemical_by_location_and_toxicity",
+      "if": { "var": "chemical_controls" },
+      "then": {
+        "action": "filter",
+        "criteria": [
+          { "in_location": { "var": "user_country" } },
+          { "not_toxic_for_pref": { "var": "user_pref_low_tox" } },
+          { "meets_phi_rei": { "var": "growth_stage" } }
+        ]
+      }
+    },
+    {
+      "name": "dosing_calculation",
+      "if": {
+        "and": [
+          { "var": "selected_chemical" },
+          { "var": "field_size_ha" }
+        ]
+      },
+      "then": {
+        "action": "calculate_dose",
+        "formula": "dose_per_tank = (rate_per_ha * knapsack_volume_l) / spray_volume_per_ha_l"
+      }
+    },
+    {
+      "name": "schedule_followup",
+      "if": { "true": true },
+      "then": { "action": "schedule_followup", "days": 5 }
+    }
+  ]
+}

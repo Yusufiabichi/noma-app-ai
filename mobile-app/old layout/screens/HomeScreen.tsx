@@ -1,9 +1,23 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Select, { ISelectItem } from 'rn-custom-select-dropdown';
+// import { SelectList } from 'react-native-dropdown-select-list';
 import BottomTab from '../components/BottomTab'
 // import MapView from 'react-native-maps'
+
+const languages: Array<ISelectItem<string>> = [
+  {
+    label: "English",
+    value: "English",
+  },
+  {
+    label: "Hausa",
+    value: "Hausa",
+  },
+]
 
 const { width, height } = Dimensions.get('window')
 
@@ -46,8 +60,8 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
 // }
 
 export default function HomeScreen({ navigation }) {
+  const [selectedValue, setSelectedValue] = useState<ISelectItem<string> | null>(null);
 
-  // const [languauge, setLanguage] = useState('eng');
   return (
 
     <SafeAreaView style={styles.container}>
@@ -56,7 +70,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.weatherTop}>
           <MaterialCommunityIcons name="map-marker" size={20} color="#fff" />
           <Text style={styles.locationText}>Kano, Nigeria</Text>
-          <Text style={styles.locationText}>Lang. EN</Text>
+          <Text style={styles.languageText}>Lang. EN</Text>
         </View>
         
         <View style={styles.weatherDetails}>
@@ -137,6 +151,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 5,
     fontWeight: "600",
+  },
+  languageText: {
+    flex: 1,
+
   },
   weatherDetails: {
     flexDirection: "row",

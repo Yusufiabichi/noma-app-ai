@@ -13,7 +13,7 @@ export default function App() {
   return (
     // <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="NomaApp AI" component={HomeScreen} />
         <Stack.Screen name="CropCheck" component={CropCheck} />
         <Stack.Screen name="CheckResult" component={CheckResult} />
         <Stack.Screen name="Community" component={Community} />

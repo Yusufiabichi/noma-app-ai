@@ -12,9 +12,10 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
-    "@react-navigation/bottom-tabs": "^7.4.0",
+    "@react-navigation/bottom-tabs": "^7.4.9",
     "@react-navigation/elements": "^2.6.3",
-    "@react-navigation/native": "^7.1.17",
+    "@react-navigation/native": "^7.1.18",
+    "expo-camera": "^17.0.8",
     "expo-constants": "~18.0.9",
     "expo-font": "~14.0.8",
     "expo-haptics": "~15.0.7",

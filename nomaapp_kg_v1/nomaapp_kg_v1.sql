@@ -1,0 +1,97 @@
+-- NomaApp Knowledge Graph v1.0.0 (Nigeria)
+CREATE TABLE metadata (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
+
+CREATE TABLE diseases (
+  id TEXT PRIMARY KEY,
+  crop TEXT,
+  disease_name TEXT,
+  display_name_en TEXT,
+  display_name_ha TEXT,
+  symptoms TEXT,
+  severity_thresholds TEXT,
+  non_chemical_controls TEXT,
+  weather_constraints TEXT,
+  expert_trigger TEXT,
+  metadata_json TEXT
+);
+
+CREATE TABLE chemical_controls (
+  id TEXT PRIMARY KEY,
+  disease_id TEXT,
+  active_ingredient TEXT,
+  modes_of_action TEXT,
+  rate_per_ha_value REAL,
+  rate_per_ha_unit TEXT,
+  rate_for_15l_value REAL,
+  rate_for_15l_unit TEXT,
+  PHI_days INTEGER,
+  REI_hours INTEGER,
+  availability TEXT,
+  toxicity_flags TEXT,
+  resistance_notes TEXT,
+  FOREIGN KEY(disease_id) REFERENCES diseases(id)
+);
+
+CREATE TABLE translations (
+  message_id TEXT,
+  lang TEXT,
+  text TEXT,
+  PRIMARY KEY(message_id, lang)
+);
+
+CREATE TABLE assets (
+  asset_id TEXT PRIMARY KEY,
+  type TEXT,
+  lang TEXT,
+  path TEXT
+);
+
+-- Metadata
+INSERT INTO metadata VALUES (
+  'metadata_json',
+  '{"kg_version":"1.0.0","country_context":"NG","notes":"Minimal prototype KG for offline testing (maize, tomato, cassava)"}'
+);
+
+-- Diseases
+INSERT INTO diseases VALUES
+('maize_faw_001','maize','fall_armyworm','Fall Armyworm','ƙudan masara',
+ '["windowpane leaf feeding","frass in whorl","ragged leaf edges"]',
+ '{"mild":"0-10% plants damaged","moderate":"10-30%","severe":">30%"}',
+ '["handpick larvae","encourage predators","intercropping with legumes"]',
+ '{"avoid_spray_if":{"rain_forecast_within_hours":12,"wind_speed_above_kph":15}}',
+ '["model_confidence < 0.7","severity == severe"]',
+ '{"validated_by":["agr_001"],"source":"internal_prototype"}'
+);
+
+INSERT INTO diseases VALUES
+('tomato_early_blight_001','tomato','early_blight','Early Blight','tabon ganye na farko',
+ '["concentric ring spots on lower leaves","yellowing and defoliation"]',
+ '{"mild":"<10% leaves","moderate":"10-30%","severe":">30%"}',
+ '["stake plants for airflow","remove infected leaves","rotate crops"]',
+ '{"avoid_spray_if":{"rain_forecast_within_hours":12}}',
+ '["model_confidence < 0.7"]',
+ '{"validated_by":["agr_002"],"source":"internal_prototype"}'
+);
+
+INSERT INTO diseases VALUES
+('cassava_bacterial_blight_001','cassava','cassava_bacterial_blight','Cassava Bacterial Blight','cutar ganyen doya (bacterial)',
+ '["wilted leaves","angular leaf spots with ooze"]',
+ '{"mild":"few affected leaves","moderate":"10-20%","severe":">20%"}',
+ '["use clean cuttings","rogue infected plants","control weeds"]',
+ '{}',
+ '["model_confidence < 0.7"]',
+ '{"validated_by":["agr_003"],"source":"internal_prototype"}'
+);
+
+-- Chemical controls
+INSERT INTO chemical_controls VALUES
+('cc_emamectin_001','maize_faw_001','Emamectin benzoate','["IRAC 6"]',150.0,'g_ai/ha',2.0,'g_per_tank',7,12,'{"NG":["GenericA"]}','["low_mammalian_toxicity"]','rotate with IRAC 28');
+
+INSERT INTO chemical_controls VALUES
+('cc_chlorothalonil_001','tomato_early_blight_001','Chlorothalonil','["FRAC M05"]',1500.0,'g_ai/ha',30.0,'g_per_tank',7,24,'{"NG":["GenericB"]}','["moderate"]','rotate with Group 11');
+
+INSERT INTO chemical_controls VALUES
+('cc_none_001','cassava_bacterial_blight_001','','[]',NULL,'',NULL,'',NULL,NULL,'{}','[]','');

@@ -1,0 +1,39 @@
+{
+  "welcome_message": {
+    "en": "Welcome to NomaApp. Help farmers diagnose crop issues.",
+    "ha": "Barka da zuwa NomaApp. Muna taimakawa manoma gano matsalolin amfanin gona."
+  },
+  "diagnosis_summary": {
+    "en": "Likely: {disease} ({confidence}%). Severity: {severity}.",
+    "ha": "Mai yuwuwa: {disease} ({confidence}%). Matsi: {severity}."
+  },
+  "do_now": { "en": "Do now", "ha": "Yi yanzu" },
+  "non_chemical_steps": {
+    "en": "Try these non-chemical steps first:",
+    "ha": "Fara da waɗannan matakan ba na sinadarai ba:"
+  },
+  "spray_instruction": {
+    "en": "If spraying: use the recommended dose and wear PPE.",
+    "ha": "Idan za a feshe: yi amfani da kwayar da aka ba da shawara kuma sanya kayan kariya."
+  },
+  "safety_warning": {
+    "en": "Warning: follow PHI and REI; keep away from water sources.",
+    "ha": "Gargaɗi: bi PHI da REI; ka nisanci wuraren ruwa."
+  },
+  "expert_review_prompt": {
+    "en": "Low confidence — request expert review.",
+    "ha": "Ƙarancin tabbaci — nemi bitar ƙwararre."
+  },
+  "follow_up_reminder": {
+    "en": "We will remind you in {days} days to recheck.",
+    "ha": "Za mu tunatar da ku a cikin kwanaki {days} don sake duba."
+  },
+  "accept_recommendation": {
+    "en": "I will do this",
+    "ha": "Zan yi wannan"
+  },
+  "request_agronomist": {
+    "en": "Ask an agronomist",
+    "ha": "Nemi masanin noma"
+  }
+}

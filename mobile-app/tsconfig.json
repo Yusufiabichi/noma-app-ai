@@ -15,6 +15,6 @@
     "app/index.tsx",
     "app/Welcome.jsx",
     "app/HomeScreen.jsx",
-    "app/index.jsx"
+    "app/index.tsx"
   ]
 }
