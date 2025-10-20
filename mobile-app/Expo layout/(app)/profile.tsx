@@ -1,15 +1,20 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { Redirect } from 'expo-router'
 
-const profile = () => {
+const Profile = () => {
+
+  const isLoggedIn = true;
+  if(!isLoggedIn){
+    return <Redirect href="/login"/>
+  }
   return (
     <View style={styles.container}>
-      <Text>profile</Text>
+      <Text>Profile</Text>
     </View>
   )
 }
 
-export default profile
+export default Profile
 
 const styles = StyleSheet.create({
   container: {

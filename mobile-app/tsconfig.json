@@ -12,9 +12,9 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/_layout.jsx",
-    "app/(app)/index.tsx",
+    "Expo layout/(app)/index.tsx",
     "app/Welcome.jsx",
     "app/HomeScreen.jsx",
-    "app/(app)/index.tsx"
+    "Expo layout/(app)/index.tsx"
   ]
 }
