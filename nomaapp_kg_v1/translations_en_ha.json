@@ -1,7 +1,7 @@
 {
   "welcome_message": {
-    "en": "Welcome to NomaApp. Help farmers diagnose crop issues.",
-    "ha": "Barka da zuwa NomaApp. Muna taimakawa manoma gano matsalolin amfanin gona."
+    "en": "Welcome to NomaApp AI. Help farmers diagnose crop issues.",
+    "ha": "Barka da zuwa NomaApp AI. Muna taimakar manoma gano matsalolin amfanin gona."
   },
   "diagnosis_summary": {
     "en": "Likely: {disease} ({confidence}%). Severity: {severity}.",
@@ -14,7 +14,7 @@
   },
   "spray_instruction": {
     "en": "If spraying: use the recommended dose and wear PPE.",
-    "ha": "Idan za a feshe: yi amfani da kwayar da aka ba da shawara kuma sanya kayan kariya."
+    "ha": "Idan za ai feshi: yi amfani da kwayar da aka ba da shawara kuma sanya kayan kariya."
   },
   "safety_warning": {
     "en": "Warning: follow PHI and REI; keep away from water sources.",
@@ -34,6 +34,6 @@
   },
   "request_agronomist": {
     "en": "Ask an agronomist",
-    "ha": "Nemi masanin noma"
+    "ha": "Tambayi masanin noma"
   }
 }

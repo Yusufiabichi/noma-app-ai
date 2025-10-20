@@ -52,7 +52,8 @@ CREATE TABLE assets (
 -- Metadata
 INSERT INTO metadata VALUES (
   'metadata_json',
-  '{"kg_version":"1.0.0","country_context":"NG","notes":"Minimal prototype KG for offline testing (maize, tomato, cassava)"}'
+  '{"kg_version":"1.0.0","country_context":"NG","notes":"Minimal prototype KG for offline 
+  testing (maize, tomato, cassava)"}'
 );
 
 -- Diseases
@@ -77,7 +78,8 @@ INSERT INTO diseases VALUES
 );
 
 INSERT INTO diseases VALUES
-('cassava_bacterial_blight_001','cassava','cassava_bacterial_blight','Cassava Bacterial Blight','cutar ganyen doya (bacterial)',
+('cassava_bacterial_blight_001','cassava','cassava_bacterial_blight','Cassava Bacterial Blight',
+'cutar ganyen doya (bacterial)',
  '["wilted leaves","angular leaf spots with ooze"]',
  '{"mild":"few affected leaves","moderate":"10-20%","severe":">20%"}',
  '["use clean cuttings","rogue infected plants","control weeds"]',
@@ -88,10 +90,12 @@ INSERT INTO diseases VALUES
 
 -- Chemical controls
 INSERT INTO chemical_controls VALUES
-('cc_emamectin_001','maize_faw_001','Emamectin benzoate','["IRAC 6"]',150.0,'g_ai/ha',2.0,'g_per_tank',7,12,'{"NG":["GenericA"]}','["low_mammalian_toxicity"]','rotate with IRAC 28');
+('cc_emamectin_001','maize_faw_001','Emamectin benzoate','["IRAC 6"]',150.0,'g_ai/ha',2.0,
+'g_per_tank',7,12,'{"NG":["GenericA"]}','["low_mammalian_toxicity"]','rotate with IRAC 28');
 
 INSERT INTO chemical_controls VALUES
-('cc_chlorothalonil_001','tomato_early_blight_001','Chlorothalonil','["FRAC M05"]',1500.0,'g_ai/ha',30.0,'g_per_tank',7,24,'{"NG":["GenericB"]}','["moderate"]','rotate with Group 11');
+('cc_chlorothalonil_001','tomato_early_blight_001','Chlorothalonil','["FRAC M05"]',1500.0,
+'g_ai/ha',30.0,'g_per_tank',7,24,'{"NG":["GenericB"]}','["moderate"]','rotate with Group 11');
 
 INSERT INTO chemical_controls VALUES
 ('cc_none_001','cassava_bacterial_blight_001','','[]',NULL,'',NULL,'',NULL,NULL,'{}','[]','');
