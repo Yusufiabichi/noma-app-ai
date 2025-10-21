@@ -2,21 +2,41 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { router } from 'expo-router';
+import { useState } from 'react';
+import Data from '../constants/data.json'
 
 
 export default function HomeScreen() {
+  const [wheather, setWeather] = useState(32);
+  const [language, setLanguage] = useState("ha")
+  
+  // console.log(Data);
   return (
     <View style={styles.container}>
       {/* Location Card */}
       <View style={styles.locationCard}>
         <View>
-          <Text style={styles.locationLabel}>Current Location</Text>
           <Text style={styles.locationName}>Kano, Nigeria</Text>
-          <Text style={styles.temperature}>🌡️ 32°C</Text>
+          <Text style={styles.temperature}>{wheather}°C</Text>
+          {wheather >= 30 ? <Text style={styles.conditionText}>
+            {language==="en" ? Data.en.condition_text[0]: Data.ha.condition_text[0]}
+            </Text>: <Text style={styles.conditionText}>
+              {language==="en" ? Data.en.condition_text[1]: Data.ha.condition_text[1]}
+              </Text>}
+          {wheather >= 30 ? 
+          <View style={styles.statusBox}>
+            <Text style={styles.statusRed}>
+              {language==="en" ? Data.en.status_text.bad: Data.ha.status_text.bad}
+            </Text>
+          </View> :
           <View style={styles.statusBox}>
             <Feather name="check-square" size={16} color="#00B894" />
-            <Text style={styles.statusText}>Spray Favorable</Text>
-          </View>
+            <Text style={styles.statusText}>
+              {language==="en" ? Data.en.status_text.good: Data.ha.status_text.good}
+            </Text>
+          </View> }
+          
         </View>
         <View style={styles.sunIcon}>
           <Feather name="sun" size={28} color="#fff" />
@@ -24,30 +44,45 @@ export default function HomeScreen() {
       </View>
 
       {/* Welcome Message */}
-      <Text style={styles.welcomeTitle}>Welcome, Farmer!</Text>
-      <Text style={styles.subtitle}>Diagnose your crops with AI</Text>
+      <Text style={styles.welcomeTitle}>
+        {language==="en" ? Data.en.welcome_title: Data.ha.welcome_title}
+      </Text>
+      <Text style={styles.subtitle}>
+        {language==="en" ? Data.en.welcome_subtitle: Data.ha.welcome_subtitle}
+      </Text>
 
       {/* Scan Button */}
       <TouchableOpacity style={styles.scanButton}>
         <FontAwesome name="camera" size={20} color="#fff" />
-        <Text style={styles.scanText}>Scan Your Crop</Text>
+        <Text style={styles.scanText}>
+            {language==="en" ? Data.en.scan_text: Data.ha.scan_text}
+        </Text>
       </TouchableOpacity>
 
       {/* Quick Options */}
       <View style={styles.cardRow}>
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card}
+        onPress={()=> router.push("../fertilizer-advice")}>
           <MaterialCommunityIcons name="spray-bottle" size={30} color="#00B894" />
-          <Text style={styles.cardText}>Fertilizer Advice</Text>
+          <Text style={styles.cardText}>
+            {language==="en" ? Data.en.cards_text[0]: Data.ha.cards_text[0]}
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card}
+        onPress={()=> router.push("../disease-guide")}>
           <MaterialIcons name="pest-control" size={30} color="#c62828" />
-          <Text style={styles.cardText}>Pest & Disease Guide</Text>
+          <Text style={styles.cardText}>
+            {language==="en" ? Data.en.cards_text[1]: Data.ha.cards_text[1]}
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card}
+        onPress={()=> router.push("../farming-tips")}>
           <FontAwesome5 name="leaf" size={28} color="#00B894" />
-          <Text style={styles.cardText}>Farming Tips</Text>
+          <Text style={styles.cardText}>
+            {language==="en" ? Data.en.cards_text[2]: Data.ha.cards_text[2]}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -59,7 +94,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FFFB',
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 30,
   },
   locationCard: {
     backgroundColor: '#00B894',
@@ -81,6 +116,11 @@ const styles = StyleSheet.create({
   },
   temperature: {
     color: '#fff',
+    fontSize: 30,
+    fontWeight: 600,
+  },
+  conditionText: {
+    color: "#c8e6c9",
     fontSize: 16,
   },
   statusBox: {
@@ -97,6 +137,11 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 12,
   },
+  statusRed: {
+    color: '#c62828',
+    marginLeft: 5,
+    fontSize: 12,
+  },
   sunIcon: {
     backgroundColor: '#00A982',
     padding: 12,
@@ -105,13 +150,13 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 22,
     fontWeight: '700',
-    marginTop: 30,
+    marginTop: 35,
     textAlign: 'center',
   },
   subtitle: {
     color: '#5C5C5C',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   scanButton: {
     backgroundColor: '#00B894',
@@ -127,14 +172,14 @@ const styles = StyleSheet.create({
   },
   scanText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     marginLeft: 8,
   },
   cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: 45,
   },
   card: {
     backgroundColor: '#fff',

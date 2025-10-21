@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router'
 import { FontAwesome, FontAwesome5, MaterialIcons } from '@expo/vector-icons'
+import { Pressable, Text } from 'react-native'
 
 export default function TabsLayout() {
   return (
@@ -34,6 +35,14 @@ export default function TabsLayout() {
           title: 'NomaApp AI', // ✅ Header title
           tabBarLabel: 'Crops',
           tabBarIcon: ({ color }) => <FontAwesome5 name="seedling" size={22} color={color} />,
+          headerRight: () => (
+              <Pressable onPress={() =>{
+                // setLanguage("ha")
+                alert("Menu button pressed!")
+                }}>
+                  <Text style={{ color: "#000", marginRight: 10, fontSize: 16 }}>Lang. EN</Text>
+              </Pressable>
+          ),
         }}
       />
       {/* <Tabs.Screen

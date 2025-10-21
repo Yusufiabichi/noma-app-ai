@@ -1,4 +1,5 @@
 {
+  
   "welcome_message": {
     "en": "Welcome to NomaApp AI. Help farmers diagnose crop issues.",
     "ha": "Barka da zuwa NomaApp AI. Muna taimakar manoma gano matsalolin amfanin gona."
@@ -34,6 +35,6 @@
   },
   "request_agronomist": {
     "en": "Ask an agronomist",
-    "ha": "Tambayi masanin noma"
+    "ha": "Tambayi Malamin noma"
   }
 }
