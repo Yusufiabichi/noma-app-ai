@@ -17,7 +17,10 @@ export default function HomeScreen() {
       {/* Location Card */}
       <View style={styles.locationCard}>
         <View>
-          <Text style={styles.locationName}>Kano, Nigeria</Text>
+          <Text style={styles.locationName}>
+            <MaterialCommunityIcons name="map-marker" size={20} color="#fff" />
+            Kano, Nigeria
+          </Text>
           <Text style={styles.temperature}>{wheather}°C</Text>
           {wheather >= 30 ? <Text style={styles.conditionText}>
             {language==="en" ? Data.en.condition_text[0]: Data.ha.condition_text[0]}
@@ -52,10 +55,12 @@ export default function HomeScreen() {
       </Text>
 
       {/* Scan Button */}
-      <TouchableOpacity style={styles.scanButton}>
+      <TouchableOpacity style={styles.scanButton}
+        onPress={()=> router.push("../crop-scan")}
+      >
         <FontAwesome name="camera" size={20} color="#fff" />
         <Text style={styles.scanText}>
-            {language==="en" ? Data.en.scan_text: Data.ha.scan_text}
+            {language==="en" ? Data.en.scan_text : Data.ha.scan_text}
         </Text>
       </TouchableOpacity>
 
@@ -65,7 +70,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../fertilizer-advice")}>
           <MaterialCommunityIcons name="spray-bottle" size={30} color="#00B894" />
           <Text style={styles.cardText}>
-            {language==="en" ? Data.en.cards_text[0]: Data.ha.cards_text[0]}
+            {language==="en" ? Data.en.cards_text[0] : Data.ha.cards_text[0]}
           </Text>
         </TouchableOpacity>
 
@@ -73,7 +78,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../disease-guide")}>
           <MaterialIcons name="pest-control" size={30} color="#c62828" />
           <Text style={styles.cardText}>
-            {language==="en" ? Data.en.cards_text[1]: Data.ha.cards_text[1]}
+            {language==="en" ? Data.en.cards_text[1] : Data.ha.cards_text[1]}
           </Text>
         </TouchableOpacity>
 
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: "#00B894",
   },
   cardText: {

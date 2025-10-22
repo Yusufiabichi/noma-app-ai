@@ -1,8 +1,12 @@
 import { Tabs } from 'expo-router'
-import { FontAwesome, FontAwesome5, MaterialIcons } from '@expo/vector-icons'
-import { Pressable, Text } from 'react-native'
+import { FontAwesome5, MaterialIcons } from '@expo/vector-icons'
+import { Pressable, Text, View } from 'react-native'
+import React, { useState } from 'react'
+// import LanguageSelector from '../LanguageSelector'
+import {Picker} from '@react-native-picker/picker';
 
 export default function TabsLayout() {
+  // const []
   return (
     <Tabs
       screenOptions={{
@@ -10,13 +14,13 @@ export default function TabsLayout() {
         headerTitleAlign: 'left',
         headerTitleStyle: {
           fontSize: 20,
-          fontWeight: '700',
+          fontWeight: '500',
         },
         tabBarActiveTintColor: '#00B894',
         tabBarInactiveTintColor: '#A0A0A0',
         tabBarStyle: {
           backgroundColor: '#fff',
-          borderTopWidth: 1,
+          borderTopWidth: 0.5,
           elevation: 10,
           height: 65,
           paddingBottom: 4,
@@ -32,15 +36,15 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'NomaApp AI', // ✅ Header title
+          title: 'NomaApp AI',
           tabBarLabel: 'Crops',
           tabBarIcon: ({ color }) => <FontAwesome5 name="seedling" size={22} color={color} />,
           headerRight: () => (
               <Pressable onPress={() =>{
-                // setLanguage("ha")
+                // return <LanguageSelector/>;
                 alert("Menu button pressed!")
                 }}>
-                  <Text style={{ color: "#000", marginRight: 10, fontSize: 16 }}>Lang. EN</Text>
+                  <Text style={{ color: "#000", marginRight: 10, fontSize: 16 }}>Lang EN.</Text>
               </Pressable>
           ),
         }}
@@ -75,7 +79,7 @@ export default function TabsLayout() {
         options={{
           title: 'Profile',
           tabBarLabel: 'Profile',
-          tabBarIcon: ({ color }) => <FontAwesome5 name="user-circle" size={22} color={color} />,
+          tabBarIcon: ({ color }) => <FontAwesome5 name="user" size={22} color={color} />,
         }}
       />
     </Tabs>
