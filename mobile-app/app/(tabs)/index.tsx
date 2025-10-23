@@ -4,15 +4,17 @@ import { FontAwesome, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import Data from '../constants/data.json'
 
 
 export default function HomeScreen() {
   const [wheather, setWeather] = useState(32);
-  const [language, setLanguage] = useState("ha")
-  
+  // const [language, setLanguage] = useState("ha")
+  const { language, setLanguage } = useLanguage();
   // console.log(Data);
   return (
+    
     <View style={styles.container}>
       {/* Location Card */}
       <View style={styles.locationCard}>
@@ -23,20 +25,20 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.temperature}>{wheather}°C</Text>
           {wheather >= 30 ? <Text style={styles.conditionText}>
-            {language==="en" ? Data.en.condition_text[0]: Data.ha.condition_text[0]}
+            {language==="english" ? Data.en.condition_text[0]: Data.ha.condition_text[0]}
             </Text>: <Text style={styles.conditionText}>
-              {language==="en" ? Data.en.condition_text[1]: Data.ha.condition_text[1]}
+              {language==="english" ? Data.en.condition_text[1]: Data.ha.condition_text[1]}
               </Text>}
           {wheather >= 30 ? 
           <View style={styles.statusBox}>
             <Text style={styles.statusRed}>
-              {language==="en" ? Data.en.status_text.bad: Data.ha.status_text.bad}
+              {language==="english" ? Data.en.status_text.bad: Data.ha.status_text.bad}
             </Text>
           </View> :
           <View style={styles.statusBox}>
             <Feather name="check-square" size={16} color="#00B894" />
             <Text style={styles.statusText}>
-              {language==="en" ? Data.en.status_text.good: Data.ha.status_text.good}
+              {language==="english" ? Data.en.status_text.good: Data.ha.status_text.good}
             </Text>
           </View> }
           
@@ -48,10 +50,10 @@ export default function HomeScreen() {
 
       {/* Welcome Message */}
       <Text style={styles.welcomeTitle}>
-        {language==="en" ? Data.en.welcome_title: Data.ha.welcome_title}
+        {language==="english" ? Data.en.welcome_title: Data.ha.welcome_title}
       </Text>
       <Text style={styles.subtitle}>
-        {language==="en" ? Data.en.welcome_subtitle: Data.ha.welcome_subtitle}
+        {language==="english" ? Data.en.welcome_subtitle: Data.ha.welcome_subtitle}
       </Text>
 
       {/* Scan Button */}
@@ -60,7 +62,7 @@ export default function HomeScreen() {
       >
         <FontAwesome name="camera" size={20} color="#fff" />
         <Text style={styles.scanText}>
-            {language==="en" ? Data.en.scan_text : Data.ha.scan_text}
+            {language==="english" ? Data.en.scan_text : Data.ha.scan_text}
         </Text>
       </TouchableOpacity>
 
@@ -70,7 +72,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../fertilizer-advice")}>
           <MaterialCommunityIcons name="spray-bottle" size={30} color="#00B894" />
           <Text style={styles.cardText}>
-            {language==="en" ? Data.en.cards_text[0] : Data.ha.cards_text[0]}
+            {language==="english" ? Data.en.cards_text[0] : Data.ha.cards_text[0]}
           </Text>
         </TouchableOpacity>
 
@@ -78,7 +80,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../disease-guide")}>
           <MaterialIcons name="pest-control" size={30} color="#c62828" />
           <Text style={styles.cardText}>
-            {language==="en" ? Data.en.cards_text[1] : Data.ha.cards_text[1]}
+            {language==="english" ? Data.en.cards_text[1] : Data.ha.cards_text[1]}
           </Text>
         </TouchableOpacity>
 
@@ -86,7 +88,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../farming-tips")}>
           <FontAwesome5 name="leaf" size={28} color="#00B894" />
           <Text style={styles.cardText}>
-            {language==="en" ? Data.en.cards_text[2]: Data.ha.cards_text[2]}
+            {language==="english" ? Data.en.cards_text[2]: Data.ha.cards_text[2]}
           </Text>
         </TouchableOpacity>
       </View>
