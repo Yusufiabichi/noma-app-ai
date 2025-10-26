@@ -1,5 +1,5 @@
 // app/index.js
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { FontAwesome, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from 'expo-router';
@@ -15,7 +15,7 @@ export default function HomeScreen() {
   // console.log(Data);
   return (
     
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Location Card */}
       <View style={styles.locationCard}>
         <View>
@@ -92,7 +92,7 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
