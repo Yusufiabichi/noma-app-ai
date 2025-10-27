@@ -1,25 +1,34 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import PostCard from './components/PostCard';
 
-export default function FertilizerAdvice() {
+const FertilizerAdvice: React.FC = () => {
+  const posts = [
+    {
+      title: 'Best Fertilizer for Maize',
+      description: 'Use NPK 15:15:15 during planting and urea at knee height for strong growth.',
+      image: require('../assets/fertilizer1.jpg'),
+    },
+    {
+      title: 'Organic Compost Benefits',
+      description: 'Compost improves soil structure and helps retain water naturally.',
+      image: require('../assets/fertilizer2.jpg'),
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-        <Text style={styles.welcomeTitle}>Fertilzer Advice</Text>
-    </View>
-  )
-}
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Fertilizer Advice</Text>
+      {posts.map((item, index) => (
+        <PostCard key={index} {...item} />
+      ))}
+    </ScrollView>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-    flex: 1,
-    backgroundColor: '#F8FFFB',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-  },
-  welcomeTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 30,
-    textAlign: 'center',
-  },
-})
+  container: { flex: 1, backgroundColor: '#F1F8E9', padding: 16 },
+  header: { fontSize: 22, fontWeight: 'bold', color: '#33691E', marginBottom: 20 },
+});
+
+export default FertilizerAdvice;

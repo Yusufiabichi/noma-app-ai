@@ -1,25 +1,34 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import PostCard from './components/PostCard';
 
-export default function DiseaseGuide() {
+const PestDiseaseGuide: React.FC = () => {
+  const guides = [
+    {
+      title: 'Identifying Maize Armyworm',
+      description: 'Look for chewed leaves and caterpillars on maize shoots. Apply neem spray early.',
+      image: require('../assets/pest1.jpg'),
+    },
+    {
+      title: 'Tomato Blight Prevention',
+      description: 'Avoid overhead watering and use copper-based fungicide at early signs.',
+      image: require('../assets/pest2.webp'),
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-        <Text style={styles.welcomeTitle}>Pest & Disease Guide</Text>
-    </View>
-  )
-}
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Pest & Disease Guide</Text>
+      {guides.map((item, index) => (
+        <PostCard key={index} {...item} />
+      ))}
+    </ScrollView>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-    flex: 1,
-    backgroundColor: '#F8FFFB',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-  },
-  welcomeTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 30,
-    textAlign: 'center',
-  },
-})
+  container: { flex: 1, backgroundColor: '#FFF3E0', padding: 16 },
+  header: { fontSize: 22, fontWeight: 'bold', color: '#E65100', marginBottom: 20 },
+});
+
+export default PestDiseaseGuide;

@@ -15,9 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, CameraCapturedPicture } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router'; // <- useRouter hook
 
 export default function CropScan() {
+  const router = useRouter(); // <- correct use
   const cameraRef = useRef<Camera | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -27,17 +28,19 @@ export default function CropScan() {
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
+      try {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === 'granted');
 
-      // If you want to show/use gallery also request media library permission for image picker
-      if (Platform.OS !== 'web') {
-        const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        // not strictly required to proceed, but informed
-        if (mediaStatus !== 'granted') {
-          // user denied gallery but camera can still work
-          console.log('No gallery permission');
+        if (Platform.OS !== 'web') {
+          const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (mediaStatus !== 'granted') {
+            console.log('No gallery permission');
+          }
         }
+      } catch (err) {
+        console.error('permission error', err);
+        setHasPermission(false);
       }
     })();
   }, []);
@@ -64,9 +67,24 @@ export default function CropScan() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.8,
       });
-      if (!result.cancelled) {
-        setPhoto({ uri: result.uri } as any);
-        setPreviewVisible(true);
+
+      // handle both older and newer shapes:
+      // newer SDKs: { canceled: boolean, assets: [{ uri, ... }] }
+      // older: { cancelled: boolean, uri }
+      const canceled = (result as any).canceled ?? (result as any).cancelled ?? false;
+      if (!canceled) {
+        const uri =
+          // prefer assets (newer shape)
+          (result as any).assets?.[0]?.uri ||
+          // older shape
+          (result as any).uri ||
+          null;
+        if (uri) {
+          setPhoto({ uri });
+          setPreviewVisible(true);
+        } else {
+          console.warn('Could not find uri in image picker result', result);
+        }
       }
     } catch (err) {
       console.error('openGallery error', err);
@@ -104,12 +122,19 @@ export default function CropScan() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.cameraWrapper}>
-        <Camera
-          ref={(ref) => (cameraRef.current = ref)}
-          style={styles.camera}
-          onCameraReady={() => setIsCameraReady(true)}
-          ratio="16:9"
-        />
+        {Platform.OS !== 'web' ? (
+          <Camera
+            ref={(ref) => (cameraRef.current = ref)}
+            style={styles.camera}
+            onCameraReady={() => setIsCameraReady(true)}
+            ratio="16:9"
+          />
+        ) : (
+          // expo-camera does not fully work on web in many setups — avoid rendering it on web
+          <View style={[styles.camera, { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }]}>
+            <Text style={{ color: 'white' }}>Camera not available on web</Text>
+          </View>
+        )}
 
         {/* Overlay: rounded rectangle */}
         <View pointerEvents="none" style={styles.overlayContainer}>
@@ -126,7 +151,7 @@ export default function CropScan() {
 
         {/* Top-left back (optional) and top-right help */}
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => {router.push("./")}}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('./')}>
             <Ionicons name="arrow-back" size={22} color="white" />
           </TouchableOpacity>
 
@@ -162,7 +187,6 @@ export default function CropScan() {
 
           <TouchableOpacity
             onPress={() => {
-              // optional: toggle flash or switch camera
               Alert.alert('Info', 'Implement flash or camera switch here if you want.');
             }}
             style={styles.sideButton}
@@ -196,7 +220,6 @@ export default function CropScan() {
             <TouchableOpacity
               style={[styles.previewButton, { backgroundColor: '#1a73e8' }]}
               onPress={() => {
-                // TODO: send image to classification / upload endpoint
                 Alert.alert('Next', 'Send this image to your crop diagnosis pipeline (implement upload).');
               }}
             >
@@ -209,15 +232,10 @@ export default function CropScan() {
   );
 }
 
-/* -------------------------
-   Styles
-   ------------------------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-
   cameraWrapper: { flex: 1, position: 'relative' },
   camera: { flex: 1 },
-
   overlayContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
@@ -225,7 +243,7 @@ const styles = StyleSheet.create({
   },
   overlayInner: {
     width: '90%',
-    aspectRatio: 4 / 5, // adjust shape of frame (taller or wider)
+    aspectRatio: 4 / 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -237,7 +255,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.95)',
     backgroundColor: 'transparent',
   },
-
   hintBubble: {
     position: 'absolute',
     left: 16,
@@ -249,7 +266,6 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
   },
   hintText: { color: '#111', fontWeight: '600' },
-
   topBar: {
     position: 'absolute',
     top: 8,
@@ -266,7 +282,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.35)',
     borderRadius: 8,
   },
-
   bottomBar: {
     position: 'absolute',
     bottom: 18,
@@ -305,9 +320,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: 'white',
   },
-
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
   previewFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -320,7 +333,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-
   button: {
     paddingHorizontal: 16,
     paddingVertical: 10,

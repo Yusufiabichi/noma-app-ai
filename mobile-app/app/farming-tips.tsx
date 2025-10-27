@@ -1,25 +1,34 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import PostCard from './components/PostCard';
 
-export default function FarmingTips() {
+const FarmingTips: React.FC = () => {
+  const tips = [
+    {
+      title: 'Soil Testing Before Planting',
+      description: 'Check soil pH and nutrient levels to determine the best crops to plant.',
+      image: require('../assets/tips1.jpg'),
+    },
+    {
+      title: 'Smart Watering Techniques',
+      description: 'Use drip irrigation to save water and ensure consistent soil moisture.',
+      image: require('../assets/tips2.jpg'),
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-        <Text style={styles.welcomeTitle}>Farming Tips</Text>
-    </View>
-  )
-}
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Farming Tips</Text>
+      {tips.map((item, index) => (
+        <PostCard key={index} {...item} />
+      ))}
+    </ScrollView>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-    flex: 1,
-    backgroundColor: '#F8FFFB',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-  },
-  welcomeTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 30,
-    textAlign: 'center',
-  },
-})
+  container: { flex: 1, backgroundColor: '#E3F2FD', padding: 16 },
+  header: { fontSize: 22, fontWeight: 'bold', color: '#0D47A1', marginBottom: 20 },
+});
+
+export default FarmingTips;
