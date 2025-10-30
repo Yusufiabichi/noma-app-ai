@@ -65,7 +65,7 @@ export default function TabsLayout() {
           fontSize: 20,
           fontWeight: '500',
         },
-        tabBarActiveTintColor: '#00B894',
+        tabBarActiveTintColor: '#16A34A',
         tabBarInactiveTintColor: '#A0A0A0',
         tabBarStyle: {
           backgroundColor: '#fff',
@@ -74,6 +74,7 @@ export default function TabsLayout() {
           height: 65,
           paddingBottom: 4,
           paddingTop: 8,
+          marginBottom: 15,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -90,7 +91,7 @@ export default function TabsLayout() {
           headerRight: () => (
                 <SafeAreaView style={{ flex: 1 }}>
                   <View style={styles.headerBar}>
-                    <FontAwesome5 name="globe" size={28} color="#00B894" />
+                    <FontAwesome5 name="globe" size={28} color="#16A34A" />
                     <HeaderLanguageSelector />
                   </View>
                 </SafeAreaView>

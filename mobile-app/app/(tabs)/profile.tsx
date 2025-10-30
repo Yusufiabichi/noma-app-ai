@@ -1,6 +1,14 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { FontAwesome, Feather, FontAwesome5 } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 interface UserData {
   name: string;
@@ -11,6 +19,8 @@ interface UserData {
 }
 
 const ProfileScreen: React.FC = () => {
+  const router = useRouter();
+
   const user: UserData = {
     name: 'Yusufia Bichi',
     email: 'yusufia@cc.cc',
@@ -25,6 +35,20 @@ const ProfileScreen: React.FC = () => {
       .map((n) => n[0])
       .join('')
       .toUpperCase();
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: () => {
+          // Clear any saved auth state here (if using AsyncStorage or context)
+          router.replace('../(auth)'); // redirect to login/signup screen
+        },
+      },
+    ]);
   };
 
   return (
@@ -57,7 +81,9 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.premiumCard}>
         <View>
           <Text style={styles.premiumTitle}>Premium Plan</Text>
-          <Text style={styles.premiumText}>Unlimited scans & advanced features</Text>
+          <Text style={styles.premiumText}>
+            Unlimited scans & advanced features
+          </Text>
         </View>
         <FontAwesome5 name="crown" size={24} color="#fff" />
       </View>
@@ -84,10 +110,18 @@ const ProfileScreen: React.FC = () => {
           </View>
           <View>
             <Text style={styles.optionTitle}>Notifications</Text>
-            <Text style={styles.optionSubtitle}>Push notifications & alerts</Text>
+            <Text style={styles.optionSubtitle}>
+              Push notifications & alerts
+            </Text>
           </View>
         </View>
         <Feather name="chevron-right" size={22} color="#999" />
+      </TouchableOpacity>
+
+      {/* Logout Button */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Feather name="log-out" size={20} color="#dc2626" style={{ marginRight: 8 }} />
+        <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -96,20 +130,8 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAF9',
+    backgroundColor: '#F8FFFB',
     paddingHorizontal: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 24,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
-    marginLeft: 10,
   },
   profileCard: {
     backgroundColor: '#fff',
@@ -212,6 +234,21 @@ const styles = StyleSheet.create({
   optionSubtitle: {
     fontSize: 13,
     color: '#666',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 14,
+    borderRadius: 16,
+    marginBottom: 30,
+    marginTop: 10,
+  },
+  logoutText: {
+    color: '#dc2626',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 

@@ -1,4 +1,4 @@
-// App.tsx
+// CropScan.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -12,45 +12,34 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Camera, CameraCapturedPicture } from 'expo-camera';
+import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router'; // <- useRouter hook
+import { useRouter } from 'expo-router';
 
 export default function CropScan() {
-  const router = useRouter(); // <- correct use
-  const cameraRef = useRef<Camera | null>(null);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const router = useRouter();
+  const cameraRef = useRef<any>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [taking, setTaking] = useState(false);
   const [photo, setPhoto] = useState<CameraCapturedPicture | { uri: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const { status } = await Camera.requestCameraPermissionsAsync();
-        setHasPermission(status === 'granted');
-
-        if (Platform.OS !== 'web') {
-          const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (mediaStatus !== 'granted') {
-            console.log('No gallery permission');
-          }
-        }
-      } catch (err) {
-        console.error('permission error', err);
-        setHasPermission(false);
-      }
-    })();
-  }, []);
+    if (!permission?.granted) {
+      requestPermission();
+    }
+  }, [permission]);
 
   async function takePicture() {
     if (!cameraRef.current || taking) return;
     setTaking(true);
     try {
-      const options = { quality: 0.8, skipProcessing: true, base64: false } as const;
-      const photoTaken = await cameraRef.current.takePictureAsync(options);
+      const photoTaken = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+        skipProcessing: true,
+      });
       setPhoto(photoTaken);
       setPreviewVisible(true);
     } catch (err) {
@@ -68,22 +57,13 @@ export default function CropScan() {
         quality: 0.8,
       });
 
-      // handle both older and newer shapes:
-      // newer SDKs: { canceled: boolean, assets: [{ uri, ... }] }
-      // older: { cancelled: boolean, uri }
       const canceled = (result as any).canceled ?? (result as any).cancelled ?? false;
       if (!canceled) {
         const uri =
-          // prefer assets (newer shape)
-          (result as any).assets?.[0]?.uri ||
-          // older shape
-          (result as any).uri ||
-          null;
+          (result as any).assets?.[0]?.uri || (result as any).uri || null;
         if (uri) {
           setPhoto({ uri });
           setPreviewVisible(true);
-        } else {
-          console.warn('Could not find uri in image picker result', result);
         }
       }
     } catch (err) {
@@ -91,7 +71,7 @@ export default function CropScan() {
     }
   }
 
-  if (hasPermission === null) {
+  if (!permission) {
     return (
       <SafeAreaView style={styles.center}>
         <ActivityIndicator />
@@ -100,19 +80,13 @@ export default function CropScan() {
     );
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
       <SafeAreaView style={styles.center}>
         <Text style={{ textAlign: 'center', marginBottom: 12 }}>
           Camera permission is required. Please enable it in settings.
         </Text>
-        <TouchableOpacity
-          onPress={async () => {
-            const { status } = await Camera.requestCameraPermissionsAsync();
-            setHasPermission(status === 'granted');
-          }}
-          style={styles.button}
-        >
+        <TouchableOpacity onPress={requestPermission} style={styles.button}>
           <Text style={styles.buttonText}>Try again</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -123,44 +97,46 @@ export default function CropScan() {
     <SafeAreaView style={styles.container}>
       <View style={styles.cameraWrapper}>
         {Platform.OS !== 'web' ? (
-          <Camera
-            ref={(ref) => (cameraRef.current = ref)}
+          <CameraView
+            ref={cameraRef}
             style={styles.camera}
+            facing="back"
             onCameraReady={() => setIsCameraReady(true)}
-            ratio="16:9"
           />
         ) : (
-          // expo-camera does not fully work on web in many setups — avoid rendering it on web
-          <View style={[styles.camera, { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }]}>
+          <View
+            style={[
+              styles.camera,
+              { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
+            ]}
+          >
             <Text style={{ color: 'white' }}>Camera not available on web</Text>
           </View>
         )}
 
-        {/* Overlay: rounded rectangle */}
+        {/* Overlay: frame */}
         <View pointerEvents="none" style={styles.overlayContainer}>
           <View style={styles.overlayInner}>
-            {/* inner transparent frame */}
             <View style={styles.frame} />
           </View>
         </View>
 
-        {/* Hint bubble at bottom-left above shutter */}
+        {/* Hint bubble */}
         <View style={styles.hintBubble}>
-          <Text style={styles.hintText}>NomaApp works with crops only 😎</Text>
+          <Text style={styles.hintText}>Place your crop's leaf in the frame</Text>
         </View>
 
-        {/* Top-left back (optional) and top-right help */}
+        {/* Top controls */}
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.iconButton} onPress={() => router.push('./')}>
             <Ionicons name="arrow-back" size={22} color="white" />
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() =>
               Alert.alert(
                 'Scan tips',
-                'Make sure the leaf or plant fills the white frame, avoid strong backlight, and hold the camera steady.'
+                'Ensure the leaf fills the frame and avoid strong backlight.'
               )
             }
           >
@@ -168,7 +144,7 @@ export default function CropScan() {
           </TouchableOpacity>
         </View>
 
-        {/* Bottom control bar */}
+        {/* Bottom controls */}
         <View style={styles.bottomBar}>
           <TouchableOpacity onPress={openGallery} style={styles.sideButton}>
             <Ionicons name="images-outline" size={28} color="white" />
@@ -178,7 +154,6 @@ export default function CropScan() {
             onPress={takePicture}
             style={styles.shutterButton}
             disabled={!isCameraReady || taking}
-            accessibilityLabel="Shutter"
           >
             <View style={[styles.shutterOuter, taking && { opacity: 0.6 }]}>
               <View style={styles.shutterInner} />
@@ -186,9 +161,7 @@ export default function CropScan() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              Alert.alert('Info', 'Implement flash or camera switch here if you want.');
-            }}
+            onPress={() => Alert.alert('Info', 'Implement flash or camera switch here.')}
             style={styles.sideButton}
           >
             <Ionicons name="camera-reverse-outline" size={28} color="white" />
@@ -219,9 +192,9 @@ export default function CropScan() {
 
             <TouchableOpacity
               style={[styles.previewButton, { backgroundColor: '#1a73e8' }]}
-              onPress={() => {
-                Alert.alert('Next', 'Send this image to your crop diagnosis pipeline (implement upload).');
-              }}
+              onPress={() =>
+                Alert.alert('Next', 'AI Model Integration.')
+              }
             >
               <Text style={{ color: 'white', fontWeight: '600' }}>Use photo</Text>
             </TouchableOpacity>

@@ -289,12 +289,12 @@ const styles = StyleSheet.create({
   postImage: { width: "100%", height: 180, borderRadius: 12, marginVertical: 8 },
   footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   tag: { borderRadius: 12, paddingVertical: 2, paddingHorizontal: 8, marginRight: 10 },
-  viewPost: { color: "#00A86B", fontWeight: "600" },
+  viewPost: { color: "#16A34A", fontWeight: "600" },
   fab: {
     position: "absolute",
     bottom: 25,
     right: 25,
-    backgroundColor: "#00A86B",
+    backgroundColor: "#16A34A",
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -316,6 +316,6 @@ const styles = StyleSheet.create({
   replyTime: { color: "#888", fontSize: 12 },
   replyText: { marginTop: 5, color: "#333" },
   modalButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
-  replyButton: { backgroundColor: "#00A86B", padding: 12, borderRadius: 10, width: "48%", alignItems: "center" },
+  replyButton: { backgroundColor: "#16A34A", padding: 12, borderRadius: 10, width: "48%", alignItems: "center" },
   shareButton: { borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 10, width: "48%", alignItems: "center" },
 });
