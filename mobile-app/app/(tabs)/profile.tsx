@@ -45,7 +45,7 @@ const ProfileScreen: React.FC = () => {
         style: 'destructive',
         onPress: () => {
           // Clear any saved auth state here (if using AsyncStorage or context)
-          router.replace('../(auth)'); // redirect to login/signup screen
+          router.replace('../(auth)'); 
         },
       },
     ]);
