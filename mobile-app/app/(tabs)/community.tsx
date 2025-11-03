@@ -28,7 +28,7 @@ interface Post {
 const posts: Post[] = [
   {
     id: "1",
-    name: "Sarah Johnson",
+    name: "Mahadi Yusuf",
     role: "Farmer",
     time: "2 hours ago",
     title: "Help! My tomato leaves are turning yellow",
@@ -41,7 +41,7 @@ const posts: Post[] = [
   },
   {
     id: "2",
-    name: "James Wilson",
+    name: "Aliyu Ishaq",
     role: "Expert",
     time: "4 hours ago",
     title: "Best organic pest control methods for corn",
@@ -53,7 +53,7 @@ const posts: Post[] = [
   },
   {
     id: "3",
-    name: "Robert Kumar",
+    name: "Mariyatu Hayatu",
     role: "Farmer",
     time: "6 hours ago",
     title: "When is the best time to harvest wheat?",
@@ -105,7 +105,7 @@ export default function CommunityForumScreen() {
       </View>
 
       {/* Stats */}
-      <View style={styles.stats}>
+      {/* <View style={styles.stats}>
         <View style={styles.statBox}>
           <Text style={styles.statNumber}>127</Text>
           <Text style={styles.statLabel}>Total Posts</Text>
@@ -118,7 +118,7 @@ export default function CommunityForumScreen() {
           <Text style={styles.statNumber}>38</Text>
           <Text style={styles.statLabel}>Discussions</Text>
         </View>
-      </View>
+      </View> */}
 
       {/* Posts */}
       <FlatList

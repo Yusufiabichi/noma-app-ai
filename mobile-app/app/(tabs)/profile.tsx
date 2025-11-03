@@ -44,8 +44,7 @@ const ProfileScreen: React.FC = () => {
         text: 'Logout',
         style: 'destructive',
         onPress: () => {
-          // Clear any saved auth state here (if using AsyncStorage or context)
-          router.replace('../(auth)'); 
+          router.replace('../(auth)');
         },
       },
     ]);
@@ -85,7 +84,7 @@ const ProfileScreen: React.FC = () => {
             Unlimited scans & advanced features
           </Text>
         </View>
-        <FontAwesome5 name="crown" size={24} color="#fff" />
+        <FontAwesome5 name="crown" size={22} color="#fff" />
       </View>
 
       {/* Account Settings */}
@@ -135,86 +134,89 @@ const styles = StyleSheet.create({
   },
   profileCard: {
     backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 18,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 15,
+    marginVertical: 16,
     shadowColor: '#000',
     shadowOpacity: 0.05,
-    shadowRadius: 5,
+    shadowRadius: 4,
     elevation: 2,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 65,
+    height: 65,
+    borderRadius: 35,
     backgroundColor: '#16A34A',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   avatarText: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
   },
   name: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     color: '#111',
   },
   email: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#666',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    paddingHorizontal: 10,
   },
   statItem: {
     alignItems: 'center',
     flex: 1,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     color: '#111',
   },
   statLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#777',
   },
   premiumCard: {
     backgroundColor: '#16A34A',
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   premiumTitle: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   premiumText: {
     color: '#fff',
     opacity: 0.9,
-    fontSize: 13,
+    fontSize: 12,
     marginTop: 2,
   },
   optionCard: {
     backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   optionLeft: {
     flexDirection: 'row',
@@ -222,17 +224,17 @@ const styles = StyleSheet.create({
   },
   optionIconContainer: {
     backgroundColor: '#DCFCE7',
-    padding: 10,
-    borderRadius: 12,
-    marginRight: 14,
+    padding: 9,
+    borderRadius: 10,
+    marginRight: 12,
   },
   optionTitle: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '600',
     color: '#111',
   },
   optionSubtitle: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: '#666',
   },
   logoutButton: {
@@ -240,14 +242,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    paddingVertical: 14,
-    borderRadius: 16,
-    marginBottom: 30,
-    marginTop: 10,
+    paddingVertical: 12,
+    borderRadius: 14,
+    marginBottom: 24,
+    marginTop: 6,
   },
   logoutText: {
     color: '#dc2626',
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '600',
   },
 });
