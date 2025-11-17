@@ -2,7 +2,7 @@
 // app/context/LanguageContext.tsx
 import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
 
-export type Lang = 'english' | 'hausa' | 'french'; // extend as needed
+export type Lang = 'english' | 'hausa' | 'yoruba' | 'igbo'; // extend as needed
 
 type LanguageContextType = {
   language: Lang;

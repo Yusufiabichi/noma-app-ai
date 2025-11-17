@@ -186,13 +186,17 @@ export default function CropScan() {
               style={[styles.previewButton, { backgroundColor: '#fff' }]}
               onPress={() => setPreviewVisible(false)}
             >
-              <Text style={{ color: '#111', fontWeight: '600' }}>Retake</Text>
+              <Text style={{ color: '#111', fontWeight: '600' }}>
+                <Ionicons name="arrow-back" size={20} color="#000" />
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.previewButton, { backgroundColor: '#1a73e8' }]}
+              style={[styles.previewButton, { backgroundColor: '#16A34A' }]}
               onPress={() =>
-                Alert.alert('Next', 'AI Model Integration.')
+                // Alert.alert('Next', 'AI Model Integration.')
+                router.replace('./treatment-rec')
+                // console.log("button clicked")
               }
             >
               <Text>
@@ -303,7 +307,8 @@ const styles = StyleSheet.create({
   previewButton: {
     flex: 1,
     marginHorizontal: 8,
-    paddingVertical: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 5,
     borderRadius: 10,
     alignItems: 'center',
   },

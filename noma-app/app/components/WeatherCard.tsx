@@ -99,8 +99,8 @@ export default function WeatherCard(): JSX.Element {
           <Ionicons name="warning-outline" size={16} color="#c0392b" />
             <Text style={styles.statusRed}>
               {language === "english"
-                ? Data.en.status_text.bad
-                : Data.ha.status_text.bad}
+                ? Data.en.home.status_text.bad
+                : Data.ha.home.status_text.bad}
             </Text>
           </View>
         ) : (
@@ -108,8 +108,8 @@ export default function WeatherCard(): JSX.Element {
             <Feather name="check-square" size={16} color="#16A34A" />
             <Text style={styles.statusText}>
               {language === "english"
-                ? Data.en.status_text.good
-                : Data.ha.status_text.good}
+                ? Data.en.home.status_text.good
+                : Data.ha.home.status_text.good}
             </Text>
           </View>
         )}

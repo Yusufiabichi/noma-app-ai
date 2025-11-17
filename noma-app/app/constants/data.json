@@ -1,25 +1,33 @@
 
 {
-    "en": {
+    "en":{ 
+        "home": {
         "condition_text": ["Hot & Dry", "Cool & Good"],
         "status_text": {
             "good": "Spray Favorable",
-            "bad": "Spraying not good untill 9:00pm"
+            "bad": "Spraying not good untill 7:00pm"
         },
         "welcome_title": "Welcome Farmer!",
         "welcome_subtitle": "Diagnose your crops with AI",
         "scan_text": "Scan Your Crop",
-        "cards_text": ["Fertilizer Advice", "Pest & Disease Guide", "Farming Tips"]
-    },
+        "cards_text": ["Fertilizer Advice", "Pest & Disease Guide", "Climate Smart Practices"]
+    }},
     "ha": {
+        "home": {
         "condition_text": ["Akwai zafin Rana", "Yanayi Mai Kyau"],
         "status_text": {
             "good": "Za'a iya feshi yanzu",
-            "bad": "Kada ayi feshi, har sai zuwa 9:00pm"
+            "bad": "Kada ayi feshi, har sai zuwa 7:00pm"
         },
         "welcome_title": "Barka da Zuwa, Yusufia!",
         "welcome_subtitle": "Duba lafiyar shukarku da AI",
         "scan_text": "Dauki hoton shukar",
-        "cards_text": ["Shawarwarin taki", "Pest & Disease Guide", "Dabarun yin Noma"]
+        "cards_text": ["Shawarwarin taki", "Dabarun Cututtuka", "Dabarun yin Noma"]
+    },
+        "treat-rec": {
+            "issue_label": "Matsalar da muka gano",
+            "issue_title": "Cizon Shinkafa",
+            "issue_info": ""
+        }
     }
 }

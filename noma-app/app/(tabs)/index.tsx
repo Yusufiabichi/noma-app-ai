@@ -18,10 +18,10 @@ export default function HomeScreen() {
 
       {/* Welcome Message */}
       <Text style={styles.welcomeTitle}>
-        {language==="english" ? Data.en.welcome_title: Data.ha.welcome_title}
+        {language==="english" ? Data.en.home.welcome_title: Data.ha.home.welcome_title}
       </Text>
       <Text style={styles.subtitle}>
-        {language==="english" ? Data.en.welcome_subtitle: Data.ha.welcome_subtitle}
+        {language==="english" ? Data.en.home.welcome_subtitle: Data.ha.home.welcome_subtitle}
       </Text>
 
       {/* Scan Button */}
@@ -30,7 +30,7 @@ export default function HomeScreen() {
       >
         <FontAwesome name="camera" size={20} color="#fff" />
         <Text style={styles.scanText}>
-            {language==="english" ? Data.en.scan_text : Data.ha.scan_text}
+            {language==="english" ? Data.en.home.scan_text : Data.ha.home.scan_text}
         </Text>
       </TouchableOpacity>
 
@@ -40,7 +40,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../fertilizer-advice")}>
           <MaterialCommunityIcons name="spray-bottle" size={30} color="#16A34A" />
           <Text style={styles.cardText}>
-            {language==="english" ? Data.en.cards_text[0] : Data.ha.cards_text[0]}
+            {language==="english" ? Data.en.home.cards_text[0] : Data.ha.home.cards_text[0]}
           </Text>
         </TouchableOpacity>
 
@@ -48,7 +48,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../disease-guide")}>
           <MaterialIcons name="pest-control" size={30} color="#c62828" />
           <Text style={styles.cardText}>
-            {language==="english" ? Data.en.cards_text[1] : Data.ha.cards_text[1]}
+            {language==="english" ? Data.en.home.cards_text[1] : Data.ha.home.cards_text[1]}
           </Text>
         </TouchableOpacity>
 
@@ -56,7 +56,7 @@ export default function HomeScreen() {
         onPress={()=> router.push("../farming-tips")}>
           <FontAwesome5 name="leaf" size={28} color="#1a73e8" />
           <Text style={styles.cardText}>
-            {language==="english" ? Data.en.cards_text[2]: Data.ha.cards_text[2]}
+            {language==="english" ? Data.en.home.cards_text[2]: Data.ha.home.cards_text[2]}
           </Text>
         </TouchableOpacity>
       </View>

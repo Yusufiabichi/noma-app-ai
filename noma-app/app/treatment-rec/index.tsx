@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { router } from "expo-router";
 
 const TreatmentRecommendationScreen = () => {
   return (
@@ -11,6 +12,9 @@ const TreatmentRecommendationScreen = () => {
       <View style={styles.issueCard}>
         <View style={styles.issueHeader}>
           <Ionicons name="warning-outline" size={20} color="#c0392b" />
+          {/* <Ionicons name="arrow-undo-sharp" size={20} color="#c0392b" />
+          <Ionicons name="arrow-back-circle" size={20} color="#c0392b" />
+                <Ionicons name="checkmark-outline" size={20} color="#c0392b" /> */}
           <Text style={styles.issueLabel}>Detected Issue</Text>
         </View>
         <Text style={styles.issueTitle}>Early Blight</Text>
@@ -64,10 +68,16 @@ const TreatmentRecommendationScreen = () => {
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.confirmButton}>
+        <TouchableOpacity style={styles.confirmButton} 
+          onPress={() => 
+            router.push('./')
+          }>
           <Text style={styles.buttonText}>I will do this</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.expertButton}>
+        <TouchableOpacity style={styles.expertButton} 
+          onPress={() => 
+            router.push('./')
+          }>
           <Text style={styles.buttonText}>Ask Expert</Text>
         </TouchableOpacity>
       </View>
@@ -153,7 +163,7 @@ const styles = StyleSheet.create({
   },
   listNumber: {
     fontWeight: "700",
-    color: "#2e7d32",
+    color: "#16A34A",
   },
   listText: {
     flex: 1,
@@ -167,7 +177,7 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: "#28a745",
+    backgroundColor: "#16A34A",
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",

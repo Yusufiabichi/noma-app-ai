@@ -11,7 +11,7 @@ function HeaderLanguageSelector() {
   const { language, setLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
 
-  const langs: Lang[] = ['english', 'hausa', 'french'];
+  const langs: Lang[] = ['english', 'hausa', 'yoruba', 'igbo'];
 
   return (
     <>
