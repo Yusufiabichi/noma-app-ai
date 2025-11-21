@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import PostCard from './components/PostCard';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const FarmingTips: React.FC = () => {
   const tips = [
@@ -17,12 +18,14 @@ const FarmingTips: React.FC = () => {
   ];
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Farming Tips</Text>
-      {tips.map((item, index) => (
-        <PostCard key={index} {...item} />
-      ))}
-    </ScrollView>
+    <SafeAreaView>
+      <ScrollView style={styles.container}>
+        <Text style={styles.header}>Farming Tips</Text>
+        {tips.map((item, index) => (
+          <PostCard key={index} {...item} />
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

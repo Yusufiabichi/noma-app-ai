@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@nozbe/watermelondb": "^0.28.0",
     "@react-native-community/geolocation": "^3.4.0",
     "@react-native-picker/picker": "^2.11.4",
     "@react-navigation/bottom-tabs": "^7.4.9",
@@ -44,7 +45,8 @@
     "react-native-svg": "^15.14.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
-    "rn-custom-select-dropdown": "^1.1.9"
+    "rn-custom-select-dropdown": "^1.1.9",
+    "undefined": "@nozbe/watermelondb/hooks"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

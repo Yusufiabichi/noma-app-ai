@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { database } from "../database";
+
 import {
   View,
   Text,

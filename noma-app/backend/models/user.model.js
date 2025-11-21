@@ -9,6 +9,12 @@ const userSchema = new mongoose.Schema( {
         maxlength: [50, 'Name cannot be more than 50 characters'],
         minlength: [2, 'Name must be at least 2 characters']
     },
+    phone: {
+        type: String,
+        required: true, 
+        unique: true,
+        maxlength: [13, 'Phone number cannot be more than 13 numbers'],
+    },
     email: {
         type: String, 
         required: true, 

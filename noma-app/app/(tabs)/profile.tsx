@@ -44,7 +44,7 @@ const ProfileScreen: React.FC = () => {
         text: 'Logout',
         style: 'destructive',
         onPress: () => {
-          router.replace('../(auth)');
+          router.replace('../login');
         },
       },
     ]);

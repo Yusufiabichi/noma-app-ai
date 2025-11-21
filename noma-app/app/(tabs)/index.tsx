@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { FontAwesome, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import Data from '../constants/data.json'
 import WeatherCard from '../components/WeatherCard';
@@ -11,8 +11,15 @@ import WeatherCard from '../components/WeatherCard';
 
 export default function HomeScreen() {
   const { language, setLanguage } = useLanguage();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+//   useEffect(() => {
+//   if (!isLoggedIn) {
+//     router.replace('/login');
+//   }
+// }, [isLoggedIn]);
   return (
-    
+
     <ScrollView style={styles.container}>
       <WeatherCard />
 
