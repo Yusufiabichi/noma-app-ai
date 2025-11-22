@@ -5,6 +5,7 @@ import { LanguageProvider } from "./context/LanguageContext";
 export default function RootLayout(){
     return (
     <Stack>
+     <LanguageProvider initial="english">
         <Stack.Screen name="(tabs)" options={{headerShown: false}} />
         <Stack.Screen name="(auth)" options={{headerShown: false}} />
         <Stack.Screen name="treatment-rec" options={{headerShown: false}} />
@@ -12,6 +13,7 @@ export default function RootLayout(){
         <Stack.Screen name="farming-tips" options={{headerShown: false,  title: "Farming Tips"}} />
         <Stack.Screen name="fertilizer-advice" options={{headerShown: false,  title: "Fertilizer Advice"}} />
         <Stack.Screen name="disease-guide" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
+    </LanguageProvider>
     </Stack>
 )
 }

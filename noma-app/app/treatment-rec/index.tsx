@@ -2,9 +2,14 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
+import { LanguageProvider, useLanguage } from '../context/LanguageContext';
 
 const TreatmentRecommendationScreen = () => {
+
+  // const { language, setLanguage } = useLanguage();
+
   return (
+    // <LanguageProvider initial="english">
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Analysis Results</Text>
 
@@ -17,7 +22,9 @@ const TreatmentRecommendationScreen = () => {
                 <Ionicons name="checkmark-outline" size={20} color="#c0392b" /> */}
           <Text style={styles.issueLabel}>Detected Issue</Text>
         </View>
-        <Text style={styles.issueTitle}>Early Blight</Text>
+        {/* <Text style={styles.issueTitle}>{language === 'english' ? 'Maize Early Blight' : 'Kudan Cizon Masara'}</Text> */}
+        <Text style={styles.issueTitle}>Maize Early Blight</Text>
+        <Text style={styles.issueCrop}>Crop: Maize</Text>
         <Text style={styles.issueInfo}>Confidence: 94% • Severity: Moderate</Text>
       </View>
 
@@ -82,6 +89,7 @@ const TreatmentRecommendationScreen = () => {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    // </LanguageProvider>
   );
 };
 
@@ -121,6 +129,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#b22222",
     marginBottom: 5,
+  },
+  issueCrop: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#b34b4b",
   },
   issueInfo: {
     fontSize: 14,
