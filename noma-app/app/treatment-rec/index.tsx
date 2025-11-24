@@ -6,7 +6,8 @@ import { LanguageProvider, useLanguage } from '../context/LanguageContext';
 
 const TreatmentRecommendationScreen = () => {
 
-  // const { language, setLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguage();
+  console.log(language)
 
   return (
     // <LanguageProvider initial="english">
@@ -22,8 +23,8 @@ const TreatmentRecommendationScreen = () => {
                 <Ionicons name="checkmark-outline" size={20} color="#c0392b" /> */}
           <Text style={styles.issueLabel}>Detected Issue</Text>
         </View>
-        {/* <Text style={styles.issueTitle}>{language === 'english' ? 'Maize Early Blight' : 'Kudan Cizon Masara'}</Text> */}
-        <Text style={styles.issueTitle}>Maize Early Blight</Text>
+        <Text style={styles.issueTitle}>{language === 'english' ? 'Maize Early Blight' : 'Kudan Cizon Masara'}</Text>
+        {/* <Text style={styles.issueTitle}>Maize Early Blight</Text> */}
         <Text style={styles.issueCrop}>Crop: Maize</Text>
         <Text style={styles.issueInfo}>Confidence: 94% • Severity: Moderate</Text>
       </View>

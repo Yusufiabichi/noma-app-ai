@@ -15,3 +15,9 @@
 //   adapter,
 //   modelClasses: [User],
 // });
+
+import User from './models/User'
+
+const database = new Database({
+    modelClasses: [User],
+})
