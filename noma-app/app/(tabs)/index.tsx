@@ -13,11 +13,9 @@ export default function HomeScreen() {
   const { language, setLanguage } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-//   useEffect(() => {
-//   if (!isLoggedIn) {
-//     router.replace('/login');
-//   }
-// }, [isLoggedIn]);
+  
+
+
   return (
 
     <ScrollView style={styles.container}>
