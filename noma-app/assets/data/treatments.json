@@ -1,0 +1,570 @@
+[
+  {
+    "id": "bean_angular_leaf_spot",
+    "name_en": "Bean Angular Leaf Spot",
+    "name_ha": "Tabon kusurwa a wake",
+    "crop": "Beans",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Remove and burn infected leaves or plants",
+          "Apply copper-based fungicide (e.g., Copper Oxychloride)",
+          "Avoid wetting leaves during watering"
+        ],
+        "recommended_treatment_ha": [
+          "Cire kuma ƙone ganyen da cuta ta kama",
+          "Yi amfani da maganin fungal da ke ɗauke da jan karfe (misali Copper Oxychloride)",
+          "Guji zuba ruwa a saman ganye"
+        ],
+        "future_prevention_en": [
+          "Rotate with non-host crops (maize or sorghum)",
+          "Use certified disease-free seed"
+        ],
+        "future_prevention_ha": [
+          "Yi juyin amfanin gona da masara ko dawa",
+          "Yi amfani da iri masu kyau ba tare da cuta ba"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Remove infected leaves manually",
+          "Spray Mancozeb fungicide"
+        ],
+        "recommended_treatment_ha": [
+          "Cire ganyen da ke ɗauke da cuta",
+          "Yi feshi da maganin Mancozeb"
+        ],
+        "future_prevention_en": [
+          "Avoid overcrowding at planting",
+          "Keep good field hygiene"
+        ],
+        "future_prevention_ha": [
+          "Guji shuka wake da yawa a wuri ɗaya",
+          "Kula da tsaftar gona"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Spray neem extract as organic control",
+          "Monitor weekly"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da ruwan ganyen neem a matsayin magani",
+          "Kula akai-akai kowane mako"
+        ],
+        "future_prevention_en": [
+          "Keep field weed-free",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Kula da tsaftar gona",
+          "Yi amfani da iri masu tsafta"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "bean_rust",
+    "name_en": "Bean Rust",
+    "name_ha": "Tsatsa a wake",
+    "crop": "Beans",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Spray fungicide (Chlorothalonil or Mancozeb)",
+          "Remove and burn infected leaves"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da maganin fungi kamar Mancozeb ko Chlorothalonil",
+          "Cire ganyaye masu cuta ka ƙone su"
+        ],
+        "future_prevention_en": [
+          "Plant rust-resistant varieties",
+          "Avoid planting in same spot every season"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da irin wake da ke da ƙarfi kan tsatsa",
+          "Guji shuka a wuri ɗaya duk shekara"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Improve nutrition with compost",
+          "Spray copper-based fungicide if spreading"
+        ],
+        "recommended_treatment_ha": [
+          "Haɗa taki na gargajiya don ƙara ƙarfi",
+          "Yi feshi da maganin jan karfe idan yana yaduwa"
+        ],
+        "future_prevention_en": [
+          "Maintain spacing for airflow",
+          "Regular field checks"
+        ],
+        "future_prevention_ha": [
+          "Tabbatar tazara don iska",
+          "Duba gona akai-akai"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Spray neem oil weekly",
+          "Remove small rust spots"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da mai neem sau ɗaya a mako",
+          "Cire ƙananan tabo na tsatsa"
+        ],
+        "future_prevention_en": [
+          "Monitor early",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Duba daga farko",
+          "Yi amfani da iri masu tsafta"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "rice_bacterial_leaf_spot",
+    "name_en": "Rice Bacterial Leaf Spot",
+    "name_ha": "Tabon ganye na kwayar cuta a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Uproot and destroy severely infected plants",
+          "Apply copper-based bactericide (e.g., Copper hydroxide)"
+        ],
+        "recommended_treatment_ha": [
+          "Cire shuke-shuke masu cuta sosai ka ƙone su",
+          "Yi amfani da maganin jan karfe mai kashe kwaya"
+        ],
+        "future_prevention_en": [
+          "Use certified clean seed",
+          "Rotate with non-rice crops"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da iri mai kyau",
+          "Yi juyin amfanin gona"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply foliar fertilizer to strengthen plants",
+          "Improve water management (avoid continuous flooding)"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da taki mai ƙarfafa ganye",
+          "Gyara yadda ake shayarwa (kar a bar ruwa kullum)"
+        ],
+        "future_prevention_en": [
+          "Maintain good drainage",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Tsaida ruwan tsabta",
+          "Yi amfani da iri masu tsafta"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add compost to soil",
+          "Monitor weekly"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki ga ƙasa",
+          "Kula da gida kowane mako"
+        ],
+        "future_prevention_en": [
+          "Keep field weed-free",
+          "Use healthy seedlings"
+        ],
+        "future_prevention_ha": [
+          "A cire ciyawa",
+          "Yi amfani da tsiro mai lafiya"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "rice_brown_spot",
+    "name_en": "Rice Brown Spot",
+    "name_ha": "Tabon ruwan kasa a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Spray Mancozeb or Tricyclazole fungicide",
+          "Apply balanced NPK fertilizer"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da Mancozeb ko Tricyclazole",
+          "Yi amfani da NPK 15:15:15"
+        ],
+        "future_prevention_en": [
+          "Avoid planting in nutrient-poor soils",
+          "Rotate with legumes"
+        ],
+        "future_prevention_ha": [
+          "Guji shuka a ƙasa mara ƙarfi",
+          "Yi juyin amfanin gona da wake"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply compost or poultry manure",
+          "Avoid dense planting"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki daga kaji ko shanu",
+          "Guji yawan shuka a wuri ɗaya"
+        ],
+        "future_prevention_en": [
+          "Improve soil fertility",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Ƙara lafiyar ƙasa",
+          "Yi amfani da iri masu tsafta"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add organic manure",
+          "Monitor for spread"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki na gargajiya",
+          "Kula da yada cuta"
+        ],
+        "future_prevention_en": [
+          "Clean seed before planting",
+          "Maintain good water management"
+        ],
+        "future_prevention_ha": [
+          "Tsaftace iri kafin shuka",
+          "Kula da yadda ake shayarwa"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "rice_leaf_smut",
+    "name_en": "Rice Leaf Smut",
+    "name_ha": "Leaf Smut a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Spray Propiconazole or Tricyclazole fungicide",
+          "Burn infected leaves"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da Propiconazole ko Tricyclazole",
+          "Ƙone ganyen da ke da cuta"
+        ],
+        "future_prevention_en": [
+          "Use resistant varieties",
+          "Avoid excessive nitrogen"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da iri masu juriya",
+          "Guji amfani da nitrogen da yawa"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Add compost and ensure proper spacing",
+          "Alternate wet and dry irrigation"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki na gida, ba da tazara",
+          "Sauya tsakanin shayarwa da bushewa"
+        ],
+        "future_prevention_en": [
+          "Maintain balanced fertilization",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Kula da takin ƙasa yadda ya kamata",
+          "Yi amfani da iri masu tsafta"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Spray neem extract solution",
+          "Weed regularly"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da ruwan neem",
+          "Cire ciyawa akai-akai"
+        ],
+        "future_prevention_en": [
+          "Monitor early",
+          "Avoid over-fertilization"
+        ],
+        "future_prevention_ha": [
+          "Duba tun da wuri",
+          "Guji yi wa ƙasa takin da yawa"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "rice_nitrogen_deficiency",
+    "name_en": "Rice Nitrogen Deficiency",
+    "name_ha": "Rashin Nitrogen a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply Urea or ammonium sulfate immediately",
+          "Irrigate after application"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da Urea ko ammonium sulfate nan take",
+          "Shayar da ruwa bayan yin taki"
+        ],
+        "future_prevention_en": [
+          "Use split nitrogen application",
+          "Rotate with legumes"
+        ],
+        "future_prevention_ha": [
+          "Raba amfani da nitrogen a lokuta",
+          "Yi juyin amfanin gona da wake"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Add compost or green manure",
+          "Apply moderate NPK"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki daga shanu ko wake",
+          "Yi amfani da NPK kadan"
+        ],
+        "future_prevention_en": [
+          "Regular soil testing",
+          "Use organic matter"
+        ],
+        "future_prevention_ha": [
+          "A rika gwajin ƙasa",
+          "Yi amfani da taki na gida"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add compost",
+          "Monitor growth"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki",
+          "Kula da girman shuka"
+        ],
+        "future_prevention_en": [
+          "Keep soil mulched",
+          "Avoid continuous rice cropping"
+        ],
+        "future_prevention_ha": [
+          "Rufe ƙasa da ganye",
+          "Guji noman shinkafa koyaushe a wuri ɗaya"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "rice_phosphorus_deficiency",
+    "name_en": "Rice Phosphorus Deficiency",
+    "name_ha": "Rashin Phosphorus a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply DAP or SSP at planting",
+          "Mix fertilizer near roots"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da DAP ko SSP lokacin shuka",
+          "Haɗa takin kusa da tushen shuka"
+        ],
+        "future_prevention_en": [
+          "Use compost rich in phosphorus",
+          "Starter fertilizer at planting"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da taki mai phosphorus",
+          "Yi taki a lokacin shuka"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply NPK 15:15:15 once",
+          "Avoid deep planting"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da NPK 15:15:15 sau ɗaya",
+          "Kada a binne tsaba sosai"
+        ],
+        "future_prevention_en": [
+          "Use poultry manure",
+          "Regular soil tests"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da najasar kaji",
+          "A rika gwajin ƙasa"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add poultry manure or compost",
+          "Monitor plant vigor"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara najasar kaji ko taki",
+          "Kula da ƙarfin shuka"
+        ],
+        "future_prevention_en": [
+          "Maintain balanced fertilization",
+          "Use organic matter"
+        ],
+        "future_prevention_ha": [
+          "Kula da takin ƙasa yadda ya kamata",
+          "Yi amfani da taki na gida"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "rice_potassium_deficiency",
+    "name_en": "Rice Potassium Deficiency",
+    "name_ha": "Rashin Potassium a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply Muriate of Potash (KCl) or appropriate NPK",
+          "Water well after application"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da Potash (KCl) ko NPK mai dacewa",
+          "Shayar da ruwa bayan yin taki"
+        ],
+        "future_prevention_en": [
+          "Add organic matter regularly",
+          "Avoid over-irrigation"
+        ],
+        "future_prevention_ha": [
+          "Ƙara taki na gida akai-akai",
+          "Guji shayar da yawa"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply small quantity of potash",
+          "Remove competing weeds"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da potash kadan",
+          "Cire ciyawa masu takura"
+        ],
+        "future_prevention_en": [
+          "Monitor soil moisture",
+          "Balanced fertilization"
+        ],
+        "future_prevention_ha": [
+          "Kula da danshi na ƙasa",
+          "Yi amfani da takin daidai"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add wood ash or compost",
+          "Monitor plant edges"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara toka daga itace ko taki",
+          "Kula da gefen ganye"
+        ],
+        "future_prevention_en": [
+          "Maintain soil fertility",
+          "Use crop rotation"
+        ],
+        "future_prevention_ha": [
+          "Kula da lafiya ƙasa",
+          "Yi juyin amfanin gona"
+        ]
+      }
+    }
+  },
+
+  {
+    "id": "rice_magnesium_deficiency",
+    "name_en": "Rice Magnesium Deficiency",
+    "name_ha": "Rashin Magnesium a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply Epsom salt (magnesium sulfate) to soil",
+          "Mix and water thoroughly"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da gishirin Epsom a ƙasa",
+          "Haɗa da ruwa sosai"
+        ],
+        "future_prevention_en": [
+          "Avoid overuse of potassium fertilizers",
+          "Maintain soil pH 6.0-6.5"
+        ],
+        "future_prevention_ha": [
+          "Guji amfani da potash da yawa",
+          "Kula da pH na ƙasa 6.0-6.5"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Spray foliar Epsom salt solution (2 tbsp in 10 L)",
+          "Add compost"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da ruwan Epsom (cokali 2 a lita 10)",
+          "Ƙara taki"
+        ],
+        "future_prevention_en": [
+          "Add organic matter yearly",
+          "Monitor potassium use"
+        ],
+        "future_prevention_ha": [
+          "Ƙara taki na gida duk shekara",
+          "Kula da amfani da potassium"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add compost or manure",
+          "Monitor leaves"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki na gargajiya",
+          "Kula da ganye"
+        ],
+        "future_prevention_en": [
+          "Keep soil healthy",
+          "Balanced fertilization"
+        ],
+        "future_prevention_ha": [
+          "Kula da lafiyar ƙasa",
+          "Yi amfani da taki daidai"
+        ]
+      }
+    }
+  }
+]

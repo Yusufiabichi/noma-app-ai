@@ -18,8 +18,8 @@ const FertilizerAdvice: React.FC = () => {
   ];
 
   return (
-    <SafeAreaView>
-      <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
         <Text style={styles.header}>Fertilizer Advice</Text>
         {posts.map((item, index) => (
           <PostCard key={index} {...item} />
@@ -30,7 +30,7 @@ const FertilizerAdvice: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F1F8E9', padding: 16 },
+  container: { flex: 1, backgroundColor: '#F1F8E9', padding: 16  },
   header: { fontSize: 22, fontWeight: 'bold', color: '#33691E', marginBottom: 20 },
 });
 

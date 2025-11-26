@@ -18,8 +18,8 @@ const FarmingTips: React.FC = () => {
   ];
 
   return (
-    <SafeAreaView>
-      <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
         <Text style={styles.header}>Farming Tips</Text>
         {tips.map((item, index) => (
           <PostCard key={index} {...item} />

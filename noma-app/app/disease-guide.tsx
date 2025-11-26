@@ -18,8 +18,8 @@ const PestDiseaseGuide: React.FC = () => {
   ];
 
   return (
-    <SafeAreaView>
-      <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
         <Text style={styles.header}>Pest & Disease Guide</Text>
         {guides.map((item, index) => (
           <PostCard key={index} {...item} />

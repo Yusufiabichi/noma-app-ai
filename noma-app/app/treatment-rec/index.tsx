@@ -1,16 +1,45 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { LanguageProvider, useLanguage } from '../context/LanguageContext';
+import { SafeAreaView } from "react-native-safe-area-context";
+
+
+import { getByCrop } from '../data/useTreatment.js';
+import { getById } from '../data/useTreatment.js';
+
+import treatment from "../../assets/data/treatments.json";
+
+
+
+
+const severit = ["high", "moderate", "low"]
+
+const diseaseId = "bean_angular_leaf_spot";
+  const treatmentData = getById(diseaseId);
+  console.log(treatmentData?.severities.high.future_prevention_en);
+  console.log(treatmentData?.severities.high.future_prevention_ha);
+  console.log(treatmentData?.severities.high.recommended_treatment_en);
+  console.log(treatmentData?.severities.high.recommended_treatment_ha);
+
+  const [severity, setSeverity] = useState("low");
+
+const checkSeverity = (severity) => {
+ if(severity === "high"){
+    return treatmentData.severities.high;
+ }
+}
+
+
 
 const TreatmentRecommendationScreen = () => {
 
   const { language, setLanguage } = useLanguage();
-  console.log(language)
 
   return (
     // <LanguageProvider initial="english">
+    <SafeAreaView>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Analysis Results</Text>
 
@@ -18,9 +47,6 @@ const TreatmentRecommendationScreen = () => {
       <View style={styles.issueCard}>
         <View style={styles.issueHeader}>
           <Ionicons name="warning-outline" size={20} color="#c0392b" />
-          {/* <Ionicons name="arrow-undo-sharp" size={20} color="#c0392b" />
-          <Ionicons name="arrow-back-circle" size={20} color="#c0392b" />
-                <Ionicons name="checkmark-outline" size={20} color="#c0392b" /> */}
           <Text style={styles.issueLabel}>Detected Issue</Text>
         </View>
         <Text style={styles.issueTitle}>{language === 'english' ? 'Maize Early Blight' : 'Kudan Cizon Masara'}</Text>
@@ -90,7 +116,7 @@ const TreatmentRecommendationScreen = () => {
         </TouchableOpacity>
       </View>
     </ScrollView>
-    // </LanguageProvider>
+    </SafeAreaView>
   );
 };
 
