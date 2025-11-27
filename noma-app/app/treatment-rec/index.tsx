@@ -11,26 +11,38 @@ import { getById } from '../data/useTreatment.js';
 
 import treatment from "../../assets/data/treatments.json";
 
+type severityProps = {
+  severity: string
+}
 
 
+const [confidence, setConfidence] = useState(90)
 
 const severit = ["high", "moderate", "low"]
 
-const diseaseId = "bean_angular_leaf_spot";
+const diseaseId = "bean_rust";
   const treatmentData = getById(diseaseId);
-  console.log(treatmentData?.severities.high.future_prevention_en);
-  console.log(treatmentData?.severities.high.future_prevention_ha);
-  console.log(treatmentData?.severities.high.recommended_treatment_en);
-  console.log(treatmentData?.severities.high.recommended_treatment_ha);
+  console.log(treatmentData);
+  // console.log(treatmentData?.severities.high.future_prevention_ha);
+  // console.log(treatmentData?.severities.high.recommended_treatment_en);
+  // console.log(treatmentData?.severities.high.recommended_treatment_ha);
 
-  const [severity, setSeverity] = useState("low");
+  const [severity, setSeverity] = useState("high");
 
-const checkSeverity = (severity) => {
+const checkSeverity = (props: severityProps) => {
  if(severity === "high"){
-    return treatmentData.severities.high;
+    return treatmentData?.severities.high;
+ } 
+ else if( severity === "moderate"){
+  return treatmentData?.severities.moderate;
+ } 
+ else if(severity === "low"){
+  return treatmentData?.severities.low;
  }
 }
+// how to call the function and stored its value in new variable
 
+// const checkedSeverity = checkSeverity(severity);
 
 
 const TreatmentRecommendationScreen = () => {
@@ -38,7 +50,6 @@ const TreatmentRecommendationScreen = () => {
   const { language, setLanguage } = useLanguage();
 
   return (
-    // <LanguageProvider initial="english">
     <SafeAreaView>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Analysis Results</Text>
@@ -49,10 +60,9 @@ const TreatmentRecommendationScreen = () => {
           <Ionicons name="warning-outline" size={20} color="#c0392b" />
           <Text style={styles.issueLabel}>Detected Issue</Text>
         </View>
-        <Text style={styles.issueTitle}>{language === 'english' ? 'Maize Early Blight' : 'Kudan Cizon Masara'}</Text>
-        {/* <Text style={styles.issueTitle}>Maize Early Blight</Text> */}
-        <Text style={styles.issueCrop}>Crop: Maize</Text>
-        <Text style={styles.issueInfo}>Confidence: 94% • Severity: Moderate</Text>
+        <Text style={styles.issueTitle}>{language === 'english' ? treatmentData?.name_en : treatmentData?.name_ha}</Text>
+        <Text style={styles.issueCrop}>Crop: {treatmentData?.crop}</Text>
+        <Text style={styles.issueInfo}>{`Confidence: ${confidence}% • Severity: ${severity} `}</Text>
       </View>
 
       {/* Recommended Treatment */}
@@ -62,12 +72,8 @@ const TreatmentRecommendationScreen = () => {
           <Text style={styles.sectionTitle}>Recommended Treatment</Text>
         </View>
 
-        {[
-          "Remove affected leaves immediately",
-          "Apply copper-based fungicide",
-          "Improve air circulation around plants",
-          "Avoid overhead watering",
-        ].map((item, index) => (
+        {/* check for current language and severity and display treatment recommendation based on that */}
+        {treatmentData?.severities.high.recommended_treatment_ha.map((item, index) => (
           <View key={index} style={styles.listContainer}>
             <View style={styles.listHeader}>
               <View style={styles.listNumberBox}>
