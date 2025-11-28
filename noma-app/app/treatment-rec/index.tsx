@@ -1,35 +1,38 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { LanguageProvider, useLanguage } from '../context/LanguageContext';
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
 import { getByCrop } from '../data/useTreatment.js';
 import { getById } from '../data/useTreatment.js';
 
-import treatment from "../../assets/data/treatments.json";
 
 type severityProps = {
   severity: string
 }
 
 
-const [confidence, setConfidence] = useState(90)
 
-const severit = ["high", "moderate", "low"]
 
-const diseaseId = "bean_rust";
-  const treatmentData = getById(diseaseId);
-  console.log(treatmentData);
-  // console.log(treatmentData?.severities.high.future_prevention_ha);
-  // console.log(treatmentData?.severities.high.recommended_treatment_en);
-  // console.log(treatmentData?.severities.high.recommended_treatment_ha);
+// const checkedSeverity = checkSeverity(severity);
 
+
+const TreatmentRecommendationScreen = () => {
+
+  const { language, setLanguage } = useLanguage();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [confidence, setConfidence] = useState(90)
   const [severity, setSeverity] = useState("high");
 
-const checkSeverity = (props: severityProps) => {
+
+  const diseaseId = "bean_angular_leaf_spot";
+  const treatmentData = getById(diseaseId);
+  console.log(treatmentData);
+
+// how to call the function and stored its value in new variable
+  const checkSeverity = (props: severityProps) => {
  if(severity === "high"){
     return treatmentData?.severities.high;
  } 
@@ -40,14 +43,21 @@ const checkSeverity = (props: severityProps) => {
   return treatmentData?.severities.low;
  }
 }
-// how to call the function and stored its value in new variable
-
-// const checkedSeverity = checkSeverity(severity);
 
 
-const TreatmentRecommendationScreen = () => {
+  setTimeout(()=> {
+    // load AI Model result here
+    setLoading(false);
+  }, 3000)
 
-  const { language, setLanguage } = useLanguage();
+  if(loading){
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator color="#000" size="large" />
+        <Text style={{ color: "#000", fontSize: 15}}>Our AI Model is analysing the picture.....</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView>
@@ -58,7 +68,7 @@ const TreatmentRecommendationScreen = () => {
       <View style={styles.issueCard}>
         <View style={styles.issueHeader}>
           <Ionicons name="warning-outline" size={20} color="#c0392b" />
-          <Text style={styles.issueLabel}>Detected Issue</Text>
+          <Text style={styles.issueLabel}>{language === 'hausa'? 'Matsalar da Muka Gano': 'Detected Issue' }</Text>
         </View>
         <Text style={styles.issueTitle}>{language === 'english' ? treatmentData?.name_en : treatmentData?.name_ha}</Text>
         <Text style={styles.issueCrop}>Crop: {treatmentData?.crop}</Text>
@@ -69,7 +79,7 @@ const TreatmentRecommendationScreen = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Ionicons name="medkit-outline" size={20} color="#2e7d32" />
-          <Text style={styles.sectionTitle}>Recommended Treatment</Text>
+          <Text style={styles.sectionTitle}>{language === 'hausa'? 'Yi wannan Yanzu': 'Recommended Treatment'}</Text>
         </View>
 
         {/* check for current language and severity and display treatment recommendation based on that */}
@@ -92,11 +102,9 @@ const TreatmentRecommendationScreen = () => {
           <Text style={styles.sectionTitle}>Future Prevention</Text>
         </View>
 
-        {[
-          "Rotate crops yearly",
-          "Maintain proper spacing",
-          "Use disease-resistant varieties",
-        ].map((item, index) => (
+
+        {/* check for current language and severity and display treatment recommendation based on that */}
+        {treatmentData?.severities.high.future_prevention_ha.map((item, index) => (
           <View key={index} style={styles.listContainer}>
             <View style={styles.listHeader}>
               <Ionicons name="checkmark-circle-outline" size={20} color="#2e7d32" />
@@ -112,13 +120,13 @@ const TreatmentRecommendationScreen = () => {
           onPress={() => 
             router.push('./')
           }>
-          <Text style={styles.buttonText}>I will do this</Text>
+          <Text style={styles.buttonText}>{language === 'hausa'? "Zanyi wannan": "I will do this"}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.expertButton} 
           onPress={() => 
             router.push('./')
           }>
-          <Text style={styles.buttonText}>Ask Expert</Text>
+          <Text style={styles.buttonText}>{language === "hausa"? "Tambayi Kwararru": "Ask Expert" }</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -131,6 +139,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
     flexGrow: 1,
+  },
+  loader: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: '#f0fff4' 
   },
   header: {
     fontSize: 22,
