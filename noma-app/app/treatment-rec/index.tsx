@@ -28,27 +28,45 @@ const TreatmentRecommendationScreen = () => {
 
 
   const diseaseId = "bean_angular_leaf_spot";
-  const treatmentData = getById(diseaseId);
-  console.log(treatmentData);
+  // const treatmentData = getById(diseaseId);
 
-// how to call the function and stored its value in new variable
-  const checkSeverity = (props: severityProps) => {
- if(severity === "high"){
-    return treatmentData?.severities.high;
- } 
- else if( severity === "moderate"){
-  return treatmentData?.severities.moderate;
- } 
- else if(severity === "low"){
-  return treatmentData?.severities.low;
- }
+
+const treatmentData = getById(diseaseId) ?? {
+  severities: { high: {}, moderate: {}, low: {} }
 }
+
+if(treatmentData){
+  console.log("treatmentData found", treatmentData);
+} else {
+  console.log("No treatmentData found for id:", diseaseId);
+}
+
+
+
+//Upgraded Check severity function
+
+interface SeverityProps {
+  severity: SeverityLevels;
+}
+
+type SeverityLevels = keyof typeof treatmentData.severities;
+
+const checkSeverity = (severity: SeverityLevels) => {
+  return treatmentData?.severities[severity];
+};
+
+// Usage
+const props: SeverityProps = { severity: "moderate" };
+const severityValue = checkSeverity(props.severity);
+// console.log(severityValue);
+
+
 
 
   setTimeout(()=> {
     // load AI Model result here
     setLoading(false);
-  }, 3000)
+  }, 1000)
 
   if(loading){
     return (
@@ -99,7 +117,7 @@ const TreatmentRecommendationScreen = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Ionicons name="shield-checkmark-outline" size={20} color="#0052cc" />
-          <Text style={styles.sectionTitle}>Future Prevention</Text>
+          <Text style={styles.sectionTitle}>{language ==='hausa'? 'Hanyoyin Rigakafi': 'Future Prevention'}</Text>
         </View>
 
 
