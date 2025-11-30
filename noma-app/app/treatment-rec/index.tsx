@@ -29,6 +29,10 @@ const TreatmentRecommendationScreen = () => {
 
   const diseaseId = "bean_angular_leaf_spot";
   // const treatmentData = getById(diseaseId);
+  // console.log(treatmentData);
+  //   console.log(treatmentData?.severities.high.future_prevention_ha);
+  // console.log(treatmentData?.severities.high.recommended_treatment_en);
+  // console.log(treatmentData?.severities.high.recommended_treatment_ha);
 
 
 const treatmentData = getById(diseaseId) ?? {
@@ -55,10 +59,10 @@ const checkSeverity = (severity: SeverityLevels) => {
   return treatmentData?.severities[severity];
 };
 
-// Usage
+// // Usage
 const props: SeverityProps = { severity: "moderate" };
 const severityValue = checkSeverity(props.severity);
-// console.log(severityValue);
+console.log(severityValue);
 
 
 
