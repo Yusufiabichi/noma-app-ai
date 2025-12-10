@@ -15,6 +15,10 @@ import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-ca
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+// import Tflite from 'tflite-react-native';
+import { TensorFlowLiteModel } from 'expo-tensorflow-lite';
+
+// Initialize TensorFlow Lite model (assuming model file is in assets folder)
 
 export default function CropScan() {
   const router = useRouter();
