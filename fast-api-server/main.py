@@ -20,7 +20,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
+) 
 
 MODEL = tf.keras.models.load_model("NomaApp_v1.h5")
 
@@ -42,7 +42,13 @@ def read_file_as_image(data) -> np.ndarray:
 async def predict(
     file: UploadFile = File(...)
 ):
-    image = read_file_as_image(await file.read())
+    # read uploaded file bytes and open as PIL image
+    file_bytes = await file.read()
+    pil_image = Image.open(BytesIO(file_bytes)).convert("RGB")
+
+    # preprocess: resize to model input size and normalize to [0,1]
+    pil_image = pil_image.resize((224, 224))
+    image = np.array(pil_image).astype(np.float32) / 255.0
     img_batch = np.expand_dims(image, 0)
     
     predictions = MODEL.predict(img_batch)
