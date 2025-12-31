@@ -46,6 +46,8 @@ async def predict(
     file_bytes = await file.read()
     pil_image = Image.open(BytesIO(file_bytes)).convert("RGB")
 
+    tf.keras.backend.clear_session()
+
     # preprocess: resize to model input size and normalize to [0,1]
     pil_image = pil_image.resize((224, 224))
     image = np.array(pil_image).astype(np.float32) / 255.0
