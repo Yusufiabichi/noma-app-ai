@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException
-from app.schemas.request import InferenceRequest
+from fastapi import APIRouter, HTTPException, File, UploadFile, Form
 from app.schemas.response import InferenceResponse
 from app.services.preprocess import preprocess_image
 from app.services.inference import run_inference
@@ -8,10 +7,14 @@ from app.services.postprocess import postprocess_result
 router = APIRouter()
 
 @router.post("/infer", response_model=InferenceResponse)
-def run_ai_inference(request: InferenceRequest):
+async def run_ai_inference(
+    scan_id: str = Form(...),
+    crop_type: str = Form(...),
+    image_file: UploadFile = File(...)
+):
     try:
-        image_tensor = preprocess_image(request.image_url)
-        result = run_inference(request.crop_type, image_tensor)
+        image_tensor = await preprocess_image(image_file)
+        result = run_inference(crop_type, image_tensor)
 
         postprocessed = postprocess_result(
             result["label"],
@@ -21,7 +24,7 @@ def run_ai_inference(request: InferenceRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
     return InferenceResponse(
-        scan_id=request.scan_id,
+        scan_id=scan_id,
         disease=result["label"],
         confidence=result["confidence"],
         severity="unknown",

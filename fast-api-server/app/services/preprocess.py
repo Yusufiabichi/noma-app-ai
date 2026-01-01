@@ -1,17 +1,16 @@
-import requests
+from fastapi import UploadFile
 from PIL import Image
 import numpy as np
 from io import BytesIO
 
-def preprocess_image(image_url: str, target_size=(224, 224)):
+async def preprocess_image(image_file: UploadFile, target_size=(224, 224)):
     try:
-        response = requests.get(image_url, timeout=5)
-        response.raise_for_status()
+        file_bytes = await image_file.read()
     except Exception:
-        raise ValueError("Unable to fetch image from provided URL")
+        raise ValueError("Unable to read uploaded file")
 
     try:
-        image = Image.open(BytesIO(response.content)).convert("RGB")
+        image = Image.open(BytesIO(file_bytes)).convert("RGB")
     except Exception:
         raise ValueError("Invalid image format")
 
