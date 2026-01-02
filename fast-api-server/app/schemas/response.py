@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 class InferenceResponse(BaseModel):
-    scan_id: str
+    scan_id: int
     disease: str
     confidence: float
     severity: str
