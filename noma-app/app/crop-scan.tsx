@@ -15,10 +15,34 @@ import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-ca
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-// import Tflite from 'tflite-react-native';
-import { TensorFlowLiteModel } from 'expo-tensorflow-lite';
+
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-react-native';
+
+
+
 
 // Initialize TensorFlow Lite model (assuming model file is in assets folder)
+
+const tf = new Tflite();
+const [modelLoaded, setModelLoaded] = useState(false);
+
+useEffect(() => {
+  tf.loadModel(
+    {
+      model: 'models/NomaApp_quant_model.tflite',
+      labels: 'models/labels.txt', // optional, can map Disease_id -> name
+    },
+    (err, res) => {
+      if (err) {
+        console.log('Error loading model:', err);
+      } else {
+        console.log('Model loaded successfully:', res);
+        setModelLoaded(true);
+      }
+    }
+  );
+}, []);
 
 export default function CropScan() {
   const router = useRouter();
