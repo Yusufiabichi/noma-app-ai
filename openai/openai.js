@@ -94,7 +94,7 @@ app.post("/infer", upload.single("image_file"), async (req, res) => {
           {
             role: "system",
             content:
-              "You are an agricultural expert AI assistant. Provide actionable, evidence-based recommendations for crop disease management."
+              "You are an agricultural expert AI assistant. Provide actionable, evidence-based recommendations for crop disease management. in not more than one paragraph make your recommendations clear and concise. "
           },
           {
             role: "user",
@@ -111,11 +111,7 @@ app.post("/infer", upload.single("image_file"), async (req, res) => {
 
     const aiRecommendation = aiResponse.body.choices[0].message.content;
     const cleanedRecommendation = cleanMarkdown(aiRecommendation);
-    
-    // Log AI response to console
-    console.log("\n=== AI Enhanced Recommendation ===");
-    console.log(cleanedRecommendation);
-    console.log("==================================\n");
+        
 
     // Return combined results
     res.json({
