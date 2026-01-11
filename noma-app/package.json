@@ -60,6 +60,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "baseline-browser-mapping": "^2.9.14",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "expo": "^54.0.10",

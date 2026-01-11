@@ -44,7 +44,7 @@ export const initTensorFlow = async () => {
 
 initTensorFlow();
 
-let model: tf.GraphModel | null = null;
+// let model: tf.GraphModel | null = null;
 
 console.log(
   require('../assets/tfjs_model/group1-shard1of1.bin')
