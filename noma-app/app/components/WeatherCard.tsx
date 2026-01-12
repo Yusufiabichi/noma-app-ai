@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import * as Location from "expo-location";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import Data from "../constants/data.json";
-import { useLanguage } from "../context/LanguageContext";
+import Data from "../../constants/data.json";
+import { useLanguage } from "../../src/context/LanguageContext";
 
 // Define types for the weather data and reverse geocode
 interface WeatherData {

@@ -3,7 +3,7 @@ import { FontAwesome5, MaterialIcons } from '@expo/vector-icons'
 import { Pressable, Text, View, Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import React, { useState } from 'react'
-import { LanguageProvider, useLanguage, Lang } from '../context/LanguageContext';
+import { LanguageProvider, useLanguage, Lang } from '../../src/context/LanguageContext';
 import {Picker} from '@react-native-picker/picker';
 
 

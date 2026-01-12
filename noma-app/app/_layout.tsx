@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LanguageProvider } from "./context/LanguageContext";
+import { LanguageProvider } from "../src/context/LanguageContext";
 
 export default function RootLayout(){
     return (

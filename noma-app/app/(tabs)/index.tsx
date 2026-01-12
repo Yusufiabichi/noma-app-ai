@@ -4,8 +4,8 @@ import { FontAwesome, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import Data from '../constants/data.json'
+import { useLanguage } from '@/src/context/LanguageContext';
+import Data from '@/constants/data.json'
 import WeatherCard from '../components/WeatherCard';
 
 

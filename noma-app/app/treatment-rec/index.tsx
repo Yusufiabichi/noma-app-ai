@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
-import { LanguageProvider, useLanguage } from '../context/LanguageContext';
+import { LanguageProvider, useLanguage } from '../../src/context/LanguageContext';
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getByCrop } from '../data/useTreatment.js';
-import { getById } from '../data/useTreatment.js';
+import { getByCrop } from '../../src/data/useTreatment.js';
+import { getById } from '../../src/data/useTreatment.js';
 
 
 type severityProps = {
