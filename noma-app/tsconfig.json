@@ -5,7 +5,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "jsx": "react-native", // or "react-jsx" for newer versions
+    "extends": "expo/tsconfig.base"
   },
   "include": [
     "**/*.ts",
