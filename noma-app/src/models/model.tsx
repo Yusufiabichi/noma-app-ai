@@ -5,6 +5,7 @@ import { StyleSheet, Text, View, Platform } from 'react-native';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import { bundleResourceIO, decodeJpeg } from '@tensorflow/tfjs-react-native';
+import { Asset } from 'expo-asset';
 
 // 1. REMOVED the metro-config code from here. That stays in metro.config.js!
 
@@ -24,19 +25,32 @@ let model: tf.GraphModel | null = null;
 
 export const loadModel = async () => {
   if (model) return model;
-
   await initTensorFlow();
 
-  const modelJson = require('../assets/tfjs_model/model.json');
-  const modelWeights = require('../assets/tfjs_model/group1-shard1of1.bin');
+  try {
+    if (Platform.OS === 'web') {
+      console.log('Web: Loading Layers Model from public folder...');
+      
+      // ✅ FIX: Use loadLayersModel instead of loadGraphModel
+      model = await tf.loadLayersModel('@/model/model.json');
+      
+    } else {
+      // 📱 MOBILE
+      const modelJson = require('@/assets/tfjs_model/model.json');
+      const modelWeights = require('@/assets/tfjs_model/group1-shard1of1.bin');
+      
+      // ✅ FIX: Use loadLayersModel here as well
+      model = await tf.loadLayersModel(
+        bundleResourceIO(modelJson, modelWeights)
+      );
+    }
 
-  // bundleResourceIO handles the heavy lifting for both web and mobile
-  model = await tf.loadGraphModel(
-    bundleResourceIO(modelJson, modelWeights)
-  );
-
-  console.log('✅ NomaApp GraphModel loaded');
-  return model;
+    console.log('✅ NomaApp LayersModel loaded successfully!');
+    return model;
+  } catch (error) {
+    console.error("Setup Error:", error);
+    throw error;
+  }
 };
 
 const NomaModel = () => {
