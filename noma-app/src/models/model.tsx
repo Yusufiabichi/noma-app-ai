@@ -38,39 +38,48 @@ export const loadModel = async () => {
 
   try {
     if (Platform.OS === 'web') {
-      console.log('Web: Applying Universal Keras 3 Metadata Strip...');
+      console.log('Web: Executing Universal Keras 3 -> TFJS 4 Transition...');
       
-      // 1. Get a fresh, mutable copy of the JSON
+      // 1. Get a mutable copy of the JSON
       const modelJson = JSON.parse(JSON.stringify(require('@/assets/tfjs_model/model.json')));
 
-      // 2. Identify where the layers live (Sequential vs Functional)
-      const modelConfig = modelJson.modelTopology?.model_config;
-      const layers = modelConfig?.config?.layers || modelConfig?.layers;
+      /**
+       * THE TOTAL SCRUB: 
+       * Keras 3 attaches 'module' and 'registered_name' to every single sub-object 
+       * (activations, initializers, etc.). We must delete them everywhere.
+       */
+      const scrub = (obj: any) => {
+        if (!obj || typeof obj !== 'object') return;
 
-      if (Array.isArray(layers)) {
-        layers.forEach((layer: any) => {
-          // Remove the keys that confuse TFJS's registry
-          delete layer.module;
-          delete layer.registered_name;
+        // Delete Keras 3 specific keys that break the TFJS registry
+        delete obj.module;
+        delete obj.registered_name;
 
-          if (layer.config) {
-            delete layer.config.module;
-            delete layer.config.registered_name;
-
-            // Fix InputLayer Shape
-            if (layer.class_name === 'InputLayer' && layer.config.batch_shape) {
-              layer.config.batchInputShape = layer.config.batch_shape;
-            }
-
-            // Fix Keras 3 DTypePolicy objects (convert to string)
-            if (typeof layer.config.dtype === 'object') {
-              layer.config.dtype = layer.config.dtype.config?.name || 'float32';
-            }
+        // Fix InputLayer Requirement
+        if (obj.class_name === 'InputLayer' && obj.config) {
+          if (obj.config.batch_shape) {
+            obj.config.batchInputShape = obj.config.batch_shape;
           }
-        });
+        }
+
+        // Fix DTypePolicy objects to simple strings
+        if (obj.config?.dtype && typeof obj.config.dtype === 'object') {
+          obj.config.dtype = obj.config.dtype.config?.name || 'float32';
+        }
+
+        // Recurse into everything
+        Object.keys(obj).forEach(key => scrub(obj[key]));
+      };
+
+      // 2. Apply scrub to the topology and the training config
+      scrub(modelJson.modelTopology);
+      
+      // 3. Spoof the version to force Keras 2 parsing logic
+      if (modelJson.modelTopology) {
+        modelJson.modelTopology.keras_version = '2.15.0';
+        modelJson.modelTopology.backend = 'tensorflow';
       }
 
-      // 3. Load the patched model
       model = await tf.loadLayersModel(tf.io.fromMemory(modelJson));
       
     } else {
@@ -80,10 +89,10 @@ export const loadModel = async () => {
       model = await tf.loadLayersModel(bundleResourceIO(modelJson, modelWeights));
     }
 
-    console.log('✅ NomaApp LayersModel loaded successfully!');
+    console.log('✅ SUCCESS: NomaApp Model is Live!');
     return model;
   } catch (error) {
-    console.error("Setup Error:", error);
+    console.error("Critical Setup Error:", error);
     throw error;
   }
 };
