@@ -37,55 +37,77 @@ export const loadModel = async () => {
   await initTensorFlow();
 
   try {
-    if (Platform.OS === 'web') {
-      console.log('Web: Executing Universal Keras 3 -> TFJS 4 Transition...');
-      
-      // 1. Get a mutable copy of the JSON
-      const modelJson = JSON.parse(JSON.stringify(require('@/assets/tfjs_model/model.json')));
+    // 1. Get the JSON. In React Native, 'require' returns the object directly.
+    // We deep-clone it so we can safely mutate it.
+    let modelJson = JSON.parse(JSON.stringify(require('@/assets/tfjs_model/model.json')));
 
-      /**
-       * THE TOTAL SCRUB: 
-       * Keras 3 attaches 'module' and 'registered_name' to every single sub-object 
-       * (activations, initializers, etc.). We must delete them everywhere.
-       */
-      const scrub = (obj: any) => {
-        if (!obj || typeof obj !== 'object') return;
+    /**
+     * THE KERAS 3 -> TFJS BRIDGE SCRUB
+     */
+    const scrub = (obj: any) => {
+      if (!obj || typeof obj !== 'object') return;
 
-        // Delete Keras 3 specific keys that break the TFJS registry
-        delete obj.module;
-        delete obj.registered_name;
-
-        // Fix InputLayer Requirement
-        if (obj.class_name === 'InputLayer' && obj.config) {
-          if (obj.config.batch_shape) {
-            obj.config.batchInputShape = obj.config.batch_shape;
-          }
-        }
-
-        // Fix DTypePolicy objects to simple strings
-        if (obj.config?.dtype && typeof obj.config.dtype === 'object') {
-          obj.config.dtype = obj.config.dtype.config?.name || 'float32';
-        }
-
-        // Recurse into everything
-        Object.keys(obj).forEach(key => scrub(obj[key]));
+      // FIX 1: Layer Class Mapping (The "Conv2D" fix)
+      // FIX 1: Enhanced Layer Class Mapping
+      const layerMap: { [key: string]: string } = {
+        'Conv2D': 'Conv2D',      // Try keeping uppercase first, if fails change to 'conv2d'
+        'Dense': 'Dense',
+        'Flatten': 'Flatten',
+        'MaxPooling2D': 'MaxPooling2D',
+        'Dropout': 'Dropout',
+        'BatchNormalization': 'BatchNormalization',
+        'InputLayer': 'InputLayer', // TFJS standard is often Capitalized for this specific layer
+        'Functional': 'Model'
       };
 
-      // 2. Apply scrub to the topology and the training config
-      scrub(modelJson.modelTopology);
-      
-      // 3. Spoof the version to force Keras 2 parsing logic
-      if (modelJson.modelTopology) {
-        modelJson.modelTopology.keras_version = '2.15.0';
-        modelJson.modelTopology.backend = 'tensorflow';
+      // Check if capitalization is the issue
+      if (obj.class_name === 'inputLayer') {
+        obj.class_name = 'InputLayer'; 
+      } else if (obj.class_name && layerMap[obj.class_name]) {
+        obj.class_name = layerMap[obj.class_name];
       }
 
+      // FIX 2: Keras 3 Registry Metadata
+      // Delete keys that break the TFJS layer registry
+      delete obj.module;
+      delete obj.registered_name;
+
+      // FIX 3: InputLayer batch_shape -> batchInputShape
+      // FIX 3: Robust InputLayer handling
+      if (obj.class_name?.toLowerCase() === 'inputlayer' && obj.config) {
+        obj.class_name = 'InputLayer'; // Standardize to Capitalized
+        if (obj.config.batch_shape) {
+          obj.config.batchInputShape = obj.config.batch_shape;
+        }
+      }
+
+      // FIX 4: DType Policy objects
+      if (obj.config?.dtype && typeof obj.config.dtype === 'object') {
+        obj.config.dtype = obj.config.dtype.config?.name || 'float32';
+      }
+
+      // Recurse into all properties
+      Object.keys(obj).forEach(key => scrub(obj[key]));
+    };
+
+    // Apply the scrub to the entire topology
+    scrub(modelJson.modelTopology);
+
+    // Spoof metadata to force Keras 2 legacy parsing logic inside TFJS
+    if (modelJson.modelTopology) {
+      modelJson.modelTopology.keras_version = '2.15.0';
+      modelJson.modelTopology.backend = 'tensorflow';
+    }
+
+    if (Platform.OS === 'web') {
+      console.log('Web: Loading scrubbed Keras 3 model...');
       model = await tf.loadLayersModel(tf.io.fromMemory(modelJson));
-      
     } else {
-      // 📱 MOBILE
-      const modelJson = require('@/assets/tfjs_model/model.json');
+      // 📱 MOBILE: React Native bundleResourceIO
+      console.log('Mobile: Loading scrubbed Keras 3 model via bundleResourceIO...');
       const modelWeights = require('@/assets/tfjs_model/group1-shard1of1.bin');
+      
+      // bundleResourceIO expects (JSON Object, Weight Shard(s))
       model = await tf.loadLayersModel(bundleResourceIO(modelJson, modelWeights));
     }
 
