@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/src/context/LanguageContext';
 import Data from '@/constants/data.json'
 import WeatherCard from '../components/WeatherCard';
-import { initTensorFlow, loadModel } from '@/src/models/model';
 
 
 export default function HomeScreen() {
@@ -16,31 +15,6 @@ export default function HomeScreen() {
 
   const [isReady, setIsReady] = useState(false);
   const [status, setStatus] = useState('Initializing TFJS...');
-
-  useEffect(() => {
-    async function setup() {
-      try {
-        // 1. Wait for TensorFlow to be ready
-        await initTensorFlow();
-        setStatus('TFJS Ready. Loading Model...');
-
-        // 2. Load your specific model files
-        const model = await loadModel();
-        
-        if (model) {
-          setIsReady(true);
-          setStatus('✅ Model Loaded Successfully!');
-          console.log("Model Topology:", model.modelTopology);
-        }
-      } catch (error) {
-        console.error("Setup Error:", error);
-        setStatus('❌ Error: Check console for logs');
-      }
-    }
-
-    setup();
-  }, []);
-
 
   return (
 
