@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  FlatList
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
@@ -29,6 +30,8 @@ export default function CropScan() {
   const [taking, setTaking] = useState(false);
   const [photo, setPhoto] = useState<CameraCapturedPicture | { uri: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
+  const crop_type = ['tomato', 'rice', 'beans', 'yam'];
+  
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -178,7 +181,23 @@ export default function CropScan() {
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
           <View style={{ flex: 1 }}>
             {photo ? (
-              <Image source={{ uri: (photo as any).uri }} style={{ flex: 1, resizeMode: 'contain' }} />
+              <view >
+                <Image source={{ uri: (photo as any).uri }} style={{ flex: 1, resizeMode: 'contain' }} />
+                <FlatList
+                  data={crop_type}
+                  keyExtractor={(i) => i}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() => {
+                        // setLanguage(item);
+                        // setOpen(false);
+                      }}
+                      style={styles.langRow}
+                    >
+                    </TouchableOpacity>
+                  )}
+                />
+              </view>
             ) : (
               <View style={styles.center}>
                 <Text style={{ color: 'white' }}>No image</Text>

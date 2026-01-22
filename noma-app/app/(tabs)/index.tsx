@@ -13,9 +13,6 @@ export default function HomeScreen() {
   const { language, setLanguage } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const [isReady, setIsReady] = useState(false);
-  const [status, setStatus] = useState('Initializing TFJS...');
-
   return (
 
     <ScrollView style={styles.container}>
