@@ -31,7 +31,7 @@ export default function CropScan() {
   const [photo, setPhoto] = useState<CameraCapturedPicture | { uri: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const crop_type = ['tomato', 'rice', 'beans', 'yam'];
-  
+  const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -55,6 +55,11 @@ export default function CropScan() {
     } finally {
       setTaking(false);
     }
+  }
+
+  async function imgCrop(){
+    console.log("Selected Crop", selectedCrop);
+    console.log(first)
   }
 
   async function openGallery() {
@@ -181,23 +186,48 @@ export default function CropScan() {
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
           <View style={{ flex: 1 }}>
             {photo ? (
-              <view >
-                <Image source={{ uri: (photo as any).uri }} style={{ flex: 1, resizeMode: 'contain' }} />
+              <View style={{ flex: 1 }}>
+              <Image
+                source={{ uri: (photo as any).uri }}
+                style={{ flex: 1, resizeMode: 'contain' }}
+              />
+
+              <View style={{ paddingVertical: 12 }}>
+                <Text style={{ color: '#fff', textAlign: 'center', marginBottom: 8 }}>
+                  Select Crop Type
+                </Text>
+
                 <FlatList
                   data={crop_type}
-                  keyExtractor={(i) => i}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() => {
-                        // setLanguage(item);
-                        // setOpen(false);
-                      }}
-                      style={styles.langRow}
-                    >
-                    </TouchableOpacity>
-                  )}
+                  keyExtractor={(item) => item}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 12 }}
+                  renderItem={({ item }) => {
+                    const isSelected = selectedCrop === item;
+
+                    return (
+                      <TouchableOpacity
+                        onPress={() => setSelectedCrop(item)}
+                        style={[
+                          styles.cropItem,
+                          isSelected && styles.cropItemSelected,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.cropText,
+                            isSelected && styles.cropTextSelected,
+                          ]}
+                        >
+                          {item.toUpperCase()}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
                 />
-              </view>
+              </View>
+            </View>
             ) : (
               <View style={styles.center}>
                 <Text style={{ color: 'white' }}>No image</Text>
@@ -219,8 +249,8 @@ export default function CropScan() {
               style={[styles.previewButton, { backgroundColor: '#16A34A' }]}
               onPress={() =>
                 // Alert.alert('Next', 'AI Model Integration.')
-                router.replace('./treatment-rec')
-                // console.log("button clicked")
+                // router.replace('./treatment-rec')
+                console.log("selected crop:", selectedCrop)
               }
             >
               <Text>
@@ -343,4 +373,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: { color: 'white', fontWeight: '700' },
+  cropItem: {
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  borderRadius: 20,
+  backgroundColor: 'rgba(255,255,255,0.15)',
+  marginRight: 10,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.3)',
+},
+cropItemSelected: {
+  backgroundColor: '#16A34A',
+  borderColor: '#16A34A',
+},
+cropText: {
+  color: '#fff',
+  fontWeight: '600',
+},
+cropTextSelected: {
+  color: '#fff',
+},
+
 });
