@@ -58,8 +58,9 @@ export default function CropScan() {
   }
 
   async function imgCrop(){
+    console.log({ uri: (photo as any).uri }) 
     console.log("Selected Crop", selectedCrop);
-    console.log(first)
+    // console.log("Image uri", uri)
   }
 
   async function openGallery() {
@@ -247,10 +248,11 @@ export default function CropScan() {
 
             <TouchableOpacity
               style={[styles.previewButton, { backgroundColor: '#16A34A' }]}
-              onPress={() =>
+              onPress={ imgCrop
+                // () =>
                 // Alert.alert('Next', 'AI Model Integration.')
                 // router.replace('./treatment-rec')
-                console.log("selected crop:", selectedCrop)
+                // console.log("selected crop:", selectedCrop)
               }
             >
               <Text>
