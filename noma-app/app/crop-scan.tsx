@@ -30,7 +30,7 @@ export default function CropScan() {
   const [taking, setTaking] = useState(false);
   const [photo, setPhoto] = useState<CameraCapturedPicture | { uri: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
-  const crop_type = ['tomato', 'rice', 'beans', 'yam'];
+  const crop_type = ['tomato', 'rice', 'beans', 'yam', 'other'];
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
 
   useEffect(() => {
