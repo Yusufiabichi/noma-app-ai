@@ -35,7 +35,7 @@ Agricultural productivity in many African regions is challenged by delayed or in
 | **ML Framework**    | TensorFlow / TensorFlow lite, PyTorch, Python, FastAPI (for model inference)
 | **Model Type**      | CNN for image classification   
 | **APIs**            | Google Maps, WeatherStack, Market APIs                        
-| **Data Storage**    | MongoDB                        
+| **Data Storage**    | MongoDB, Watermelon DB                        
 | **Offline Storage** | SQLite, RealmDB, LocalStorage  
 | **Voice**           | Google Speech, Mozilla TTS, custom language models
 | **Deployment**      | Google Cloud, On-device        
@@ -137,7 +137,7 @@ If you're an agritech investor, NGO, or tech enthusiast looking to support or co
 Interested in contributing, collaborating, or learning more?
 
 - Email: **yusufiabichi@yahoo.com**
-- Website: [www.nomaapp.ai](http://www.nomaapp.ai) *(Coming Soon)*
+- Website: [www.nomaapp.com.ng](http://www.nomaapp.com.ng)
 
 ---
 
