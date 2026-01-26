@@ -18,10 +18,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 
-
-
-
-
 export default function CropScan() {
   const router = useRouter();
   const cameraRef = useRef<any>(null);
@@ -60,7 +56,6 @@ export default function CropScan() {
   async function imgCrop(){
     console.log({ uri: (photo as any).uri }) 
     console.log("Selected Crop", selectedCrop);
-    // console.log("Image uri", uri)
   }
 
   async function openGallery() {
@@ -203,7 +198,7 @@ export default function CropScan() {
                   keyExtractor={(item) => item}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ paddingHorizontal: 12 }}
+                  contentContainerStyle={{ paddingHorizontal: 10 }}
                   renderItem={({ item }) => {
                     const isSelected = selectedCrop === item;
 
