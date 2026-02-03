@@ -70,7 +70,7 @@ console.log(severityValue);
   setTimeout(()=> {
     // load AI Model result here
     setLoading(false);
-  }, 1000)
+  }, 2000)
 
   if(loading){
     return (

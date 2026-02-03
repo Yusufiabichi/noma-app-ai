@@ -56,6 +56,7 @@ export default function CropScan() {
   async function imgCrop(){
     console.log({ uri: (photo as any).uri }) 
     console.log("Selected Crop", selectedCrop);
+    router.replace('./treatment-rec')
   }
 
   async function openGallery() {
