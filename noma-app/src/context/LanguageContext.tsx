@@ -15,6 +15,7 @@ type LanguageContextType = {
   language: Lang;
   setLanguage: (l: Lang) => void;
   loading: boolean;
+  completeOnboarding: () => Promise<void>;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -64,8 +65,16 @@ export const LanguageProvider = ({
     }
   }, [language, loading]);
 
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem("hasCompletedOnboarding", "true");
+    } catch (error) {
+      console.log("Error saving onboarding status:", error);
+    }
+  };
+
   const value = useMemo(
-    () => ({ language, setLanguage, loading }),
+    () => ({ language, setLanguage, loading, completeOnboarding }),
     [language, loading]
   );
     
