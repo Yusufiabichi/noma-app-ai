@@ -7,9 +7,13 @@ import {
   Text,
   TextInput,
   ActivityIndicator,
+  Alert,
+  Modal,
+  FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useLanguage } from "@/src/context/LanguageContext";
+import { register } from "@/src/api/auth.api";
 
 const COLORS = {
   primary: "#16A34A",
@@ -21,37 +25,43 @@ const COLORS = {
   error: "#dc2626",
 };
 
+const ROLES = [
+  { id: 1, label: "Farmer", value: "farmer" },
+  { id: 2, label: "Expert", value: "expert" },
+  { id: 3, label: "Supplier", value: "supplier" },
+];
+
 const SignupScreen = () => {
   const router = useRouter();
   const { completeOnboarding } = useLanguage();
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
+    name: "",
+    phone: "",
     password: "",
-    confirmPassword: "",
+    role: "",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
-    fullName?: string;
-    email?: string;
+    name?: string;
+    phone?: string;
     password?: string;
-    confirmPassword?: string;
+    role?: string;
   }>({});
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required";
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = "Name must be at least 2 characters";
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
     }
 
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d{10,}$/.test(formData.phone.replace(/\D/g, ""))) {
+      newErrors.phone = "Please enter a valid phone number";
     }
 
     if (!formData.password) {
@@ -60,12 +70,8 @@ const SignupScreen = () => {
       newErrors.password = "Password must be at least 6 characters";
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    if (!agreeTerms) {
-      newErrors.confirmPassword = "You must agree to the terms and conditions";
+    if (!formData.role) {
+      newErrors.role = "Please select a role";
     }
 
     setErrors(newErrors);
@@ -77,19 +83,23 @@ const SignupScreen = () => {
 
     setLoading(true);
     try {
-      // TODO: Implement actual signup API call
-      // const response = await signupUser(formData);
-      // if (response.success) {
-      //   await completeOnboarding();
-      //   router.replace("/(tabs)");
-      // }
-      
-      // For now, mark onboarding as complete and navigate to home
-      await completeOnboarding();
-      router.replace("/(tabs)");
-    } catch (error) {
+      const response = await register({
+        name: formData.name,
+        phone: formData.phone,
+        password: formData.password,
+        role: formData.role,
+      });
+
+      if (response.token) {
+        Alert.alert("Success", "Account created successfully!");
+        await completeOnboarding();
+        router.replace("/(tabs)");
+      }
+    } catch (error: any) {
       console.error("Signup error:", error);
-      setErrors({ email: "Signup failed. Please try again." });
+      const errorMessage = error.response?.data?.message || "Signup failed. Please try again.";
+      Alert.alert("Error", errorMessage);
+      setErrors({ phone: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -99,6 +109,14 @@ const SignupScreen = () => {
     setFormData({ ...formData, [field]: value });
     setErrors({ ...errors, [field]: undefined });
   };
+
+  const handleRoleSelect = (role: string) => {
+    setFormData({ ...formData, role });
+    setErrors({ ...errors, role: undefined });
+    setShowRoleModal(false);
+  };
+
+  const selectedRoleLabel = ROLES.find(r => r.value === formData.role)?.label || "Select Role";
 
   return (
     <View style={styles.container}>
@@ -116,44 +134,43 @@ const SignupScreen = () => {
 
         {/* Form */}
         <View style={styles.form}>
-          {/* Full Name Input */}
+          {/* Name Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Full Name</Text>
             <TextInput
               style={[
                 styles.input,
-                errors.fullName && styles.inputError,
+                errors.name && styles.inputError,
               ]}
               placeholder="Enter your full name"
               placeholderTextColor={COLORS.textLight}
               autoCapitalize="words"
-              value={formData.fullName}
-              onChangeText={(text) => handleInputChange("fullName", text)}
+              value={formData.name}
+              onChangeText={(text) => handleInputChange("name", text)}
               editable={!loading}
             />
-            {errors.fullName && (
-              <Text style={styles.errorText}>{errors.fullName}</Text>
+            {errors.name && (
+              <Text style={styles.errorText}>{errors.name}</Text>
             )}
           </View>
 
-          {/* Email Input */}
+          {/* Phone Input */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>Phone Number</Text>
             <TextInput
               style={[
                 styles.input,
-                errors.email && styles.inputError,
+                errors.phone && styles.inputError,
               ]}
-              placeholder="your@email.com"
+              placeholder="Enter your phone number"
               placeholderTextColor={COLORS.textLight}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={formData.email}
-              onChangeText={(text) => handleInputChange("email", text)}
+              keyboardType="phone-pad"
+              value={formData.phone}
+              onChangeText={(text) => handleInputChange("phone", text)}
               editable={!loading}
             />
-            {errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
+            {errors.phone && (
+              <Text style={styles.errorText}>{errors.phone}</Text>
             )}
           </View>
 
@@ -177,46 +194,67 @@ const SignupScreen = () => {
             )}
           </View>
 
-          {/* Confirm Password Input */}
+          {/* Role Selector */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <TextInput
+            <Text style={styles.label}>Role</Text>
+            <TouchableOpacity
               style={[
                 styles.input,
-                errors.confirmPassword && styles.inputError,
+                errors.role && styles.inputError,
+                { justifyContent: "center" },
               ]}
-              placeholder="••••••••"
-              placeholderTextColor={COLORS.textLight}
-              secureTextEntry
-              value={formData.confirmPassword}
-              onChangeText={(text) => handleInputChange("confirmPassword", text)}
-              editable={!loading}
-            />
-            {errors.confirmPassword && (
-              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+              onPress={() => setShowRoleModal(true)}
+              disabled={loading}
+            >
+              <Text
+                style={[
+                  styles.roleText,
+                  !formData.role && { color: COLORS.textLight },
+                ]}
+              >
+                {selectedRoleLabel}
+              </Text>
+            </TouchableOpacity>
+            {errors.role && (
+              <Text style={styles.errorText}>{errors.role}</Text>
             )}
           </View>
 
-          {/* Terms and Conditions */}
-          <TouchableOpacity
-            style={styles.termsContainer}
-            onPress={() => setAgreeTerms(!agreeTerms)}
-            disabled={loading}
+          {/* Role Modal */}
+          <Modal
+            visible={showRoleModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowRoleModal(false)}
           >
-            <View
-              style={[
-                styles.checkbox,
-                agreeTerms && styles.checkboxChecked,
-              ]}
-            >
-              {agreeTerms && <Text style={styles.checkmark}>✓</Text>}
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select Role</Text>
+                <FlatList
+                  data={ROLES}
+                  keyExtractor={(item) => item.id.toString()}
+                  scrollEnabled={false}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.roleOption}
+                      onPress={() => handleRoleSelect(item.value)}
+                    >
+                      <Text style={styles.roleOptionText}>{item.label}</Text>
+                      {formData.role === item.value && (
+                        <Text style={styles.checkmark}>✓</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                />
+                <TouchableOpacity
+                  style={styles.modalCloseButton}
+                  onPress={() => setShowRoleModal(false)}
+                >
+                  <Text style={styles.modalCloseButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <Text style={styles.termsLabel}>
-              I agree to the{" "}
-              <Text style={styles.termsLink}>terms of service</Text> and{" "}
-              <Text style={styles.termsLink}>privacy policy</Text>
-            </Text>
-          </TouchableOpacity>
+          </Modal>
 
           {/* Signup Button */}
           <TouchableOpacity
@@ -317,40 +355,56 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: "500",
   },
-  termsContainer: {
+  roleText: {
+    fontSize: 14,
+    color: COLORS.textDark,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.textDark,
+    marginBottom: 16,
+  },
+  roleOption: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 24,
-    marginTop: 8,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginRight: 12,
-    marginTop: 2,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  checkboxChecked: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.primary,
+  roleOptionText: {
+    fontSize: 16,
+    color: COLORS.textDark,
+    fontWeight: "500",
   },
   checkmark: {
-    color: COLORS.white,
-    fontSize: 12,
+    color: COLORS.primary,
+    fontSize: 18,
     fontWeight: "bold",
   },
-  termsLabel: {
-    flex: 1,
-    fontSize: 13,
-    color: COLORS.textLight,
-    lineHeight: 18,
+  modalCloseButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+    marginTop: 16,
   },
-  termsLink: {
-    color: COLORS.primary,
+  modalCloseButtonText: {
+    color: COLORS.white,
+    fontSize: 14,
     fontWeight: "600",
   },
   signupButton: {

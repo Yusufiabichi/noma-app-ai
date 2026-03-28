@@ -7,9 +7,11 @@ import {
   Text,
   TextInput,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useLanguage } from "@/src/context/LanguageContext";
+import { login } from "@/src/api/auth.api";
 
 const COLORS = {
   primary: "#16A34A",
@@ -24,21 +26,21 @@ const COLORS = {
 const LoginScreen = () => {
   const router = useRouter();
   const { completeOnboarding } = useLanguage();
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
-    email?: string;
+    phone?: string;
     password?: string;
   }>({});
 
   const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: { phone?: string; password?: string } = {};
 
-    if (!email) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email";
+    if (!phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d{10,}$/.test(phone.replace(/\D/g, ""))) {
+      newErrors.phone = "Please enter a valid phone number";
     }
 
     if (!password) {
@@ -56,19 +58,18 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      // TODO: Implement actual login API call
-      // const response = await loginUser(email, password);
-      // if (response.success) {
-      //   await completeOnboarding();
-      //   router.replace("/(tabs)");
-      // }
-      
-      // For now, mark onboarding as complete and navigate to home
-      await completeOnboarding();
-      router.replace("/(tabs)");
-    } catch (error) {
+      const response = await login(phone, password);
+
+      if (response.token) {
+        Alert.alert("Success", "Logged in successfully!");
+        await completeOnboarding();
+        router.replace("/(tabs)");
+      }
+    } catch (error: any) {
       console.error("Login error:", error);
-      setErrors({ email: "Login failed. Please try again." });
+      const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
+      Alert.alert("Error", errorMessage);
+      setErrors({ phone: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -94,27 +95,27 @@ const LoginScreen = () => {
 
         {/* Form */}
         <View style={styles.form}>
-          {/* Email Input */}
+          {/* Phone Input */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>Phone Number</Text>
             <TextInput
               style={[
                 styles.input,
-                errors.email && styles.inputError,
+                errors.phone && styles.inputError,
               ]}
-              placeholder="your@email.com"
+              placeholder="Enter your phone number"
               placeholderTextColor={COLORS.textLight}
-              keyboardType="email-address"
+              keyboardType="phone-pad"
               autoCapitalize="none"
-              value={email}
+              value={phone}
               onChangeText={(text) => {
-                setEmail(text);
-                setErrors({ ...errors, email: undefined });
+                setPhone(text);
+                setErrors({ ...errors, phone: undefined });
               }}
               editable={!loading}
             />
-            {errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
+            {errors.phone && (
+              <Text style={styles.errorText}>{errors.phone}</Text>
             )}
           </View>
 

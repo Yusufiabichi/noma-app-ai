@@ -58,7 +58,7 @@ const LanguageSelectorScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Hello!</Text>
-          <Text style={styles.headerSubtitle}>Select your Plantix language</Text>
+          <Text style={styles.headerSubtitle}>Select your NomaApp language</Text>
         </View>
 
         {/* Language Options */}

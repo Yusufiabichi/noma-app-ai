@@ -44,6 +44,7 @@ const ProfileScreen: React.FC = () => {
         text: 'Logout',
         style: 'destructive',
         onPress: () => {
+          //TODO: Redirect to login screen and clear user session
           router.replace('../login');
         },
       },
