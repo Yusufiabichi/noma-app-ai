@@ -13,11 +13,11 @@ import client from './client';
 
 /**
  * Register a new user
- * @param {Object} userData - User registration data
- * @param {string} userData.name - User's full name
- * @param {string} userData.phone - User's phone number
- * @param {string} userData.password - User password
- * @param {string} userData.role - User role (farmer, expert, supplier)
+ * @param {Object} userData 
+ * @param {string} userData.name
+ * @param {string} userData.phone 
+ * @param {string} userData.password
+ * @param {string} userData.role
  * @returns {Promise<{user: Object, token: string}>}
  */
 export const register = async (userData) => {
@@ -27,8 +27,8 @@ export const register = async (userData) => {
 
 /**
  * Login user
- * @param {string} phone - User phone
- * @param {string} password - User password
+ * @param {string} phone
+ * @param {string} password 
  * @returns {Promise<{user: Object, token: string}>}
  */
 export const login = async (phone, password) => {
@@ -38,8 +38,8 @@ export const login = async (phone, password) => {
 
 /**
  * Change user password
- * @param {string} currentPassword - Current password
- * @param {string} newPassword - New password
+ * @param {string} currentPassword 
+ * @param {string} newPassword 
  * @returns {Promise<{token: string}>}
  */
 export const changePassword = async (currentPassword, newPassword) => {

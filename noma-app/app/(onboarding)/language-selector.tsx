@@ -28,7 +28,7 @@ const languages = [
   {
     id: "hausa",
     name: "Hausa",
-    subtitle: "Noma a yarƙar ku",
+    subtitle: "Noma da yaren ku",
     code: "hausa",
   },
   {
@@ -55,13 +55,11 @@ const LanguageSelectorScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Hello!</Text>
           <Text style={styles.headerSubtitle}>Select your NomaApp language</Text>
         </View>
 
-        {/* Language Options */}
         <View style={styles.languagesContainer}>
           {languages.map((lang) => (
             <TouchableOpacity
