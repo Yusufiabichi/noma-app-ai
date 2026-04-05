@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noma AI - Crop Disease Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6ceb7dff 0%, #30a33aff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #66ea99ff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #66ea99ff;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #66ea9dff;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background: #f5f5f5;
+            border: 2px dashed #66eaa1ff;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #66ea9dff;
+            color: white;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            color: #666666ff;
+            font-size: 0.9rem;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #66ea7cff 0%, #4ba261ff 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-section {
+            margin-bottom: 25px;
+        }
+
+        .result-section h3 {
+            color: #25be39ff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .result-value {
+            color: #333;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #66ea87ff 0%, #4ba261ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            transition: width 0.5s ease;
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .severity-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .severity-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .severity-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .ai-recommendation {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #66ea8eff;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #66ea7cff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌱 Crop Disease Detection</h1>
+            <p>Advanced Crop Disease Detection & AI-Powered Recommendations</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>Upload & Analyze</h2>
+                <form id="inferenceForm">
+                    <div class="form-group">
+                        <label for="image_file">Crop Image *</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="image_file" name="image_file" accept="image/*" required>
+                            <label for="image_file" class="file-input-label">
+                                📸 Click to select image
+                            </label>
+                        </div>
+                        <div class="file-name" id="fileName"></div>
+                        <div class="image-preview" id="imagePreview"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="crop_type">Crop Type *</label>
+                        <select id="crop_type" name="crop_type" required>
+                            <option value="">Select crop type</option>
+                            <option value="maize">Maize</option>
+                            <option value="rice">Rice</option>
+                            <option value="cowpea">Cowpea</option>
+                
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="region">Region (Optional)</label>
+                        <input type="text" id="region" name="region" placeholder="e.g., East Africa">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="temperature">Temperature °C (Optional)</label>
+                        <input type="number" id="temperature" name="temperature" placeholder="e.g., 25">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="soilMoisture">Soil Moisture (Optional)</label>
+                        <input type="text" id="soilMoisture" name="soilMoisture" placeholder="e.g., Moderate, High, Low">
+                    </div>
+
+                    <button type="submit" class="btn" id="submitBtn">Analyze Crop Disease</button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing image and generating recommendations...</p>
+                </div>
+
+                <div class="error" id="error"></div>
+            </div>
+
+            <div class="card results" id="results">
+                <h2>Analysis Results</h2>
+                
+                <div class="result-section">
+                    <h3>Disease Detection</h3>
+                    <div class="result-item">
+                        <span class="result-label">Scan ID:</span>
+                        <span class="result-value" id="scanId">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Detected Disease:</span>
+                        <span class="result-value" id="disease">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Confidence:</span>
+                        <span class="result-value" id="confidenceText">-</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceBar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="result-item" style="margin-top: 10px;">
+                        <span class="result-label">Severity:</span>
+                        <span id="severityBadge">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Basic Recommendation:</span>
+                    </div>
+                    <div style="padding: 10px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;">
+                        <span id="basicRec">-</span>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h3>🤖 AI-Enhanced Recommendations</h3>
+                    <div class="ai-recommendation" id="aiRec">
+                        Analyzing...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('inferenceForm');
+        const fileInput = document.getElementById('image_file');
+        const fileName = document.getElementById('fileName');
+        const imagePreview = document.getElementById('imagePreview');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const error = document.getElementById('error');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Image preview
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = `Selected: ${file.name}`;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Hide previous results and errors
+            results.classList.remove('show');
+            error.classList.remove('show');
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+                
+                const response = await fetch('/infer', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (err) {
+                error.textContent = `Error: ${err.message}`;
+                error.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        });
+
+        function displayResults(data) {
+            // Disease detection results
+            document.getElementById('scanId').textContent = data.scan_id;
+            document.getElementById('disease').textContent = data.disease_detection.disease;
+            
+            const confidence = (data.disease_detection.confidence * 100).toFixed(2);
+            document.getElementById('confidenceText').textContent = `${confidence}%`;
+            document.getElementById('confidenceBar').style.width = `${confidence}%`;
+            document.getElementById('confidenceBar').textContent = `${confidence}%`;
+            
+            const severity = data.disease_detection.severity;
+            const severityBadge = document.getElementById('severityBadge');
+            severityBadge.textContent = severity;
+            severityBadge.className = `severity-badge severity-${severity.toLowerCase()}`;
+            
+            document.getElementById('basicRec').textContent = data.disease_detection.basic_recommendation;
+            document.getElementById('aiRec').textContent = data.ai_enhanced_recommendation;
+
+            // Show results
+            results.classList.add('show');
+            results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>

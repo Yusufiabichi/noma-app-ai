@@ -1,0 +1,23 @@
+{
+  "type": "module",
+  "name": "noma-ai-enhancement",
+  "version": "1.0.0",
+  "description": "AI-enhanced recommendations for crop disease detection",
+  "main": "openai.js",
+  "scripts": {
+    "start": "node openai.js",
+    "dev": "nodemon openai.js"
+  },
+  "dependencies": {
+    "@azure-rest/ai-inference": "latest",
+    "@azure/core-auth": "latest",
+    "@azure/core-sse": "latest",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "form-data": "^4.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
