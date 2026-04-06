@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { clearAuthTokens } from '../../src/api/client';
 
 interface UserData {
   name: string;
@@ -37,13 +38,14 @@ const ProfileScreen: React.FC = () => {
       .toUpperCase();
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert('Logout', 'Are you sure you want to log out?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Logout',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
+          await clearAuthTokens();
           router.replace('../login');
         },
       },

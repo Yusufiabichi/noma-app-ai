@@ -83,18 +83,18 @@ const SignupScreen = () => {
 
     setLoading(true);
     try {
-      const response = await register({
-        name: formData.name,
-        phone: formData.phone,
-        password: formData.password,
-        role: formData.role,
-      });
+      // const response = await register({
+      //   name: formData.name,
+      //   phone: formData.phone,
+      //   password: formData.password,
+      //   role: formData.role,
+      // });
 
-      if (response.token) {
+      // if (response.token) {
         Alert.alert("Success", "Account created successfully!");
         await completeOnboarding();
         router.replace("/(tabs)");
-      }
+      // }
     } catch (error: any) {
       console.error("Signup error:", error);
       const errorMessage = error.response?.data?.message || "Signup failed. Please try again.";

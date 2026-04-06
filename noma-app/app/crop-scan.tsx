@@ -16,16 +16,25 @@ import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-ca
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '@/src/context/LanguageContext';
+import { useAuth } from '@/src/hooks/useAuth';
+import client from '@/src/api/client';
+import * as localScanService from '@/src/services/localScanService';
+import { isOnline } from '@/src/utils/network';
+import logger from '@/src/utils/logger';
 
 
 export default function CropScan() {
   const router = useRouter();
+  const { language } = useLanguage();
+  const { user } = useAuth();
   const cameraRef = useRef<any>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [taking, setTaking] = useState(false);
   const [photo, setPhoto] = useState<CameraCapturedPicture | { uri: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const crop_type = ['tomato', 'rice', 'beans', 'yam', 'other'];
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
 
@@ -54,9 +63,112 @@ export default function CropScan() {
   }
 
   async function imgCrop(){
-    console.log({ uri: (photo as any).uri }) 
-    console.log("Selected Crop", selectedCrop);
-    router.replace('./treatment-rec')
+    if (!selectedCrop) {
+      Alert.alert('Error', 'Please select a crop type');
+      return;
+    }
+
+    if (!photo?.uri) {
+      Alert.alert('Error', 'No image selected');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const online = await isOnline();
+      
+      if (online) {
+        // Online flow: Upload and process immediately
+        logger.info('Device is online, processing scan immediately');
+        await processScanOnline((photo as any).uri, selectedCrop);
+      } else {
+        // Offline flow: Save locally and mark as pending
+        logger.info('Device is offline, saving scan locally');
+        await processScanOffline((photo as any).uri, selectedCrop);
+      }
+    } catch (error) {
+      logger.error('Error processing scan', error);
+      Alert.alert('Error', error.message || 'Failed to process scan');
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  async function processScanOnline(imageUri: string, cropType: string) {
+    try {
+      // Show loading
+      Alert.alert('Processing', 'Scanning image and analyzing...', [
+        { text: 'Dismiss', onPress: () => {} }
+      ], { cancelable: false });
+
+      // Create form data with image
+      const formData = new FormData();
+      formData.append('image', {
+        uri: imageUri,
+        name: `scan-${Date.now()}.jpg`,
+        type: 'image/jpeg',
+      });
+      formData.append('cropType', cropType);
+
+      // Call AI inference endpoint
+      const response = await client.uploadFile('/infer', formData);
+      
+      logger.info('AI inference successful', { disease: response.disease });
+
+      // Navigate to treatment recommendations with results
+      router.replace({
+        pathname: './treatment-rec',
+        params: {
+          scanResult: JSON.stringify({
+            disease: response.disease,
+            cropType: response.cropType || cropType,
+            confidence: response.confidence,
+            severity: response.severity,
+            recommendations: response.recommendations,
+            futurePrevention: response.futurePrevention,
+            language,
+            isOnline: true,
+            scanId: response.scan_id,
+          }),
+        },
+      });
+    } catch (error) {
+      logger.error('Online scan processing failed', error);
+      throw error;
+    }
+  }
+
+  async function processScanOffline(imageUri: string, cropType: string) {
+    try {
+      // Save image locally
+      const localImageUri = await localScanService.saveImageLocally(imageUri);
+      
+      // Create scan record with pending status
+      const scan = await localScanService.createLocalScan({
+        userId: user?.id || 'offline-user',
+        imageUri: localImageUri,
+        cropType,
+      });
+
+      logger.info('Local scan created', { scanId: scan.id });
+
+      // Navigate to treatment recommendations showing pending status
+      router.replace({
+        pathname: './treatment-rec',
+        params: {
+          scanResult: JSON.stringify({
+            status: 'pending',
+            cropType,
+            language,
+            isOnline: false,
+            localScanId: scan.id,
+          }),
+        },
+      });
+    } catch (error) {
+      logger.error('Offline scan processing failed', error);
+      throw error;
+    }
   }
 
   async function openGallery() {
@@ -234,26 +346,30 @@ export default function CropScan() {
 
           <View style={styles.previewFooter}>
             <TouchableOpacity
-              style={[styles.previewButton, { backgroundColor: '#fff' }]}
+              style={[styles.previewButton, styles.previewButtonSecondary]}
               onPress={() => setPreviewVisible(false)}
+              disabled={isProcessing}
             >
-              <Text style={{ color: '#111', fontWeight: '600' }}>
-                <Ionicons name="arrow-back" size={20} color="#000" />
-              </Text>
+              <Ionicons name="arrow-back" size={18} color="#111" />
+              <Text style={styles.previewButtonSecondaryText}>Retake</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.previewButton, { backgroundColor: '#16A34A' }]}
-              onPress={ imgCrop
-                // () =>
-                // Alert.alert('Next', 'AI Model Integration.')
-                // router.replace('./treatment-rec')
-                // console.log("selected crop:", selectedCrop)
-              }
+              style={[styles.previewButton, styles.previewButtonPrimary, isProcessing && { opacity: 0.6 }]}
+              onPress={imgCrop}
+              disabled={isProcessing}
             >
-              <Text>
-                <Ionicons name="checkmark" size={20} color="#fff" />
-              </Text>
+              {isProcessing ? (
+                <>
+                  <ActivityIndicator size="small" color="white" />
+                  <Text style={[styles.previewButtonPrimaryText, { marginLeft: 8 }]}>Processing...</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.previewButtonPrimaryText}>Use Photo</Text>
+                  <Ionicons name="checkmark" size={18} color="#fff" />
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -359,10 +475,37 @@ const styles = StyleSheet.create({
   previewButton: {
     flex: 1,
     marginHorizontal: 8,
-    paddingVertical: 5,
-    paddingHorizontal: 5,
-    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  previewButtonSecondary: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  previewButtonPrimary: {
+    backgroundColor: '#16A34A',
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+  previewButtonSecondaryText: {
+    color: '#111',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  previewButtonPrimaryText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+    marginRight: 8,
   },
   button: {
     paddingHorizontal: 16,

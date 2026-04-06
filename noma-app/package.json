@@ -16,6 +16,7 @@
     "@nozbe/watermelondb": "^0.28.0",
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-community/geolocation": "^3.4.0",
+    "@react-native-community/netinfo": "^12.0.1",
     "@react-native-picker/picker": "^2.11.4",
     "@react-navigation/bottom-tabs": "^7.4.9",
     "@react-navigation/elements": "^2.6.3",

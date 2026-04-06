@@ -37,16 +37,16 @@ let authToken = null;
 let tokenRefreshPromise = null;
 let onTokenExpiredCallback = null;
 
-/**
- * Set callback for token expiration (used by auth service)
- */
+
+// Set callback for token expiration (used by auth service)
+
 export const setOnTokenExpired = (callback) => {
   onTokenExpiredCallback = callback;
 };
 
-/**
- * Set the authentication token
- */
+
+//  Set the authentication token
+
 export const setAuthToken = async (token) => {
   authToken = token;
   if (token) {
@@ -58,9 +58,9 @@ export const setAuthToken = async (token) => {
   }
 };
 
-/**
- * Get the current authentication token
- */
+
+// Get the current authentication token
+ 
 export const getAuthToken = async () => {
   if (authToken) return authToken;
   
@@ -76,9 +76,9 @@ export const getAuthToken = async () => {
   }
 };
 
-/**
- * Clear all authentication tokens
- */
+
+//  Clear all authentication tokens
+ 
 export const clearAuthTokens = async () => {
   authToken = null;
   try {
@@ -89,9 +89,9 @@ export const clearAuthTokens = async () => {
   }
 };
 
-/**
- * Initialize client (call on app startup)
- */
+
+//  Initialize client (call on app startup)
+
 export const initializeClient = async () => {
   await getAuthToken();
   logger.info('API client initialized', { 
@@ -169,49 +169,49 @@ apiClient.interceptors.response.use(
   }
 );
 
-/**
- * Make a GET request
- */
+
+//  Make a GET request
+
 export const get = async (url, config = {}) => {
   const response = await apiClient.get(url, config);
   return response.data;
 };
 
-/**
- * Make a POST request
- */
+
+//  Make a POST request
+
 export const post = async (url, data = {}, config = {}) => {
   const response = await apiClient.post(url, data, config);
   return response.data;
 };
 
-/**
- * Make a PUT request
- */
+
+//  Make a PUT request
+
 export const put = async (url, data = {}, config = {}) => {
   const response = await apiClient.put(url, data, config);
   return response.data;
 };
 
-/**
- * Make a PATCH request
- */
+
+//  Make a PATCH request
+
 export const patch = async (url, data = {}, config = {}) => {
   const response = await apiClient.patch(url, data, config);
   return response.data;
 };
 
-/**
- * Make a DELETE request
- */
+
+//  Make a DELETE request
+
 export const del = async (url, config = {}) => {
   const response = await apiClient.delete(url, config);
   return response.data;
 };
 
-/**
- * Upload file with multipart/form-data
- */
+
+//  Upload file with multipart/form-data
+
 export const uploadFile = async (url, formData, onProgress = null) => {
   const config = {
     headers: {

@@ -2,15 +2,21 @@ import React, { useEffect, useState } from "react";
 import { View, Image, Animated, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SplashScreen from "expo-splash-screen";
 import { useLanguage } from "@/src/context/LanguageContext";
 
-const SplashScreen = () => {
+const AppSplashScreen = () => {
   const router = useRouter();
   const fadeAnim = new Animated.Value(0);
   const { loading } = useLanguage();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   useEffect(() => {
+    // Keep the native splash screen visible until we explicitly hide it.
+    SplashScreen.preventAutoHideAsync().catch(() => {
+      // ignore if already hidden or unavailable
+    });
+
     // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -20,32 +26,26 @@ const SplashScreen = () => {
   }, []);
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     const checkOnboardingStatus = async () => {
       try {
         const hasCompleted = await AsyncStorage.getItem("hasCompletedOnboarding");
-        
-        // Navigate after 2000ms
-        const timer = setTimeout(() => {
-          if (!loading) {
-            if (hasCompleted === "true") {
-              router.replace("/(tabs)");
-            } else {
-              router.replace("/(onboarding)/language-selector");
-            }
-          }
-        }, 2000);
 
-        return () => clearTimeout(timer);
-      } catch (error) {
-        console.error("Error checking onboarding status:", error);
-        // Default to onboarding if there's an error
-        const timer = setTimeout(() => {
-          if (!loading) {
+        timer = setTimeout(async () => {
+          if (hasCompleted === "true") {
+            router.replace("/(tabs)");
+          } else {
             router.replace("/(onboarding)/language-selector");
           }
+          await SplashScreen.hideAsync();
         }, 2000);
-
-        return () => clearTimeout(timer);
+      } catch (error) {
+        console.error("Error checking onboarding status:", error);
+        timer = setTimeout(async () => {
+          router.replace("/(onboarding)/language-selector");
+          await SplashScreen.hideAsync();
+        }, 2000);
       } finally {
         setCheckingOnboarding(false);
       }
@@ -54,6 +54,12 @@ const SplashScreen = () => {
     if (!loading) {
       checkOnboardingStatus();
     }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, [loading]);
 
   return (
@@ -86,4 +92,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SplashScreen;
+export default AppSplashScreen;

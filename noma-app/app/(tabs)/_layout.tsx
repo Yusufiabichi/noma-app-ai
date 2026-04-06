@@ -85,7 +85,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'NomaApp AI',
+          title: 'NomaApp',
           tabBarLabel: 'Crops',
           tabBarIcon: ({ color }) => <FontAwesome5 name="seedling" size={22} color={color} />,
           headerRight: () => (
@@ -98,19 +98,20 @@ export default function TabsLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="scan"
+      <Tabs.Screen
+        name="market-place"
         options={{
-          title: 'Scan',
-          tabBarLabel: 'Scan',
-          tabBarIcon: ({ color }) => <FontAwesome name="camera" size={22} color={color} />,
+          title: 'Market Place',
+          tabBarLabel: 'Market Place',
+          headerShown: false,
+          tabBarIcon: ({ color }) => <FontAwesome5 name="shopping-bag" size={22} color={color} />,
         }}
-      /> */}
+      />
       <Tabs.Screen
         name="community"
         options={{
-          title: 'Community',
-          tabBarLabel: 'Community',
+          title: 'Chat with Experts',
+          tabBarLabel: 'Chat',
           tabBarIcon: ({ color }) => <MaterialIcons name="forum" size={22} color={color} />,
           
         }}

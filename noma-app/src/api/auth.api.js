@@ -45,7 +45,7 @@ export const login = async (phone, password) => {
 export const changePassword = async (currentPassword, newPassword) => {
   const response = await client.post('/auth/change-password', {
     currentPassword,
-    newPassword,
+    newPassword, 
   });
   return response.data;
 };

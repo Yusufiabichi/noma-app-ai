@@ -1,8 +1,12 @@
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LanguageProvider } from "@/src/context/LanguageContext";
+import { useSync } from '@/src/hooks/useSync';
+
 
 export default function RootLayout(){
+    useSync(); 
+
     return (
         <>
         <LanguageProvider>

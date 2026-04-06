@@ -58,13 +58,13 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const response = await login(phone, password);
+      // const response = await login(phone, password);
 
-      if (response.token) {
+      // if (response.token) {
         Alert.alert("Success", "Logged in successfully!");
         await completeOnboarding();
         router.replace("/(tabs)");
-      }
+      // }
     } catch (error: any) {
       console.error("Login error:", error);
       const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
