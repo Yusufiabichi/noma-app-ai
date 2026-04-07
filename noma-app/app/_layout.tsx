@@ -2,10 +2,11 @@ import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LanguageProvider } from "@/src/context/LanguageContext";
 import { useSync } from '@/src/hooks/useSync';
-
+import { useEffect } from 'react';
 
 export default function RootLayout(){
-    useSync(); 
+    // Initialize sync hook for network monitoring
+    useSync();
 
     return (
         <>
@@ -14,7 +15,6 @@ export default function RootLayout(){
                 <Stack.Screen name="index" options={{headerShown: false}} />
                 <Stack.Screen name="(onboarding)" options={{headerShown: false}} />
                 <Stack.Screen name="(tabs)" options={{headerShown: false}} />
-                <Stack.Screen name="(auth)" options={{headerShown: false}} />
                 <Stack.Screen name="treatment-rec" options={{headerShown: false}} />
                 <Stack.Screen name="crop-scan" options={{headerShown: false}} />
                 <Stack.Screen name="farming-tips" options={{headerShown: false,  title: "Farming Tips"}} />
