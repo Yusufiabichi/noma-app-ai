@@ -1,7 +1,7 @@
-/**
- * useSync Hook
- * Manages network monitoring and automatic sync when coming back online
- */
+
+// useSync Hook
+// Manages network monitoring and automatic sync when coming back online
+
 
 import { useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';

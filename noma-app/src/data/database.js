@@ -1,8 +1,8 @@
 
-/**
- * WatermelonDB Database Setup
- * Local database for offline-first functionality
- */
+
+// WatermelonDB Database Setup
+// Local database for offline-first functionality
+
 
 import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
@@ -53,7 +53,7 @@ export const initializeDatabase = async () => {
     return false;
   }
 };
-  actionsEnabled: true,
-});
-
+actionsEnabled: true;
 export default database;
+// });
+
