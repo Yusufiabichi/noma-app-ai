@@ -1,7 +1,7 @@
-/**
- * useAuth Hook
- * Get current user information from auth context
- */
+
+// useAuth Hook
+// Get current user information from auth context
+
 
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';

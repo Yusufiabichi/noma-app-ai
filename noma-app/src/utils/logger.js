@@ -1,9 +1,9 @@
-/**
- * Logger Utility
- * 
- * Centralized logging for the application.
- * Handles different log levels with different formatting.
- */
+
+// Logger Utility
+
+// Centralized logging for the application.
+// Handles different log levels with different formatting.
+
 
 const isDevelopment = __DEV__; // Expo environment variable
 
@@ -14,9 +14,9 @@ const LOG_LEVEL = {
   ERROR: 'ERROR',
 };
 
-/**
- * Format log message with timestamp and level
- */
+
+// Format log message with timestamp and level
+
 const formatLog = (level, message, data = null) => {
   const timestamp = new Date().toISOString();
   const prefix = `[${timestamp}] [${level}]`;
@@ -27,39 +27,38 @@ const formatLog = (level, message, data = null) => {
   return `${prefix} ${message}`;
 };
 
-/**
- * Log debug message (development only)
- */
+
+// Log debug message (development only)
+
 const debug = (message, data = null) => {
   if (isDevelopment) {
     console.log(formatLog(LOG_LEVEL.DEBUG, message, data));
   }
 };
 
-/**
- * Log info message
- */
+// Log info message
+
 const info = (message, data = null) => {
   console.log(formatLog(LOG_LEVEL.INFO, message, data));
 };
 
-/**
- * Log warning message
- */
+
+// Log warning message
+
 const warn = (message, data = null) => {
   console.warn(formatLog(LOG_LEVEL.WARN, message, data));
 };
 
-/**
- * Log error message
- */
+
+// Log error message
+
 const error = (message, errorObject = null) => {
   console.error(formatLog(LOG_LEVEL.ERROR, message, errorObject));
 };
 
-/**
- * Log API request
- */
+
+// Log API request
+
 const apiRequest = (method, url, data = null) => {
   const logData = { method: method?.toUpperCase(), url };
   if (data && Object.keys(data).length > 0) {
@@ -68,9 +67,9 @@ const apiRequest = (method, url, data = null) => {
   debug('API Request', logData);
 };
 
-/**
- * Log API response
- */
+
+// Log API response
+
 const apiResponse = (method, url, status, duration) => {
   const logData = {
     method: method?.toUpperCase(),
