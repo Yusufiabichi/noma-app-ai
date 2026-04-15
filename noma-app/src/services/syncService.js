@@ -1,7 +1,7 @@
-/**
- * Sync Service
- * Handles synchronization of offline scans with backend
- */
+
+// Sync Service
+// Handles synchronization of offline scans with backend
+
 
 import client from '../api/client';
 import * as localScanService from './localScanService';
@@ -13,7 +13,7 @@ import logger from '../utils/logger';
 /**
  * Sync pending scans with backend
  * Called when device comes back online
- * @param {string} userId - User ID
+ * @param {string} userId
  * @returns {Promise<{processed: number, synced: number, failed: number, results: Array}>}
  */
 export const syncPendingScans = async (userId) => {
