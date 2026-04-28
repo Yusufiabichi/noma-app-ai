@@ -43,6 +43,7 @@
     "expo-web-browser": "~15.0.7",
     "express": "^5.1.0",
     "jpeg-js": "^0.4.4",
+    "lokijs": "^1.5.12",
     "react": "19.1.0",
     "react-compiler-runtime": "^1.0.0",
     "react-dom": "19.1.0",
