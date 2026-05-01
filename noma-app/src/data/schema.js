@@ -1,7 +1,7 @@
-/**
- * WatermelonDB Database Schema
- * Defines the structure for local database tables
- */
+
+// WatermelonDB Database Schema
+// Defines the structure for local database tables
+
 
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
