@@ -19,6 +19,10 @@ def startup_event():
 
 app.include_router(api_router, prefix="/ai")
 
+@app.get("/")
+def root():
+    return {"message": "API is running 🚀"}
+
 if __name__ == "__main__":
     uvicorn.run(app
                 , host='localhost', port=8000)
