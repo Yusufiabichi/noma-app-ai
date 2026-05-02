@@ -59,11 +59,11 @@
     "react-native-tflite": "^0.0.2",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
-    "rn-custom-select-dropdown": "^1.1.9",
-    "undefined": "@nozbe/watermelondb/hooks"
+    "rn-custom-select-dropdown": "^1.1.9"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "babel-plugin-react-compiler": "^0.0.0-experimental-696af53-20240625",
     "baseline-browser-mapping": "^2.9.14",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",

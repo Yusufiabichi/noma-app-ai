@@ -4,27 +4,44 @@
 // Local database for offline-first functionality
 
 
+import { Platform } from 'react-native';
 import { Database } from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import { schema } from './schema';
 import { Scan } from './models/Scan';
+
+// Use the web-friendly LokiJS adapter when running in a browser.
+// Native platforms use SQLite.
+const SQLiteAdapter = Platform.OS !== 'web'
+  ? require('@nozbe/watermelondb/adapters/sqlite').default
+  : null;
+const LokiJSAdapter = Platform.OS === 'web'
+  ? require('@nozbe/watermelondb/adapters/lokijs').default
+  : null;
 
 // Lazy initialization of database
 let databaseInstance = null;
 
 const getDatabase = () => {
   if (!databaseInstance) {
-    // Create SQLite adapter for React Native
-    const adapter = new SQLiteAdapter({
+    const adapterOptions = {
       schema,
       dbName: 'noma_app.db',
-      jsi: false, // Disable JSI for compatibility
       onSetUpError: (error) => {
         console.error('WatermelonDB setup error:', error);
       },
-    });
+    };
 
-    // Create database instance
+    const adapter = Platform.OS === 'web'
+      ? new LokiJSAdapter({
+          ...adapterOptions,
+          useWebWorker: false,
+          useIncrementalIndexedDB: true,
+        })
+      : new SQLiteAdapter({
+          ...adapterOptions,
+          jsi: false,
+        });
+
     databaseInstance = new Database({
       adapter,
       modelClasses: [Scan],
@@ -53,7 +70,7 @@ export const initializeDatabase = async () => {
     return false;
   }
 };
-actionsEnabled: true;
+
 export default database;
 // });
 
