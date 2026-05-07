@@ -98,7 +98,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+    {/*  <Tabs.Screen
         name="market-place"
         options={{
           title: 'Market Place',
@@ -106,7 +106,7 @@ export default function TabsLayout() {
           headerShown: false,
           tabBarIcon: ({ color }) => <FontAwesome5 name="shopping-bag" size={22} color={color} />,
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="community"
         options={{
@@ -116,14 +116,6 @@ export default function TabsLayout() {
           
         }}
       />
-        {/* <Tabs.Screen
-          name="marketplace"
-          options={{
-            title: 'Market Place',
-            tabBarLabel: 'Market Place',
-            tabBarIcon: ({ color }) => <FontAwesome5 name="market" size={22} color={color} />,
-          }}
-        /> */}
       <Tabs.Screen
         name="profile"
         options={{
