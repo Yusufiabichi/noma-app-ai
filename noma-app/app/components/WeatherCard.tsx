@@ -81,7 +81,7 @@ export default function WeatherCard(): JSX.Element {
   // Fallback if weather is null
   if (!weather) return <></>;
 
-  const wheather = weather.temp;
+  const currentTemp = weather.temp;
   const condition = weather.condition;
 
   return (
@@ -91,10 +91,10 @@ export default function WeatherCard(): JSX.Element {
           <MaterialCommunityIcons name="map-marker" size={20} color="#fff" />{" "}
           {locationName}
         </Text>
-        <Text style={styles.temperature}>{wheather}°C</Text>
+        <Text style={styles.temperature}>{currentTemp}°C</Text>
         <Text style={styles.conditionText}>{condition}</Text>
 
-        {wheather >= 30 ? (
+        {currentTemp >= 30 ? (
           <View style={styles.statusBox}>
           <Ionicons name="warning-outline" size={16} color="#c0392b" />
             <Text style={styles.statusRed}>

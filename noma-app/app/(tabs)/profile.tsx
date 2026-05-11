@@ -10,10 +10,12 @@ import {
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { clearAuthTokens } from '../../src/api/client';
+import { useAuth, setUserData } from '@/src/hooks/useAuth';
 
 interface UserData {
   name: string;
-  email: string;
+  phone?: string;
+  email?: string;
   scans: number;
   healthy: number;
   issues: number;
@@ -21,13 +23,15 @@ interface UserData {
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
+  const { user: authUser } = useAuth();
 
   const user: UserData = {
-    name: 'Yusufia Bichi',
-    email: 'yusufia@cc.cc',
-    scans: 24,
-    healthy: 18,
-    issues: 6,
+    name: authUser?.name || 'Guest User',
+    phone: authUser?.phone || '',
+    email: authUser?.email || authUser?.phone || 'No contact info',
+    scans: authUser?.scansCount || 0,
+    healthy: authUser?.healthyCount || 0,
+    issues: authUser?.issuesCount || 0,
   };
 
   const getInitials = (name: string): string => {
@@ -46,6 +50,7 @@ const ProfileScreen: React.FC = () => {
         style: 'destructive',
         onPress: async () => {
           await clearAuthTokens();
+          await setUserData(null);
           router.replace('../login');
         },
       },

@@ -10,8 +10,11 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { login } from "@/src/api/auth.api";
+import { setAuthToken } from "@/src/api/client";
+import { setUserData } from "@/src/hooks/useAuth";
 
 const COLORS = {
   primary: "#16A34A",
@@ -28,6 +31,7 @@ const LoginScreen = () => {
   const { completeOnboarding } = useLanguage();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
     phone?: string;
@@ -61,6 +65,10 @@ const LoginScreen = () => {
       const response = await login(phone, password);
 
       if (response.token) {
+        await setAuthToken(response.token);
+        if (response.user) {
+          await setUserData(response.user);
+        }
         Alert.alert("Success", "Logged in successfully!");
         await completeOnboarding();
         router.replace("/(tabs)");
@@ -122,21 +130,38 @@ const LoginScreen = () => {
           {/* Password Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={[
-                styles.input,
-                errors.password && styles.inputError,
-              ]}
-              placeholder="••••••••"
-              placeholderTextColor={COLORS.textLight}
-              secureTextEntry
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                setErrors({ ...errors, password: undefined });
-              }}
-              editable={!loading}
-            />
+            <View style={[
+              styles.passwordInputWrapper,
+              errors.password && styles.inputError,
+            ]}>
+              <TextInput
+                style={[
+                  styles.input,
+                  { flex: 1, borderWidth: 0 },
+                  errors.password && { color: COLORS.error },
+                ]}
+                placeholder="••••••••"
+                placeholderTextColor={COLORS.textLight}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setErrors({ ...errors, password: undefined });
+                }}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+                disabled={loading}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color={COLORS.textLight}
+                />
+              </TouchableOpacity>
+            </View>
             {errors.password && (
               <Text style={styles.errorText}>{errors.password}</Text>
             )}
@@ -236,6 +261,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textDark,
     backgroundColor: COLORS.white,
+  },
+  passwordInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    backgroundColor: COLORS.white,
+  },
+  eyeIcon: {
+    paddingHorizontal: 12,
   },
   inputError: {
     borderColor: COLORS.error,

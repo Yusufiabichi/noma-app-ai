@@ -11,12 +11,24 @@ import { Scan } from './models/Scan';
 
 // Use the web-friendly LokiJS adapter when running in a browser.
 // Native platforms use SQLite.
-const SQLiteAdapter = Platform.OS !== 'web'
-  ? require('@nozbe/watermelondb/adapters/sqlite').default
-  : null;
-const LokiJSAdapter = Platform.OS === 'web'
-  ? require('@nozbe/watermelondb/adapters/lokijs').default
-  : null;
+let SQLiteAdapter;
+let LokiJSAdapter;
+
+if (Platform.OS === 'web') {
+  try {
+    LokiJSAdapter = require('@nozbe/watermelondb/adapters/lokijs').default;
+  } catch (e) {
+    console.error('Failed to load WatermelonDB LokiJS adapter:', e);
+  }
+} else if (Platform.OS === 'ios' || Platform.OS === 'android') {
+  try {
+    // For Expo, we need to be careful. If using Expo Go, this will fail at runtime
+    // because the native module is missing.
+    SQLiteAdapter = require('@nozbe/watermelondb/adapters/sqlite').default;
+  } catch (e) {
+    console.warn('WatermelonDB SQLite adapter could not be loaded. If you are using Expo Go, WatermelonDB requires a custom development client.', e);
+  }
+}
 
 // Lazy initialization of database
 let databaseInstance = null;
@@ -31,26 +43,37 @@ const getDatabase = () => {
       },
     };
 
-    const adapter = Platform.OS === 'web'
-      ? new LokiJSAdapter({
-          ...adapterOptions,
-          useWebWorker: false,
-          useIncrementalIndexedDB: true,
-        })
-      : new SQLiteAdapter({
-          ...adapterOptions,
-          jsi: false,
-        });
+    let adapter;
 
-    databaseInstance = new Database({
-      adapter,
-      modelClasses: [Scan],
-      actionsEnabled: true,
-    });
+    if (Platform.OS === 'web') {
+      adapter = new LokiJSAdapter({
+        ...adapterOptions,
+        useWebWorker: false,
+        useIncrementalIndexedDB: true,
+      });
+    } else if (SQLiteAdapter) {
+      adapter = new SQLiteAdapter({
+        ...adapterOptions,
+        jsi: false,
+      });
+    } else {
+      // Fallback for Node or unknown environments to avoid crashing during bundling
+      console.warn('WatermelonDB: No suitable adapter found for this platform. Database functionality will be unavailable.');
+      return null;
+    }
+
+    if (adapter) {
+      databaseInstance = new Database({
+        adapter,
+        modelClasses: [Scan],
+        actionsEnabled: true,
+      });
+    }
   }
 
   return databaseInstance;
 };
+
 
 // Export database getter
 export const database = getDatabase();
@@ -60,6 +83,10 @@ export const initializeDatabase = async () => {
   try {
     // Test database connection by trying to access the scans table
     const db = getDatabase();
+    if (!db) {
+      console.warn('Database instance not available, skipping initialization');
+      return false;
+    }
     const scansCollection = db.get('scans');
     await scansCollection.query().fetchCount();
     console.log('Database initialized successfully');

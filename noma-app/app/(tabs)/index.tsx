@@ -5,13 +5,38 @@ import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vecto
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/src/context/LanguageContext';
+import { useAuth } from '@/src/hooks/useAuth';
 import Data from '@/constants/data.json'
 import WeatherCard from '../components/WeatherCard';
 
-
 export default function HomeScreen() {
   const { language, setLanguage } = useLanguage();
+  const { user } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const diagnosisHistory = [
+    {
+      id: '1',
+      name: 'Tomato leaf spot scan',
+      date: 'May 5, 2026',
+      details: 'AI diagnosis detected possible early blight. Verification needed.',
+      status: 'pending' as const,
+    },
+    {
+      id: '2',
+      name: 'Maize nutrient check',
+      date: 'May 3, 2026',
+      details: 'Successful recommendation sent for fertilizer adjustment.',
+      status: 'completed' as const,
+    },
+    {
+      id: '3',
+      name: 'Cassava root health',
+      date: 'Apr 28, 2026',
+      details: 'Scan failed to get clear results due to low image quality.',
+      status: 'failed' as const,
+    },
+  ];
 
   return (
 
@@ -20,7 +45,9 @@ export default function HomeScreen() {
 
       {/* Welcome Message */}
       <Text style={styles.welcomeTitle}>
-        {language==="english" ? Data.en.home.welcome_title: Data.ha.home.welcome_title}
+        {language === "english"
+          ? `Welcome ${user?.name || "Farmer"}!`
+          : `Barka da Zuwa, ${user?.name || "Manomi"}!`}
       </Text>
       <Text style={styles.subtitle}>
         {language==="english" ? Data.en.home.welcome_subtitle: Data.ha.home.welcome_subtitle}
@@ -61,6 +88,47 @@ export default function HomeScreen() {
             {language==="english" ? Data.en.home.cards_text[2]: Data.ha.home.cards_text[2]}
           </Text>
         </TouchableOpacity>
+      </View>
+
+      {/* Recent Diagnosis History */}
+      <View style={styles.historyHeader}>
+        <Text style={styles.historyTitle}>Recent diagnosis history</Text>
+        {/* <Text style={styles.historySubtitle}>
+          Review the status of your last AI scans and follow up where needed.
+        </Text> */}
+      </View>
+
+      <View style={styles.historyList}>
+        {diagnosisHistory.map((item) => (
+          <TouchableOpacity key={item.id} style={styles.historyCard}>
+            <View style={styles.historyRow}>
+              <View style={styles.historyTextBlock}>
+                <Text style={styles.historyName}>{item.name}</Text>
+                <Text style={styles.historyDate}>{item.date}</Text>
+              </View>
+              <View
+                style={[
+                  styles.historyBadge,
+                  item.status === 'completed'
+                    ? styles.completedBadge
+                    : item.status === 'pending'
+                    ? styles.pendingBadge
+                    : styles.failedBadge,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.historyBadgeText,
+                    item.status === 'failed' && styles.failedBadgeText,
+                  ]}
+                >
+                  {item.status}
+                </Text>
+              </View>
+            </View>
+            {/* <Text style={styles.historyDetails}>{item.details}</Text> */}
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );
@@ -178,5 +246,86 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#2C2C2C',
     paddingHorizontal: 6,
+  },
+  historyHeader: {
+    marginTop: 32,
+    marginBottom: 12,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#122C27',
+    marginBottom: 4,
+  },
+  historySubtitle: {
+    color: '#5C5C5C',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  historyList: {
+    marginBottom: 20,
+  },
+  historyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#E8F5ED',
+  },
+  historyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
+  historyTextBlock: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  historyName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#122C27',
+  },
+  historyDate: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#7C8B88',
+  },
+  historyDetails: {
+    color: '#5C5C5C',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  historyBadge: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    minWidth: 90,
+    alignItems: 'center',
+  },
+  historyBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#13775A',
+    textTransform: 'capitalize',
+  },
+  completedBadge: {
+    backgroundColor: '#E3F8EE',
+  },
+  pendingBadge: {
+    backgroundColor: '#FEF6E5',
+  },
+  failedBadge: {
+    backgroundColor: '#F9E8E8',
+  },
+  failedBadgeText: {
+    color: '#C62828',
   },
 });

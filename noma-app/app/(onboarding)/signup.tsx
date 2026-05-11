@@ -12,8 +12,11 @@ import {
   FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { register } from "@/src/api/auth.api";
+import { setAuthToken } from "@/src/api/client";
+import { setUserData } from "@/src/hooks/useAuth";
 
 const COLORS = {
   primary: "#16A34A",
@@ -40,6 +43,7 @@ const SignupScreen = () => {
     password: "",
     role: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
@@ -91,6 +95,10 @@ const SignupScreen = () => {
       });
 
       if (response.token) {
+        await setAuthToken(response.token);
+        if (response.user) {
+          await setUserData(response.user);
+        }
         Alert.alert("Success", "Account created successfully!");
         await completeOnboarding();
         router.replace("/(tabs)");
@@ -177,18 +185,34 @@ const SignupScreen = () => {
           {/* Password Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={[
-                styles.input,
-                errors.password && styles.inputError,
-              ]}
-              placeholder="••••••••"
-              placeholderTextColor={COLORS.textLight}
-              secureTextEntry
-              value={formData.password}
-              onChangeText={(text) => handleInputChange("password", text)}
-              editable={!loading}
-            />
+            <View style={[
+              styles.passwordInputWrapper,
+              errors.password && styles.inputError,
+            ]}>
+              <TextInput
+                style={[
+                  styles.input,
+                  { flex: 1, borderWidth: 0 },
+                ]}
+                placeholder="••••••••"
+                placeholderTextColor={COLORS.textLight}
+                secureTextEntry={!showPassword}
+                value={formData.password}
+                onChangeText={(text) => handleInputChange("password", text)}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+                disabled={loading}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color={COLORS.textLight}
+                />
+              </TouchableOpacity>
+            </View>
             {errors.password && (
               <Text style={styles.errorText}>{errors.password}</Text>
             )}
@@ -345,6 +369,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textDark,
     backgroundColor: COLORS.white,
+  },
+  passwordInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    backgroundColor: COLORS.white,
+  },
+  eyeIcon: {
+    paddingHorizontal: 12,
   },
   inputError: {
     borderColor: COLORS.error,

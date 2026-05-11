@@ -7,315 +7,510 @@ import {
   Modal,
   Image,
   StyleSheet,
-  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-interface Post {
+interface Agent {
   id: string;
   name: string;
-  role: string;
-  time: string;
   title: string;
-  description: string;
-  likes: number;
-  comments: number;
-  type: "question" | "discussion";
+  region: string;
+  availability: "online" | "offline";
+  expertise: string;
+  rating: number;
+  responseTime: string;
   image?: any;
 }
 
-const posts: Post[] = [
+const agents: Agent[] = [
   {
     id: "1",
-    name: "Mahadi Yusuf",
-    role: "Farmer",
-    time: "2 hours ago",
-    title: "Help! My tomato leaves are turning yellow",
-    description:
-      "I noticed my tomato plants have yellow leaves starting from the bottom...",
-    likes: 12,
-    comments: 8,
-    type: "question",
+    name: "Dr. Amina Bello",
+    title: "Senior Agronomist",
+    region: "Northern Nigeria",
+    availability: "online",
+    expertise: "Crop nutrition, disease diagnosis, soil health",
+    rating: 4.9,
+    responseTime: "5 min",
     image: require("../../assets/6.jpg"),
   },
   {
     id: "2",
-    name: "Aliyu Ishaq",
-    role: "Expert",
-    time: "4 hours ago",
-    title: "Best organic pest control methods for corn",
-    description:
-      "I want to share some effective organic methods I have been using...",
-    likes: 24,
-    comments: 15,
-    type: "discussion",
+    name: "Mr. Ibrahim Musa",
+    title: "Extension Agent",
+    region: "Kano State",
+    availability: "online",
+    expertise: "Pest control, irrigation advice, field visits",
+    rating: 4.7,
+    responseTime: "8 min",
+    image: require("../../assets/2.jpg"),
   },
   {
     id: "3",
-    name: "Mariyatu Hayatu",
-    role: "Farmer",
-    time: "6 hours ago",
-    title: "When is the best time to harvest wheat?",
-    description:
-      "My wheat crop is approaching maturity and I want to make sure...",
-    likes: 18,
-    comments: 12,
-    type: "question",
-    image: require("../../assets/2.jpg"),
+    name: "Mrs. Zainab Abdullahi",
+    title: "Crop Protection Specialist",
+    region: "Kaduna",
+    availability: "offline",
+    expertise: "Fertilizer planning, resistant varieties, pest scouting",
+    rating: 4.8,
+    responseTime: "20 min",
+    image: require("../../assets/avatar.jpg"),
   },
 ];
 
 export default function CommunityForumScreen() {
-  const [activeTab, setActiveTab] = useState<"All Posts" | "Questions" | "Discussions">("All Posts");
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
-  const filteredPosts =
-    activeTab === "All Posts"
-      ? posts
-      : posts.filter((post) => post.type === activeTab.toLowerCase());
+  const renderHeader = () => (
+    <>
+      <View style={styles.pageHeader}>
+        <Text style={styles.title}>Connect with a real agronomist</Text>
+        <Text style={styles.subtitle}>
+          The AI result confidence was low, so we’ve routed you to trusted
+          experts for a clearer recommendation.
+        </Text>
+      </View>
+
+      <View style={styles.infoBanner}>
+        <Ionicons name="alert-circle-outline" size={24} color="#1F6E8C" />
+        <View style={styles.infoTextWrap}>
+          <Text style={styles.infoTitle}>Low confidence detected</Text>
+          <Text style={styles.infoDescription}>
+            Chat with an agronomist or extension agent to verify the result and
+            get practical next steps.
+          </Text>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Available agents</Text>
+    </>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      {/* <View style={styles.header}>
-        <Ionicons name="arrow-back" size={22} color="#000" />
-        <Text style={styles.headerTitle}>Community Forum</Text>
-        <Ionicons name="add" size={24} color="#000" />
-      </View> */}
-
-      {/* Tabs */}
-      <View style={styles.tabs}>
-        {["All Posts", "Questions", "Discussions"].map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab as typeof activeTab)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText,
-              ]}
-            >
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Stats */}
-      {/* <View style={styles.stats}>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>127</Text>
-          <Text style={styles.statLabel}>Total Posts</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>89</Text>
-          <Text style={styles.statLabel}>Questions</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>38</Text>
-          <Text style={styles.statLabel}>Discussions</Text>
-        </View>
-      </View> */}
-
-      {/* Posts */}
       <FlatList
-        data={filteredPosts}
+        data={agents}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        ListHeaderComponentStyle={styles.listHeader}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Image
-                source={require("../../assets/avatar.jpg")}
-                style={styles.avatar}
-              />
-              <View>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.role}>
-                  {item.role} • {item.time}
-                </Text>
+          <TouchableOpacity
+            style={styles.agentCard}
+            activeOpacity={0.92}
+            onPress={() => setSelectedAgent(item)}
+          >
+            <View style={styles.agentAccent} />
+            <View style={styles.agentRow}>
+              <Image source={item.image} style={styles.agentAvatar} />
+              <View style={styles.agentMeta}>
+                <Text style={styles.agentName}>{item.name}</Text>
+                <Text style={styles.agentTitle}>{item.title}</Text>
+                <Text style={styles.agentRegion}>{item.region}</Text>
               </View>
-            </View>
-
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.desc}>{item.description}</Text>
-
-            {item.image && (
-              <Image source={item.image} style={styles.postImage} />
-            )}
-
-            <View style={styles.footer}>
-              <View style={{ flexDirection: "row", gap: 12 }}>
-                <Text>❤️ {item.likes}</Text>
-                <Text>💬 {item.comments}</Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={[
+                  styles.statusBadge,
+                  item.availability === "online"
+                    ? styles.statusActive
+                    : styles.statusOffline,
+                ]}
+              >
                 <View
                   style={[
-                    styles.tag,
-                    {
-                      backgroundColor:
-                        item.type === "question" ? "#FFE7C2" : "#E6D9FF",
-                    },
+                    styles.statusDot,
+                    item.availability === "online"
+                      ? styles.statusDotActive
+                      : styles.statusDotOffline,
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.statusText,
+                    item.availability === "online"
+                      ? styles.statusTextActive
+                      : styles.statusTextOffline,
                   ]}
                 >
-                  <Text
-                    style={{
-                      color:
-                        item.type === "question" ? "#E6A047" : "#7B5DD6",
-                      fontSize: 12,
-                    }}
-                  >
-                    {item.type}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => setSelectedPost(item)}>
-                  <Text style={styles.viewPost}>View Post</Text>
-                </TouchableOpacity>
+                  {item.availability === "online" ? "Active" : "Offline"}
+                </Text>
               </View>
             </View>
-          </View>
+
+            <View style={styles.agentInfoRow}>
+              <View style={styles.agentInfoBlock}>
+                <Text style={styles.infoLabel}>Expertise</Text>
+                <Text style={styles.infoValue}>{item.expertise}</Text>
+              </View>
+              <View style={styles.agentInfoBlock}>
+                <Text style={styles.infoLabel}>Response</Text>
+                <Text style={styles.infoValue}>{item.responseTime}</Text>
+              </View>
+              <View style={styles.agentInfoBlock}>
+                <Text style={styles.infoLabel}>Rating</Text>
+                <Text style={styles.infoValue}>{item.rating.toFixed(1)} ★</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardActionRow}>
+              <TouchableOpacity
+                style={
+                  item.availability === "online"
+                    ? styles.primaryButton
+                    : styles.secondaryButton
+                }
+                onPress={() => setSelectedAgent(item)}
+              >
+                <Text
+                  style={
+                    item.availability === "online"
+                      ? styles.primaryButtonText
+                      : styles.secondaryButtonText
+                  }
+                >
+                  {item.availability === "online" ? "Start chat" : "Request callback"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         )}
-        contentContainerStyle={{ paddingBottom: 100 }}
       />
 
-      {/* Floating + Button */}
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
-
-      {/* Modal */}
-      <Modal visible={!!selectedPost} animationType="slide" transparent>
-        {selectedPost && (
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <ScrollView>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Forum Post</Text>
-                  <TouchableOpacity onPress={() => setSelectedPost(null)}>
-                    <Ionicons name="close" size={24} color="#000" />
-                  </TouchableOpacity>
-                </View>
-
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginTop: 10,
-                  }}
-                >
-                  <Image
-                    source={require("../../assets/avatar.jpg")}
-                    style={styles.avatar}
-                  />
-                  <View>
-                    <Text style={styles.name}>{selectedPost.name}</Text>
-                    <Text style={styles.role}>
-                      {selectedPost.role} • {selectedPost.time}
-                    </Text>
-                  </View>
-                </View>
-
-                <Text style={styles.title}>{selectedPost.title}</Text>
-                <Text style={styles.desc}>
-                  My wheat crop is approaching maturity and I want to make sure
-                  I harvest at the optimal time. What signs should I look for to
-                  determine the perfect harvest timing?
-                </Text>
-
-                {selectedPost.image && (
-                  <Image
-                    source={selectedPost.image}
-                    style={[styles.postImage, { marginTop: 10 }]}
-                  />
-                )}
-
-                <Text style={styles.recentReplies}>Recent Replies</Text>
-                <View style={styles.replyBox}>
-                  <Text style={styles.replyName}>
-                    Dr. Amanda Foster <Text style={styles.expertTag}>Expert</Text>
-                  </Text>
-                  <Text style={styles.replyTime}>5 hours ago</Text>
-                  <Text style={styles.replyText}>
-                    Look for the grain moisture content to be around 13–15%.
-                    Wheat heads should be golden and grains firm when pressed
-                    with a fingernail.
-                  </Text>
-                </View>
-
-                <View style={styles.modalButtons}>
-                  <TouchableOpacity style={styles.replyButton}>
-                    <Text style={{ color: "#fff" }}>Reply to Post</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.shareButton}>
-                    <Text>Share Post</Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
+      <Modal visible={!!selectedAgent} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{selectedAgent?.name}</Text>
+              <TouchableOpacity onPress={() => setSelectedAgent(null)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
             </View>
+
+            <Text style={styles.modalSubtitle}>{selectedAgent?.title}</Text>
+            <View style={styles.modalStatusRow}>
+              <View
+                style={[
+                  styles.statusBadge,
+                  selectedAgent?.availability === "online"
+                    ? styles.statusActive
+                    : styles.statusOffline,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.statusDot,
+                    selectedAgent?.availability === "online"
+                      ? styles.statusDotActive
+                      : styles.statusDotOffline,
+                  ]}
+                />
+                <Text
+                  style={
+                    selectedAgent?.availability === "online"
+                      ? styles.statusTextActive
+                      : styles.statusTextOffline
+                  }
+                >
+                  {selectedAgent?.availability === "online" ? "Active now" : "Offline"}
+                </Text>
+              </View>
+              <Text style={styles.modalResponse}>Avg reply {selectedAgent?.responseTime}</Text>
+            </View>
+
+            <Text style={styles.modalSectionTitle}>Why chat with this agent?</Text>
+            <Text style={styles.modalBody}>
+              This expert can verify unclear AI results, recommend the best next
+              steps for your farm, and share practical advice on disease control,
+              soil health, or fertilizer planning.
+            </Text>
+
+            <TouchableOpacity style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Connect now</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setSelectedAgent(null)}
+            >
+              <Text style={styles.modalCancelText}>Choose another expert</Text>
+            </TouchableOpacity>
           </View>
-        )}
+        </View>
       </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5FBF7", paddingHorizontal: 16 },
-  header: {
+  container: {
+    flex: 1,
+    backgroundColor: "#EFF7F4",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  pageHeader: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#16A34A",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#475058",
+    lineHeight: 22,
+  },
+  infoBanner: {
+    backgroundColor: "#DFF3F0",
+    borderRadius: 18,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  infoTextWrap: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#122C27",
+    marginBottom: 4,
+  },
+  infoDescription: {
+    fontSize: 14,
+    color: "#35645A",
+    lineHeight: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#122C27",
+    marginBottom: 16,
+  },
+  listHeader: {
+    paddingBottom: 16,
+  },
+  listContent: {
+    paddingBottom: 28,
+  },
+  agentCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#E6EEEB",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 18,
+    elevation: 2,
+  },
+  agentAccent: {
+    width: 46,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#16A34A",
+    marginBottom: 12,
+  },
+  agentRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
+    marginBottom: 12,
   },
-  headerTitle: { fontSize: 20, fontWeight: "600" },
-  tabs: { flexDirection: "row", justifyContent: "space-around", marginVertical: 10 },
-  tab: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, backgroundColor: "#E5E5E5" },
-  activeTab: { backgroundColor: "#00A86B" },
-  tabText: { color: "#000", fontWeight: "500" },
-  activeTabText: { color: "#fff" },
-  stats: { flexDirection: "row", justifyContent: "space-around", marginVertical: 10 },
-  statBox: { backgroundColor: "#fff", padding: 15, borderRadius: 12, alignItems: "center" },
-  statNumber: { fontSize: 20, fontWeight: "700" },
-  statLabel: { color: "#555" },
-  card: { backgroundColor: "#fff", padding: 15, borderRadius: 12, marginVertical: 8 },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
-  name: { fontWeight: "600", fontSize: 15 },
-  role: { color: "#666" },
-  title: { fontWeight: "700", marginTop: 5 },
-  desc: { color: "#555", marginVertical: 5 },
-  postImage: { width: "100%", height: 180, borderRadius: 12, marginVertical: 8 },
-  footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  tag: { borderRadius: 12, paddingVertical: 2, paddingHorizontal: 8, marginRight: 10 },
-  viewPost: { color: "#16A34A", fontWeight: "600" },
-  fab: {
-    position: "absolute",
-    bottom: 25,
-    right: 25,
-    backgroundColor: "#16A34A",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  agentAvatar: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    marginRight: 14,
+  },
+  agentMeta: {
+    flex: 1,
+  },
+  agentName: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#122C27",
+  },
+  agentTitle: {
+    fontSize: 12,
+    color: "#556A67",
+    marginTop: 2,
+  },
+  agentRegion: {
+    fontSize: 11,
+    color: "#7C8B88",
+    marginTop: 2,
+  },
+  statusBadge: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
-  modalContainer: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center" },
-  modalContent: { backgroundColor: "#fff", margin: 20, borderRadius: 20, padding: 20, maxHeight: "85%" },
-  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  modalTitle: { fontSize: 18, fontWeight: "700" },
-  recentReplies: { marginTop: 20, fontWeight: "700", fontSize: 16 },
-  replyBox: { backgroundColor: "#F7F7F7", borderRadius: 12, padding: 12, marginTop: 10 },
-  replyName: { fontWeight: "600" },
-  expertTag: { color: "#7B5DD6", fontSize: 12 },
-  replyTime: { color: "#888", fontSize: 12 },
-  replyText: { marginTop: 5, color: "#333" },
-  modalButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
-  replyButton: { backgroundColor: "#16A34A", padding: 12, borderRadius: 10, width: "48%", alignItems: "center" },
-  shareButton: { borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 10, width: "48%", alignItems: "center" },
+  statusActive: {
+    backgroundColor: "#E5F8F1",
+  },
+  statusOffline: {
+    backgroundColor: "#F3F3F5",
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  statusDotActive: {
+    backgroundColor: "#17A663",
+  },
+  statusDotOffline: {
+    backgroundColor: "#8A8D94",
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  statusTextActive: {
+    color: "#13775A",
+  },
+  statusTextOffline: {
+    color: "#5A5B69",
+  },
+  agentInfoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: "#EEF2F1",
+    paddingTop: 14,
+  },
+  agentInfoBlock: {
+    width: "30%",
+  },
+  infoLabel: {
+    fontSize: 11,
+    color: "#7F918E",
+    marginBottom: 3,
+  },
+  infoValue: {
+    fontSize: 13,
+    color: "#183C35",
+    lineHeight: 18,
+  },
+  cardActionRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  primaryButton: {
+    backgroundColor: "#16A34A",
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    minWidth: 112,
+    alignItems: "center",
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: "#C3C8CA",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+  },
+  primaryButtonText: {
+    color: "#FFF",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  secondaryButtonText: {
+    color: "#4E5B5A",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "flex-end",
+  },
+  modalSheet: {
+    backgroundColor: "#FFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 28,
+  },
+  modalHandle: {
+    width: 56,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#D9D9D9",
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#122C27",
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: "#556A67",
+    marginBottom: 14,
+  },
+  modalStatusRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalResponse: {
+    fontSize: 13,
+    color: "#5A6562",
+  },
+  modalSectionTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#16322F",
+    marginBottom: 8,
+  },
+  modalBody: {
+    fontSize: 14,
+    color: "#4E5B5A",
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  modalButton: {
+    backgroundColor: "#138A69",
+    borderRadius: 16,
+    paddingVertical: 15,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  modalButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  modalCancelButton: {
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  modalCancelText: {
+    color: "#4E5B5A",
+    fontSize: 14,
+    fontWeight: "700",
+  },
 });
