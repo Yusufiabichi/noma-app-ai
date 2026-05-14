@@ -22,7 +22,7 @@ import client from '@/src/api/client';
 import * as localScanService from '@/src/services/localScanService';
 import { isOnline } from '@/src/utils/network';
 import logger from '@/src/utils/logger';
-
+import { createScan } from '@/src/api/scans.api'
 
 export default function CropScan() {
   const router = useRouter();
@@ -111,29 +111,36 @@ export default function CropScan() {
       formData.append('cropType', cropType);
 
       // Call AI inference endpoint
-      const response = await client.uploadFile('/infer', formData);
+//       const response = await client.uploadFile('/infer', formData);
+      const response = await createScan(formData);
       
-      logger.info('AI inference successful', { disease: response.disease });
+      logger.info('Scan API successful', { disease: response.disease });
 
       // Navigate to treatment recommendations with results
-      router.replace({
-        pathname: './treatment-rec',
-        params: {
-          scanResult: JSON.stringify({
-            disease: response.disease,
-            cropType: response.cropType || cropType,
-            confidence: response.confidence,
-            severity: response.severity,
-            recommendations: response.recommendations,
-            futurePrevention: response.futurePrevention,
-            language,
-            isOnline: true,
-            scanId: response.scan_id,
-          }),
-        },
-      });
+//       router.replace({
+//         pathname: './treatment-rec',
+//         params: {
+//           scanResult: JSON.stringify({
+//             disease: response.disease,
+//             cropType: response.cropType || cropType,
+//             confidence: response.confidence,
+//             severity: response.severity,
+//             recommendations: response.recommendations,
+//             futurePrevention: response.futurePrevention,
+//             language,
+//             isOnline: true,
+//             scanId: response.scan_id,
+//           }),
+//         },
+//       });
     } catch (error) {
-      logger.error('Online scan processing failed', error);
+//       logger.error('Online scan processing failed', error);
+      logger.error("FULL ERROR:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        stack: error.stack,
+      });
       throw error;
     }
   }

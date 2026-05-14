@@ -22,10 +22,10 @@ app.add_middleware(
     allow_headers=["*"],
 ) 
 
-MODEL = tf.keras.models.load_model("NomaApp_v1.h5")
+MODEL = tf.keras.models.load_model("NomaApp_v2.h5")
 
 CLASS_NAMES = ['Maize_Blight', 'Maize_Common_Rust', 'Maize_Gray_Leaf_Spot',
-                'Maize_Healthy', 'Rice_Bacterial_leaf_blight',
+                'Maize_Healthy', 'rice_bacterial_leaf_blight',
                   'Rice_Brown_spot', 'Rice_Leaf_smut',
                     'bean_angular_leaf_spot', 
                     'bean_healthy', 'bean_rust']

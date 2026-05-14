@@ -12,7 +12,8 @@
  */
 
 import client from './client';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
+import { useLanguage } from '@/src/context/LanguageContext';
 
 /**
  * Create a new scan with image upload
@@ -26,7 +27,7 @@ import * as FileSystem from 'expo-file-system';
  * @returns {Promise<{scan: Object}>}
  */
 export const createScan = async (scanData, onProgress = null) => {
-  const { imageUri, farmId, cropType, symptoms, notes } = scanData;
+  const { imageUri, cropType, language } = scanData;
   
   // Create form data for multipart upload
   const formData = new FormData();
@@ -46,11 +47,10 @@ export const createScan = async (scanData, onProgress = null) => {
   });
   
   // Append other fields
-  if (farmId) formData.append('farmId', farmId);
+//  if (farmId) formData.append('farmId', farmId);
   if (cropType) formData.append('cropType', cropType);
-  if (symptoms) formData.append('symptoms', symptoms);
-  if (notes) formData.append('notes', notes);
-  
+//  if (notes) formData.append('notes', notes);
+
   const response = await client.uploadFile('/scans', formData, onProgress);
   return response.data;
 };
