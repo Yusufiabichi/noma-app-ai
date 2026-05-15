@@ -107,7 +107,7 @@ export default function CropScan() {
         uri: imageUri,
         name: `scan-${Date.now()}.jpg`,
         type: 'image/jpeg',
-      });
+      } as any);
       formData.append('cropType', cropType);
 
       // Call AI inference endpoint
@@ -172,7 +172,7 @@ export default function CropScan() {
           }),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Offline scan processing failed', error);
       throw error;
     }

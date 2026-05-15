@@ -157,9 +157,7 @@ const SignupScreen = () => {
               onChangeText={(text) => handleInputChange("name", text)}
               editable={!loading}
             />
-            {errors.name && (
-              <Text style={styles.errorText}>{errors.name}</Text>
-            )}
+
           </View>
 
           {/* Phone Input */}
@@ -242,6 +240,7 @@ const SignupScreen = () => {
             {errors.role && (
               <Text style={styles.errorText}>{errors.role}</Text>
             )}
+
           </View>
 
           {/* Role Modal */}
@@ -277,6 +276,9 @@ const SignupScreen = () => {
                   <Text style={styles.modalCloseButtonText}>Close</Text>
                 </TouchableOpacity>
               </View>
+              {errors.name && (
+                <Text style={styles.errorText}>{errors.name}</Text>
+              )}
             </View>
           </Modal>
 

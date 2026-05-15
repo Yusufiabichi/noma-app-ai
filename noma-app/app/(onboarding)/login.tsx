@@ -97,7 +97,7 @@ const LoginScreen = () => {
         <View style={styles.header}>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>
-            Sign in to continue to your farm
+            Sign in to continue to your NomaApp account
           </Text>
         </View>
 
@@ -141,6 +141,7 @@ const LoginScreen = () => {
                   errors.password && { color: COLORS.error },
                 ]}
                 placeholder="••••••••"
+//                 keyboardType="phone-pad"
                 placeholderTextColor={COLORS.textLight}
                 secureTextEntry={!showPassword}
                 value={password}

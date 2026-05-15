@@ -55,7 +55,7 @@ export default function HomeScreen() {
 
       {/* Scan Button */}
       <TouchableOpacity style={styles.scanButton}
-        onPress={()=> router.push("../crop-scan")}
+        onPress={()=> router.push("/cropscan")}
       >
         <FontAwesome name="camera" size={20} color="#fff" />
         <Text style={styles.scanText}>
@@ -66,7 +66,7 @@ export default function HomeScreen() {
       {/* Quick Options */}
       <View style={styles.cardRow}>
         <TouchableOpacity style={styles.card}
-        onPress={()=> router.push("../fertilizer-advice")}>
+        onPress={()=> router.push("/fertilizer-advice")}>
           <MaterialCommunityIcons name="spray-bottle" size={30} color="#16A34A" />
           <Text style={styles.cardText}>
             {language==="english" ? Data.en.home.cards_text[0] : Data.ha.home.cards_text[0]}
@@ -74,7 +74,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.card}
-        onPress={()=> router.push("../disease-guide")}>
+        onPress={()=> router.push("/disease-guide")}>
           <MaterialIcons name="pest-control" size={30} color="#c62828" />
           <Text style={styles.cardText}>
             {language==="english" ? Data.en.home.cards_text[1] : Data.ha.home.cards_text[1]}
@@ -82,7 +82,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.card}
-        onPress={()=> router.push("../farming-tips")}>
+        onPress={()=> router.push("/farming-tips")}>
           <FontAwesome5 name="leaf" size={28} color="#1a73e8" />
           <Text style={styles.cardText}>
             {language==="english" ? Data.en.home.cards_text[2]: Data.ha.home.cards_text[2]}
