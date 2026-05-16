@@ -12,8 +12,6 @@
  */
 
 import client from './client';
-import * as FileSystem from 'expo-file-system/legacy';
-import { useLanguage } from '@/src/context/LanguageContext';
 
 /**
  * Create a new scan with image upload
@@ -21,8 +19,7 @@ import { useLanguage } from '@/src/context/LanguageContext';
  * @param {string} scanData.imageUri - Local URI of the image
  * @param {string} [scanData.farmId] - Associated farm ID
  * @param {string} [scanData.cropType] - Type of crop
- * @param {string} [scanData.symptoms] - Observed symptoms
- * @param {string} [scanData.notes] - Additional notes
+ * @param {string} [scanData.language] - Language for recommendations
  * @param {Function} [onProgress] - Upload progress callback
  * @returns {Promise<{scan: Object}>}
  */
@@ -30,14 +27,12 @@ export const createScan = async (scanData, onProgress = null) => {
   const { imageUri, cropType, language } = scanData;
   
   // Create form data for multipart upload
-  const formData = new FormData();
-  
-  // Get file info
-  const fileInfo = await FileSystem.getInfoAsync(imageUri);
   const fileName = imageUri.split('/').pop();
   const fileType = fileName.toLowerCase().endsWith('.png') 
     ? 'image/png' 
     : 'image/jpeg';
+
+  const formData = new FormData();
   
   // Append image file
   formData.append('image', {
@@ -46,13 +41,11 @@ export const createScan = async (scanData, onProgress = null) => {
     type: fileType,
   });
   
-  // Append other fields
-//  if (farmId) formData.append('farmId', farmId);
   if (cropType) formData.append('cropType', cropType);
-//  if (notes) formData.append('notes', notes);
+  if (language) formData.append('language', language);
 
   const response = await client.uploadFile('/scans', formData, onProgress);
-  return response.data;
+  return response;
 };
 
 /**
@@ -68,8 +61,8 @@ export const createScan = async (scanData, onProgress = null) => {
 export const getScans = async (params = {}) => {
   const response = await client.get('/scans', { params });
   return {
-    scans: response.data,
-    pagination: response.pagination,
+    scans: response,
+    pagination: response?.pagination,
   };
 };
 
@@ -79,7 +72,7 @@ export const getScans = async (params = {}) => {
  */
 export const getScanStats = async () => {
   const response = await client.get('/scans/stats');
-  return response.data;
+  return response;
 };
 
 /**
@@ -89,7 +82,7 @@ export const getScanStats = async () => {
  */
 export const getScanById = async (scanId) => {
   const response = await client.get(`/scans/${scanId}`);
-  return response.data;
+  return response;
 };
 
 /**
@@ -99,7 +92,7 @@ export const getScanById = async (scanId) => {
  */
 export const retryScanDiagnosis = async (scanId) => {
   const response = await client.post(`/scans/${scanId}/retry`);
-  return response.data;
+  return response;
 };
 
 /**
@@ -109,7 +102,7 @@ export const retryScanDiagnosis = async (scanId) => {
  */
 export const deleteScan = async (scanId) => {
   const response = await client.del(`/scans/${scanId}`);
-  return response.data;
+  return response;
 };
 
 export default {

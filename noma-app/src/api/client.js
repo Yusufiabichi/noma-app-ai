@@ -215,7 +215,7 @@ export const del = async (url, config = {}) => {
 export const uploadFile = async (url, formData, onProgress = null) => {
   const config = {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'undefined',
     },
   };
   

@@ -35,7 +35,7 @@ export default function CropScan() {
   const [photo, setPhoto] = useState<CameraCapturedPicture | { uri: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const crop_type = ['tomato', 'rice', 'beans', 'yam', 'other'];
+  const crop_type = ['tomato', 'rice', 'beans', 'maize', 'other'];
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
 
   useEffect(() => {
@@ -101,40 +101,33 @@ export default function CropScan() {
         { text: 'Dismiss', onPress: () => {} }
       ], { cancelable: false });
 
-      // Create form data with image
-      const formData = new FormData();
-      formData.append('image', {
-        uri: imageUri,
-        name: `scan-${Date.now()}.jpg`,
-        type: 'image/jpeg',
-      } as any);
-      formData.append('cropType', cropType);
-
       // Call AI inference endpoint
-//       const response = await client.uploadFile('/infer', formData);
-      const response = await createScan(formData);
+      const response = await createScan({
+        imageUri,
+        cropType,
+        language
+      });
       
       logger.info('Scan API successful', { disease: response.disease });
 
       // Navigate to treatment recommendations with results
-//       router.replace({
-//         pathname: './treatment-rec',
-//         params: {
-//           scanResult: JSON.stringify({
-//             disease: response.disease,
-//             cropType: response.cropType || cropType,
-//             confidence: response.confidence,
-//             severity: response.severity,
-//             recommendations: response.recommendations,
-//             futurePrevention: response.futurePrevention,
-//             language,
-//             isOnline: true,
-//             scanId: response.scan_id,
-//           }),
-//         },
-//       });
+      router.replace({
+        pathname: './treatment-rec',
+        params: {
+          scanResult: JSON.stringify({
+            disease: response.disease,
+            cropType: response.cropType || cropType,
+            confidence: response.confidence,
+            severity: response.severity,
+            recommendations: response.recommendations,
+            futurePrevention: response.futurePrevention,
+            language,
+            isOnline: true,
+            scanId: response.scan_id,
+          }),
+        },
+      });
     } catch (error) {
-//       logger.error('Online scan processing failed', error);
       logger.error("FULL ERROR:", {
         message: error.message,
         response: error.response?.data,
