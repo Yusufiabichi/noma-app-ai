@@ -27,6 +27,7 @@ import { createScan } from '@/src/api/scans.api'
 export default function CropScan() {
   const router = useRouter();
   const { language } = useLanguage();
+  const languageCode = language === 'hausa' ? 'ha' : 'en';
   const { user } = useAuth();
   const cameraRef = useRef<any>(null);
   const [permission, requestPermission] = useCameraPermissions();
@@ -96,18 +97,20 @@ export default function CropScan() {
 
   async function processScanOnline(imageUri: string, cropType: string) {
     try {
-      // Show loading
-      Alert.alert('Processing', 'Scanning image and analyzing...', [
-        { text: 'Dismiss', onPress: () => {} }
-      ], { cancelable: false });
+      // Show loading (optional: could use a more non-intrusive UI)
+      // Alert.alert('Processing', 'Scanning image and analyzing...', [], { cancelable: false });
 
       // Call AI inference endpoint
       const response = await createScan({
         imageUri,
         cropType,
-        language
+        language: languageCode,
       });
       
+      if (!response) {
+        throw new Error('Received empty response from server');
+      }
+
       logger.info('Scan API successful', { disease: response.disease });
 
       // Navigate to treatment recommendations with results
@@ -127,12 +130,11 @@ export default function CropScan() {
           }),
         },
       });
-    } catch (error) {
-      logger.error("FULL ERROR:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        stack: error.stack,
+    } catch (error: any) {
+      logger.error("Scan processing failed", {
+        message: error.message || 'Unknown error',
+        code: error.code,
+        status: error.statusCode,
       });
       throw error;
     }

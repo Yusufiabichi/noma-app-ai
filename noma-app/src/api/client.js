@@ -151,7 +151,14 @@ apiClient.interceptors.response.use(
       error.response?.status || 0,
       duration
     );
-    
+
+    if (!error.response) {
+      logger.error('Network Error: No response received. Check if the server is running and the API_BASE_URL is correct.', {
+        url: error.config?.url,
+        baseUrl: error.config?.baseURL,
+      });
+    }
+
     // Handle token expiration
     if (error.response?.status === 401) {
       const errorCode = error.response?.data?.error?.code;
@@ -215,7 +222,7 @@ export const del = async (url, config = {}) => {
 export const uploadFile = async (url, formData, onProgress = null) => {
   const config = {
     headers: {
-      'Content-Type': 'undefined',
+      'Content-Type': 'multipart/form-data',
     },
   };
   
