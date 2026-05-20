@@ -23,6 +23,7 @@ import * as localScanService from '@/src/services/localScanService';
 import { isOnline } from '@/src/utils/network';
 import logger from '@/src/utils/logger';
 import { createScan } from '@/src/api/scans.api'
+import {pollUntilDiagnosed } from '@/src/utils/pollScan'
 
 export default function CropScan() {
   const router = useRouter();
@@ -38,6 +39,8 @@ export default function CropScan() {
   const [isProcessing, setIsProcessing] = useState(false);
   const crop_type = ['tomato', 'rice', 'beans', 'maize', 'other'];
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
+  const [processingStep, setProcessingStep] = useState<'uploading' | 'analyzing' | null>(null);
+
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -67,6 +70,14 @@ export default function CropScan() {
     if (!selectedCrop) {
       Alert.alert('Error', 'Please select a crop type');
       return;
+    }
+
+    setProcessingStep('uploading');
+    try {
+      await processScanOnline(photo.uri, selectedCrop);
+    } finally {
+      setProcessingStep(null);
+      setIsProcessing(false);
     }
 
     if (!photo?.uri) {
@@ -107,34 +118,46 @@ export default function CropScan() {
         language: languageCode,
       });
       
-      if (!response) {
+      if (!response.data?.scan) {
         throw new Error('Received empty response from server');
       }
 
-      logger.info('Scan API successful', { disease: response.disease });
+      const pendingScan = response.data.scan;
+      const scanId = pendingScan._id;
+
+      logger.info('Scan Created, waiting for diagnosis', { scanId });
+//       logger.info('Scan API successful', { disease: response.disease });
+
+      const diagnosedScan = await pollUntilDiagnosed(scanId);
+
+      logger.info('Diagnosis ready', {
+          scanId,
+          disease: diagnosedScan.diagnosis?.disease,
+      });
 
       // Navigate to treatment recommendations with results
       router.replace({
         pathname: './treatment-rec',
         params: {
           scanResult: JSON.stringify({
-            disease: response.disease,
-            cropType: response.cropType || cropType,
-            confidence: response.confidence,
-            severity: response.severity,
-            recommendations: response.recommendations,
-            futurePrevention: response.futurePrevention,
-            language,
+            disease: diagnosedScan.diagnosis?.disease,
+            cropType: diagnosedScan.cropType || cropType,
+            confidence: diagnosedScan.diagnosis?.confidence,
+            severity: diagnosedScan.diagnosis?.severity,
+            recommendations: diagnosedScan.diagnosis?.recommendations,
+            futurePrevention: diagnosedScan.diagnosis?.futurePrevention,
+            language: languageCode,
             isOnline: true,
-            scanId: response.scan_id,
+            scanId: diagnosedScan._id,
           }),
         },
       });
     } catch (error: any) {
-      logger.error("Scan processing failed", {
+      logger.error('Scan processing failed', {
         message: error.message || 'Unknown error',
         code: error.code,
-        status: error.statusCode,
+        retryable: error.retryable,
+        scanId: error.scanId,
       });
       throw error;
     }
@@ -364,7 +387,9 @@ export default function CropScan() {
               {isProcessing ? (
                 <>
                   <ActivityIndicator size="small" color="white" />
-                  <Text style={[styles.previewButtonPrimaryText, { marginLeft: 8 }]}>Processing...</Text>
+                  <Text style={[styles.previewButtonPrimaryText, { marginLeft: 8 }]}>
+                    {processingStep === 'uploading' ? 'Uploading...' : 'Analyzing crop...'}
+                  </Text>
                 </>
               ) : (
                 <>

@@ -82,7 +82,7 @@ export const getScanStats = async () => {
  */
 export const getScanById = async (scanId) => {
   const response = await client.get(`/scans/${scanId}`);
-  return response;
+  return response.data;
 };
 
 /**
