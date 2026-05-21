@@ -22,7 +22,15 @@ const formatLog = (level, message, data = null) => {
   const prefix = `[${timestamp}] [${level}]`;
   
   if (data) {
-    return `${prefix} ${message} ${JSON.stringify(data)}`;
+    let detail = data;
+    if (data instanceof Error) {
+      detail = {
+        message: data.message,
+        stack: data.stack,
+        ...data
+      };
+    }
+    return `${prefix} ${message} ${JSON.stringify(detail)}`;
   }
   return `${prefix} ${message}`;
 };

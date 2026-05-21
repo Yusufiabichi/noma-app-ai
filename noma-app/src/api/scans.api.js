@@ -71,8 +71,7 @@ export const getScans = async (params = {}) => {
  * @returns {Promise<{stats: Object}>}
  */
 export const getScanStats = async () => {
-  const response = await client.get('/scans/stats');
-  return response;
+  return await client.get('/scans/stats');
 };
 
 /**
@@ -81,8 +80,7 @@ export const getScanStats = async () => {
  * @returns {Promise<{scan: Object}>}
  */
 export const getScanById = async (scanId) => {
-  const response = await client.get(`/scans/${scanId}`);
-  return response.data;
+  return await client.get(`/scans/${scanId}`);
 };
 
 /**

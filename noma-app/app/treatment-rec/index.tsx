@@ -41,7 +41,19 @@ const TreatmentRecommendationScreen = () => {
     const loadScanResult = async () => {
       try {
         if (params.scanResult) {
-          const result = JSON.parse(params.scanResult as string);
+          let result: ScanResult;
+
+          if (typeof params.scanResult === 'string') {
+            try {
+              result = JSON.parse(params.scanResult);
+            } catch (e) {
+              logger.error('Failed to parse scanResult string', { value: params.scanResult });
+              throw new Error('Invalid scan result format');
+            }
+          } else {
+            result = params.scanResult as unknown as ScanResult;
+          }
+
           setScanResult(result);
           
           // If online and we have disease, try to get treatment data
@@ -57,16 +69,19 @@ const TreatmentRecommendationScreen = () => {
             setIsPending(true);
           }
         }
-      } catch (error) {
-        logger.error('Failed to load scan result', error);
-        Alert.alert('Error', 'Failed to load scan results');
+      } catch (error: any) {
+        logger.error('Failed to load scan result', {
+          message: error.message,
+          params: params.scanResult
+        });
+        Alert.alert('Error', 'Failed to load scan results: ' + (error.message || 'Unknown error'));
       } finally {
         setLoading(false);
       }
     };
 
     loadScanResult();
-  }, [params]);
+  }, [params.scanResult]);
 
   const handleSyncNow = async () => {
     if (!user?.id) {
@@ -131,6 +146,17 @@ const TreatmentRecommendationScreen = () => {
     );
   }
 
+  {scanResult?.isFallback && (
+    <View style={styles.fallbackBanner}>
+      <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
+      <Text style={styles.fallbackText}>
+        {language === 'ha'
+          ? 'Ba mu sami bayanan wannan cuta a cikin kundin mu ba. Muna bada shawarar tintubar Masana.'
+          : 'Specific data for this disease is not yet in our database. Showing general recommendations — consult an agronomist for targeted advice.'}
+      </Text>
+    </View>
+  )}
+
   // Pending analysis UI
   if (isPending || scanResult?.status === 'pending') {
     return (
@@ -146,7 +172,7 @@ const TreatmentRecommendationScreen = () => {
             </Text>
             <Text style={styles.pendingSubInfo}>
               {language === 'hausa' 
-                ? 'Jiya wayyo intaneciyin zuwa ta ci gaba da bincike.'
+                ? 'Hada wayarka da intanet don ci gaba da bincike.'
                 : 'Connect to the internet for immediate analysis, or analysis will proceed automatically when you are back online.'}
             </Text>
 
@@ -220,7 +246,7 @@ const TreatmentRecommendationScreen = () => {
             </Text>
           </View>
           <Text style={styles.issueTitle}>
-            {language === 'english' ? treatmentData?.name_en : treatmentData?.name_ha || scanResult.disease}
+            {scanResult?.name || scanResult?.disease}
           </Text>
           <Text style={styles.issueCrop}>Crop: {scanResult?.cropDetected || scanResult?.cropType}</Text>
           <Text style={styles.issueInfo}>
@@ -348,6 +374,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#b34b4b",
   },
+fallbackBanner: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  backgroundColor: '#fff8e1',
+  borderWidth: 1,
+  borderColor: '#ffe0b2',
+  borderRadius: 10,
+  padding: 12,
+  marginBottom: 16,
+  gap: 8,
+},
+fallbackText: {
+  flex: 1,
+  fontSize: 13,
+  color: '#7c4a00',
+  lineHeight: 18,
+},
   section: {
     marginBottom: 25,
   },

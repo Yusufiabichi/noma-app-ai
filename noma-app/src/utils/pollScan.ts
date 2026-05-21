@@ -24,7 +24,7 @@ export async function pollUntilDiagnosed(scanId: string) {
 
         const result = await getScanById(scanId);
         console.log('Poll raw result:', JSON.stringify(result, null, 2));
-        const scan = result?.scan;
+        const scan = result?.data?.scan || result?.scan;
 
         if (!scan) {
           clearInterval(interval);

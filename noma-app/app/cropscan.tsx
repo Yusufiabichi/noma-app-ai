@@ -72,93 +72,88 @@ export default function CropScan() {
       return;
     }
 
-    setProcessingStep('uploading');
-    try {
-      await processScanOnline(photo.uri, selectedCrop);
-    } finally {
-      setProcessingStep(null);
-      setIsProcessing(false);
-    }
-
     if (!photo?.uri) {
       Alert.alert('Error', 'No image selected');
       return;
     }
 
+    setProcessingStep('uploading');
     setIsProcessing(true);
+
     try {
       const online = await isOnline();
       
       if (online) {
-        // Online flow: Upload and process immediately
         logger.info('Device is online, processing scan immediately');
         await processScanOnline((photo as any).uri, selectedCrop);
       } else {
-        // Offline flow: Save locally and mark as pending
         logger.info('Device is offline, saving scan locally');
         await processScanOffline((photo as any).uri, selectedCrop);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error processing scan', error);
       Alert.alert('Error', error.message || 'Failed to process scan');
-    } finally {
+      // Reset processing state on error so user can try again
       setIsProcessing(false);
+      setProcessingStep(null);
     }
+    // Note: finally block removed to avoid resetting state if navigation is in progress
   }
 
   async function processScanOnline(imageUri: string, cropType: string) {
     try {
-      // Show loading (optional: could use a more non-intrusive UI)
-      // Alert.alert('Processing', 'Scanning image and analyzing...', [], { cancelable: false });
+      logger.info('Starting online scan upload...');
 
-      // Call AI inference endpoint
       const response = await createScan({
         imageUri,
         cropType,
         language: languageCode,
       });
       
-      if (!response.data?.scan) {
-        throw new Error('Received empty response from server');
+      logger.info('Upload complete. Response:', response);
+
+      const pendingScan = response?.data?.scan || response?.scan;
+
+      if (!pendingScan) {
+        throw new Error('Received empty response from server after upload');
       }
 
-      const pendingScan = response.data.scan;
       const scanId = pendingScan._id;
+      logger.info('Scan Created successfully', { scanId });
 
-      logger.info('Scan Created, waiting for diagnosis', { scanId });
-//       logger.info('Scan API successful', { disease: response.disease });
+      // SWITCH TO ANALYZING STATE
+      setProcessingStep('analyzing');
+      logger.info('State changed to: analyzing');
 
       const diagnosedScan = await pollUntilDiagnosed(scanId);
 
-      logger.info('Diagnosis ready', {
+      logger.info('Diagnosis complete!', {
           scanId,
-          disease: diagnosedScan.diagnosis?.disease,
+          disease: diagnosedScan.diagnosis?.disease || diagnosedScan.disease,
       });
 
-      // Navigate to treatment recommendations with results
+      // Prepare result for navigation
+      const resultData = {
+        disease:          diagnosedScan.diagnosis?.disease || diagnosedScan.disease,
+        name:             diagnosedScan.diagnosis?.name || diagnosedScan.name,
+        cropType:         diagnosedScan.cropType,
+        confidence:       diagnosedScan.diagnosis?.confidence || diagnosedScan.confidence,
+        severity:         diagnosedScan.diagnosis?.severity || diagnosedScan.severity,
+        recommendations:  diagnosedScan.diagnosis?.recommendations || diagnosedScan.recommendations || [],
+        futurePrevention: diagnosedScan.diagnosis?.futurePrevention || diagnosedScan.futurePrevention || [],
+        language:         diagnosedScan.diagnosis?.language || diagnosedScan.language || languageCode,
+        isOnline:         true,
+        scanId:           diagnosedScan._id,
+      };
+
       router.replace({
         pathname: './treatment-rec',
         params: {
-          scanResult: JSON.stringify({
-            disease: diagnosedScan.diagnosis?.disease,
-            cropType: diagnosedScan.cropType || cropType,
-            confidence: diagnosedScan.diagnosis?.confidence,
-            severity: diagnosedScan.diagnosis?.severity,
-            recommendations: diagnosedScan.diagnosis?.recommendations,
-            futurePrevention: diagnosedScan.diagnosis?.futurePrevention,
-            language: languageCode,
-            isOnline: true,
-            scanId: diagnosedScan._id,
-          }),
+          scanResult: JSON.stringify(resultData),
         },
       });
     } catch (error: any) {
-      logger.error('Scan processing failed', {
-        message: error.message || 'Unknown error',
-        code: error.code,
-        retryable: error.retryable,
-        scanId: error.scanId,
-      });
+      logger.error('processScanOnline failed', error);
       throw error;
     }
   }
@@ -388,7 +383,7 @@ export default function CropScan() {
                 <>
                   <ActivityIndicator size="small" color="white" />
                   <Text style={[styles.previewButtonPrimaryText, { marginLeft: 8 }]}>
-                    {processingStep === 'uploading' ? 'Uploading...' : 'Analyzing crop...'}
+                    {processingStep == 'uploading' ? 'Uploading...' : 'Analyzing crop...'}
                   </Text>
                 </>
               ) : (
