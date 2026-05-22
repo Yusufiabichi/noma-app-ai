@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,11 +24,11 @@ import { isOnline } from '@/src/utils/network';
 import logger from '@/src/utils/logger';
 import { createScan } from '@/src/api/scans.api'
 import {pollUntilDiagnosed } from '@/src/utils/pollScan'
+import { getLanguageCode } from '@/src/utils/useLanguageCode'
 
 export default function CropScan() {
   const router = useRouter();
   const { language } = useLanguage();
-  const languageCode = language === 'hausa' ? 'ha' : 'en';
   const { user } = useAuth();
   const cameraRef = useRef<any>(null);
   const [permission, requestPermission] = useCameraPermissions();
@@ -40,6 +40,9 @@ export default function CropScan() {
   const crop_type = ['tomato', 'rice', 'beans', 'maize', 'other'];
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState<'uploading' | 'analyzing' | null>(null);
+  const languageCode = useMemo(() => {
+        return language === 'hausa' ? 'ha' : 'en';
+  }, [language]);
 
 
   useEffect(() => {
@@ -97,17 +100,17 @@ export default function CropScan() {
       setIsProcessing(false);
       setProcessingStep(null);
     }
-    // Note: finally block removed to avoid resetting state if navigation is in progress
   }
 
   async function processScanOnline(imageUri: string, cropType: string) {
     try {
       logger.info('Starting online scan upload...');
+      const freshLanguageCode = await getLanguageCode();
 
       const response = await createScan({
         imageUri,
         cropType,
-        language: languageCode,
+        language: freshLanguageCode,
       });
       
       logger.info('Upload complete. Response:', response);
