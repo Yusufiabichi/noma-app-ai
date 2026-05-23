@@ -21,7 +21,7 @@ app.include_router(api_router, prefix="/ai")
 
 @app.get("/")
 def root():
-    return {"message": "API is running 🚀"}
+    return {"message": "FastAPI server is running 🚀"}
 
 if __name__ == "__main__":
     uvicorn.run(app

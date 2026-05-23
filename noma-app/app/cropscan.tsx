@@ -144,6 +144,7 @@ export default function CropScan() {
         severity:         diagnosedScan.diagnosis?.severity || diagnosedScan.severity,
         recommendations:  diagnosedScan.diagnosis?.recommendations || diagnosedScan.recommendations || [],
         futurePrevention: diagnosedScan.diagnosis?.futurePrevention || diagnosedScan.futurePrevention || [],
+        isFallback:       diagnosedScan.diagnosis?.isFallback ?? false,
         language:         diagnosedScan.diagnosis?.language || diagnosedScan.language || languageCode,
         isOnline:         true,
         scanId:           diagnosedScan._id,
@@ -185,6 +186,7 @@ export default function CropScan() {
             language,
             isOnline: false,
             localScanId: scan.id,
+            isFallback: diagnosedScan.diagnosis?.isFallback ?? false,
           }),
         },
       });

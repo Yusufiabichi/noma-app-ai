@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useLocalSearchParams } from "expo-router";
-import { LanguageProvider, useLanguage } from '../../src/context/LanguageContext';
+import { useLanguage } from '@/src/context/LanguageContext';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isOnline } from '@/src/utils/network';
 import { syncPendingScans } from '@/src/services/syncService';
@@ -10,6 +10,8 @@ import * as localScanService from '@/src/services/localScanService';
 import logger from '@/src/utils/logger';
 import { useAuth } from '@/src/hooks/useAuth';
 import { getById } from '../../src/data/useTreatment.js';
+import { getLanguageCode } from '@/src/utils/useLanguageCode'
+
 
 interface ScanResult {
   status?: string;
@@ -36,6 +38,13 @@ const TreatmentRecommendationScreen = () => {
   const [treatmentData, setTreatmentData] = useState(null);
   const [isPending, setIsPending] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const CONFIDENCE_THRESHOLD = 0.6;
+  const isLowConfidence = scanResult
+    ? (scanResult.confidence ?? 0) < CONFIDENCE_THRESHOLD
+    : false;
+  const languageCode = useMemo(() => {
+          return language === 'hausa' ? 'ha' : 'en';
+    }, [language]);
 
   useEffect(() => {
     const loadScanResult = async () => {
@@ -78,6 +87,7 @@ const TreatmentRecommendationScreen = () => {
       } finally {
         setLoading(false);
       }
+
     };
 
     loadScanResult();
@@ -146,17 +156,6 @@ const TreatmentRecommendationScreen = () => {
     );
   }
 
-  {scanResult?.isFallback && (
-    <View style={styles.fallbackBanner}>
-      <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
-      <Text style={styles.fallbackText}>
-        {language === 'ha'
-          ? 'Ba mu sami bayanan wannan cuta a cikin kundin mu ba. Muna bada shawarar tintubar Masana.'
-          : 'Specific data for this disease is not yet in our database. Showing general recommendations — consult an agronomist for targeted advice.'}
-      </Text>
-    </View>
-  )}
-
   // Pending analysis UI
   if (isPending || scanResult?.status === 'pending') {
     return (
@@ -171,7 +170,7 @@ const TreatmentRecommendationScreen = () => {
               Your scan has been saved locally and is waiting for analysis.
             </Text>
             <Text style={styles.pendingSubInfo}>
-              {language === 'hausa' 
+              {languageCode === 'ha'
                 ? 'Hada wayarka da intanet don ci gaba da bincike.'
                 : 'Connect to the internet for immediate analysis, or analysis will proceed automatically when you are back online.'}
             </Text>
@@ -232,6 +231,8 @@ const TreatmentRecommendationScreen = () => {
     );
   }
 
+
+
   return (
     <SafeAreaView edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -242,7 +243,7 @@ const TreatmentRecommendationScreen = () => {
           <View style={styles.issueHeader}>
             <Ionicons name="warning-outline" size={20} color="#c0392b" />
             <Text style={styles.issueLabel}>
-              {language === 'hausa' ? 'Matsalar da Muka Gano' : 'Detected Issue'}
+              {languageCode === 'ha' ? 'Matsalar da Muka Gano' : 'Detected Issue'}
             </Text>
           </View>
           <Text style={styles.issueTitle}>
@@ -254,16 +255,43 @@ const TreatmentRecommendationScreen = () => {
           </Text>
         </View>
 
+        {/* Low Confidence Warning Banner */}
+          {isLowConfidence && (
+            <View style={styles.lowConfidenceBanner}>
+              <Ionicons name="alert-circle-outline" size={22} color="#7c4a00" />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.lowConfidenceTitle}>
+                  {languageCode === 'ha' ? 'Rashin Tabbas' : 'Low Confidence Result'}
+                </Text>
+                <Text style={styles.lowConfidenceText}>
+                  {languageCode === 'ha'
+                    ? 'Ingancin binciken ya yi ƙasa da kashi 60%. Don Allah tuntubi ƙwararren masanin aikin gona don tabbataccen bayani.'
+                    : 'Our model is less than 60% confident in this diagnosis. Please consult an agronomist for an accurate assessment before taking action.'}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {scanResult?.isFallback && (
+              <View style={styles.fallbackBanner}>
+                <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
+                <Text style={styles.fallbackText}>
+                  {languageCode === 'ha'
+                    ? 'Ba mu sami bayanan wannan cuta a cikin kundin mu ba. Muna bada shawarar tintubar Masana.'
+                    : 'Specific data for this disease is not yet in our database. Showing general recommendations — consult an agronomist for targeted advice.'}
+                </Text>
+              </View>
+            )}
+
         {/* Recommended Treatment */}
-        {scanResult?.recommendations && scanResult.recommendations.length > 0 && (
+        {!isLowConfidence && scanResult?.recommendations && scanResult.recommendations.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="medkit-outline" size={20} color="#2e7d32" />
               <Text style={styles.sectionTitle}>
-                {language === 'hausa' ? 'Yi wannan Yanzu' : 'Recommended Treatment'}
+                {languageCode === 'ha' ? 'Yi wannan Yanzu' : 'Recommended Treatment'}
               </Text>
             </View>
-
             {scanResult.recommendations.map((item, index) => (
               <View key={index} style={styles.listContainer}>
                 <View style={styles.listHeader}>
@@ -277,13 +305,28 @@ const TreatmentRecommendationScreen = () => {
           </View>
         )}
 
+        {/* Show this instead of recommendations when confidence is low */}
+        {isLowConfidence && (
+          <View style={styles.expertPromptCard}>
+            <Ionicons name="chatbubble-ellipses-outline" size={32} color="#0052cc" />
+            <Text style={styles.expertPromptTitle}>
+              {languageCode === 'ha' ? 'Tuntubi Ƙwararru' : 'Expert Consultation Needed'}
+            </Text>
+            <Text style={styles.expertPromptText}>
+              {languageCode === 'ha'
+                ? 'Bamu da tabbacin sakamakon binciken da mukayi akan shukarku. Yi magana da ƙwararren masanin don samun ingantacciyar shawara.'
+                : 'The scan result is uncertain. Chat with a certified agronomist to get accurate treatment advice for your crop.'}
+            </Text>
+          </View>
+        )}
+
         {/* Future Prevention */}
-        {scanResult?.futurePrevention && scanResult.futurePrevention.length > 0 && (
+        {!isLowConfidence && scanResult?.futurePrevention && scanResult.futurePrevention.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="shield-checkmark-outline" size={20} color="#0052cc" />
               <Text style={styles.sectionTitle}>
-                {language === 'hausa' ? 'Hanyoyin Rigakafi' : 'Future Prevention'}
+                {languageCode === 'ha' ? 'Hanyoyin Rigakafi' : 'Future Prevention'}
               </Text>
             </View>
 
@@ -300,20 +343,27 @@ const TreatmentRecommendationScreen = () => {
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.confirmButton}
-            onPress={() => router.push('./')}
-          >
+          <TouchableOpacity
+              style={[
+                styles.confirmButton,
+                isLowConfidence && styles.confirmButtonDisabled,
+                scanResult?.isFallback && styles.confirmButtonDisabled,
+              ]}
+              onPress={() => router.push('./')}
+              disabled={isLowConfidence, scanResult?.isFallback}
+            >
             <Text style={styles.buttonText}>
-              {language === 'hausa' ? "Zanyi wannan" : "I will do this"}
+              {languageCode === 'ha' ? "Zanyi wannan" : "I will do this"}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.expertButton}
-            onPress={() => router.push('./')}
+            style={[styles.expertButton,
+            isLowConfidence && styles.expertButtonHighlighted,
+            ]}
+            onPress={() => router.push('../(tabs)/community')}
           >
             <Text style={styles.buttonText}>
-              {language === "hausa" ? "Tambayi Kwararru" : "Ask Expert"}
+              {languageCode === "ha" ? "Tambayi Kwararru" : "Ask Expert"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -542,6 +592,55 @@ fallbackText: {
     fontSize: 12,
     textAlign: "center",
   },
+lowConfidenceBanner: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  backgroundColor: '#fff3e0',
+  borderWidth: 1,
+  borderColor: '#ffb74d',
+  borderRadius: 12,
+  padding: 14,
+  marginBottom: 20,
+},
+lowConfidenceTitle: {
+  fontSize: 15,
+  fontWeight: '700',
+  color: '#7c4a00',
+  marginBottom: 4,
+},
+lowConfidenceText: {
+  fontSize: 13,
+  color: '#7c4a00',
+  lineHeight: 18,
+},
+expertPromptCard: {
+  alignItems: 'center',
+  backgroundColor: '#e8f0fe',
+  borderWidth: 1,
+  borderColor: '#b3c8f5',
+  borderRadius: 12,
+  padding: 24,
+  marginBottom: 25,
+},
+expertPromptTitle: {
+  fontSize: 17,
+  fontWeight: '700',
+  color: '#0052cc',
+  marginTop: 12,
+  marginBottom: 8,
+},
+expertPromptText: {
+  fontSize: 14,
+  color: '#0052cc',
+  textAlign: 'center',
+  lineHeight: 20,
+},
+confirmButtonDisabled: {
+  backgroundColor: '#b0bec5',  // greyed out
+},
+expertButtonHighlighted: {
+  backgroundColor: '#0041a8',  // darker blue, more prominent
+},
 });
 
 export default TreatmentRecommendationScreen;
