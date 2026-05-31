@@ -10,6 +10,7 @@ export default function RootLayout(){
 
     return (
         <>
+
         <LanguageProvider>
             <Stack>
                 <Stack.Screen name="index" options={{headerShown: false}} />

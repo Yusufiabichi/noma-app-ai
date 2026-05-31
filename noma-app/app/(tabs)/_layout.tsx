@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import React, { useState } from 'react'
 import { LanguageProvider, useLanguage, Lang } from '../../src/context/LanguageContext';
 import {Picker} from '@react-native-picker/picker';
+import { StatusBar } from 'react-native'
 
 
 function HeaderLanguageSelector() {
@@ -15,6 +16,11 @@ function HeaderLanguageSelector() {
 
   return (
     <>
+    <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#000000"
+        translucent={false}
+      />
       <Pressable onPress={() => setOpen(true)} style={styles.headerButton}>
         <Text style={styles.headerButtonText}>{language.toUpperCase()}</Text>
       </Pressable>
