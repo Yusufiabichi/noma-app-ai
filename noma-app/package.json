@@ -10,6 +10,9 @@
     "web": "expo start --web",
     "lint": "expo lint"
   },
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@babel/runtime": "^7.20.0",
     "@expo/vector-icons": "^15.0.2",
