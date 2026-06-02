@@ -95,10 +95,13 @@ export default function CropScan() {
       }
     } catch (error: any) {
       logger.error('Error processing scan', error);
-      // delete after test
-      console.log("FULL ERROR:", error);
-      console.log("ERROR RESPONSE:", error?.response?.data);
-      console.log("ERROR MESSAGE:", error?.message);
+      // Detailed debug logs for production troubleshooting
+      console.log("--- SCAN ERROR DEBUG ---");
+      console.log("TYPE:", error.name);
+      console.log("MESSAGE:", error.message);
+      console.log("STATUS CODE:", error.statusCode);
+      console.log("SERVER RESPONSE:", error.originalError?.response?.data);
+      console.log("------------------------");
 
       Alert.alert('Error', error.message || 'Failed to process scan');
       // Reset processing state on error so user can try again

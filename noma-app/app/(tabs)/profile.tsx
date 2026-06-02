@@ -23,7 +23,7 @@ interface UserData {
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
 
   const user: UserData = {
     name: authUser?.name || 'Guest User',
@@ -49,9 +49,12 @@ const ProfileScreen: React.FC = () => {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          await clearAuthTokens();
-          await setUserData(null);
-          router.replace('../login');
+          const success = await logout();
+          if (success) {
+            router.replace('/(onboarding)/login');
+          } else {
+            Alert.alert('Error', 'Failed to log out. Please try again.');
+          }
         },
       },
     ]);

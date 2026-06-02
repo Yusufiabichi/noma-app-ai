@@ -113,6 +113,9 @@ apiClient.interceptors.request.use(
     }
     
     // Log request
+    const authStatus = token ? `Bearer ${token.substring(0, 10)}...` : 'NONE';
+    console.log(`[NETWORK] Sending ${config.method?.toUpperCase()} to ${config.url} | Auth: ${authStatus}`);
+
     logger.apiRequest(config.method, config.url, config.data);
     
     return config;

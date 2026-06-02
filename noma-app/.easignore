@@ -1,0 +1,9 @@
+node_modules
+.git
+.expo
+android
+ios
+*.log
+.env*
+__tests__
+coverage

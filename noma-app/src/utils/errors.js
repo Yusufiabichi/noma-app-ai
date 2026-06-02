@@ -4,6 +4,8 @@
  * Centralized error handling and normalization for API responses.
  */
 
+import logger from './logger';
+
 /**
  * Error codes standardized across the application
  */
@@ -52,8 +54,8 @@ export class AppError extends Error {
  * Custom class for authentication-related errors
  */
 export class AuthError extends AppError {
-  constructor(message, code = ERROR_CODES.UNAUTHORIZED, statusCode = 401) {
-    super(code, message, statusCode);
+  constructor(message, code = ERROR_CODES.UNAUTHORIZED, statusCode = 401, originalError = null) {
+    super(code, message, statusCode, originalError);
     this.name = 'AuthError';
   }
 }
@@ -69,13 +71,20 @@ export const normalizeAxiosError = (error) => {
   if (error.response) {
     const { status, data } = error.response;
     
-    // Extract error code and message from response
+    // Handle different backend response structures
     const errorCode = data?.error?.code || data?.code || getErrorCodeFromStatus(status);
-    const errorMessage = data?.error?.message || data?.message || getErrorMessageFromStatus(status);
+    let errorMessage = data?.error?.message || data?.message || getErrorMessageFromStatus(status);
     
+    // Improve user experience for common production errors
+    if (errorCode === 'TOKEN_EXPIRED') {
+      errorMessage = 'Your session has expired. Please log in again to continue.';
+    }
+
+    logger.debug('Normalizing error response', { status, errorCode, errorMessage, data });
+
     // Handle specific status codes
     if (status === 401) {
-      return new AuthError(errorMessage, ERROR_CODES.TOKEN_EXPIRED, status);
+      return new AuthError(errorMessage, errorCode || ERROR_CODES.TOKEN_EXPIRED, status, error);
     }
     
     if (status === 403) {
@@ -104,7 +113,7 @@ export const normalizeAxiosError = (error) => {
   }
   
   // Check for timeout
-  if (error.code === 'ECONNABORTED' || error.message === 'timeout of 30000ms exceeded') {
+  if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
     return new AppError(ERROR_CODES.TIMEOUT_ERROR, 'Request timeout', null, error);
   }
   
@@ -114,7 +123,7 @@ export const normalizeAxiosError = (error) => {
   }
   
   // Unknown error
-  return new AppError(ERROR_CODES.UNKNOWN_ERROR, error.message || 'An unknown error occurred', null, error);
+  return new AppError(ERROR_CODES.UNKNOWN_ERROR, error.message || 'An unexpected error occurred', null, error);
 };
 
 /**
