@@ -7,3 +7,55 @@ ios
 .env*
 __tests__
 coverage
+# Ignore version control
+.git/
+.github/
+.gitignore
+
+# Ignore logs and temp files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+expo-error.log
+.DS_Store
+Thumbs.db
+
+# Ignore build outputs
+android/
+ios/
+dist/
+build/
+
+# Ignore test files
+__tests__/
+coverage/
+jest/
+
+# Ignore documentation and configs not needed for build
+docs/
+*.md
+
+# Ignore local environment files
+.env
+.env.local
+.env.*.local
+
+# Ignore editor/IDE settings
+.vscode/
+.idea/
+*.swp
+.git/
+.vs/
+docs/
+fast-api-server/
+nomaapp_kg_v1/
+openai/
+
+
+# Ignore large assets not needed in app
+*.psd
+*.ai
+*.zip
+*.tar
+*.gz

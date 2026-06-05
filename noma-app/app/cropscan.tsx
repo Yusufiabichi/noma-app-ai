@@ -396,7 +396,7 @@ export default function CropScan() {
                 <>
                   <ActivityIndicator size="small" color="white" />
                   <Text style={[styles.previewButtonPrimaryText, { marginLeft: 8 }]}>
-                    {processingStep == 'uploading' ? 'Uploading...' : 'Analyzing crop...'}
+                    {processingStep == 'uploading' ? 'Uploading...' : 'Analyzing...'}
                   </Text>
                 </>
               ) : (

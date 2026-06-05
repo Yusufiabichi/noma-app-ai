@@ -1,24 +1,40 @@
 {
-  "cli": {
-    "version": ">= 20.0.0",
-    "appVersionSource": "remote"
-  },
   "build": {
     "development": {
-      "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "API_URL": "https://dev.api.example.com",
+        "ENVIRONMENT": "development"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "API_URL": "https://staging.api.example.com",
+        "ENVIRONMENT": "staging"
+      }
     },
     "production": {
-      "autoIncrement": true,
-      "channel": "production"
+      "distribution": "store",
+      "android": {
+        "gradleCommand": ":app:bundleRelease"
+      },
+      "ios": {
+        "simulator": false
+      },
+      "env": {
+        "API_URL": "https://api.example.com",
+        "ENVIRONMENT": "production"
+      }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }
