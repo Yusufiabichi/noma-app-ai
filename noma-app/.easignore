@@ -1,12 +1,11 @@
 node_modules
-.git
 .expo
 android
 ios
 *.log
 .env*
-__tests__
 coverage
+
 # Ignore version control
 .git/
 .github/
@@ -26,11 +25,6 @@ android/
 ios/
 dist/
 build/
-
-# Ignore test files
-__tests__/
-coverage/
-jest/
 
 # Ignore documentation and configs not needed for build
 docs/
