@@ -57,4 +57,14 @@ export const setUserData = async (userData) => {
   }
 };
 
+export const getUserData = async () => {
+  try {
+    const userData = await AsyncStorage.getItem(USER_KEY);
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    logger.error('Failed to get user data', error);
+    return null;
+  }
+};
+
 export default useAuth;

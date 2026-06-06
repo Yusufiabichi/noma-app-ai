@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { clearAuthTokens } from '../../src/api/client';
 import { useAuth, setUserData } from '@/src/hooks/useAuth';
+import { getCurrentUser } from '@/src/api/auth.api';
 
 interface UserData {
   name: string;
@@ -19,11 +20,29 @@ interface UserData {
   scans: number;
   healthy: number;
   issues: number;
+  plan: string;
+  scansRemaining?: number | string;
 }
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser, logout, refreshUser } = useAuth();
+
+  useEffect(() => {
+    const fetchLatestUser = async () => {
+      try {
+        const response = await getCurrentUser();
+        if (response.user) {
+          await setUserData(response.user);
+          refreshUser();
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest user data', error);
+      }
+    };
+
+    fetchLatestUser();
+  }, []);
 
   const user: UserData = {
     name: authUser?.name || 'Guest User',
@@ -32,6 +51,8 @@ const ProfileScreen: React.FC = () => {
     scans: authUser?.scansCount || 0,
     healthy: authUser?.healthyCount || 0,
     issues: authUser?.issuesCount || 0,
+    plan: authUser?.subscription?.plan || 'free',
+    scansRemaining: authUser?.subscription?.scansRemaining ?? (authUser?.subscription?.plan === 'premium' ? '∞' : 0),
   };
 
   const getInitials = (name: string): string => {
@@ -86,15 +107,40 @@ const ProfileScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Premium Plan */}
-      <View style={styles.premiumCard}>
-        <View>
-          <Text style={styles.premiumTitle}>Premium Plan</Text>
+      {/* Plan Card */}
+      <View style={[styles.premiumCard, user.plan === 'free' && { backgroundColor: '#6b7280' }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.premiumTitle}>
+            {user.plan.toUpperCase()} Plan
+          </Text>
           <Text style={styles.premiumText}>
-            Unlimited scans & advanced features
+            {user.plan === 'free'
+              ? `Available scans: ${user.scansRemaining} left`
+              : user.plan === 'premium'
+              ? 'Unlimited scans & advanced features'
+              : `Available scans: ${user.scansRemaining} left`}
           </Text>
         </View>
-        <FontAwesome5 name="crown" size={22} color="#fff" />
+        {user.plan === 'free' ? (
+          <TouchableOpacity
+            style={styles.upgradeBtn}
+            onPress={() => router.push('/(onboarding)/plans')}
+          >
+            <Text style={styles.upgradeBtnText}>Upgrade</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ alignItems: 'flex-end' }}>
+            <FontAwesome5 name="crown" size={20} color="#fff" />
+            {user.plan !== 'premium' && (
+               <TouchableOpacity
+                 onPress={() => router.push('/(onboarding)/plans')}
+                 style={{ marginTop: 4 }}
+               >
+                 <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700', textDecorationLine: 'underline' }}>Upgrade</Text>
+               </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
 
       {/* Account Settings */}
@@ -261,6 +307,17 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     fontSize: 14.5,
     fontWeight: '600',
+  },
+  upgradeBtn: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  upgradeBtnText: {
+    color: '#111',
+    fontWeight: '700',
+    fontSize: 13,
   },
 });
 

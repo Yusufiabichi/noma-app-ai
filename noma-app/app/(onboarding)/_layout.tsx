@@ -21,6 +21,18 @@ export default function OnboardingLayout() {
           headerShown: false,
         }}
       />
+        <Stack.Screen
+          name="plans"
+          options={{
+            headerShown: true,
+          }}
+        />
+      <Stack.Screen
+          name="checkout"
+          options={{
+            headerShown: false,
+          }}
+        />
     </Stack>
   );
 }

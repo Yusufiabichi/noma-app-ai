@@ -1,5 +1,5 @@
-import { Slot, Tabs } from 'expo-router'
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons'
+import { Slot, Tabs, router } from 'expo-router'
+import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons'
 import { Pressable, Text, View, Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import React, { useState } from 'react'
@@ -91,17 +91,28 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'NomaApp',
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <FontAwesome5 name="globe" size={20} color="#16A34A" style={{ marginRight: -4 }} />
+              <HeaderLanguageSelector />
+            </View>
+          ),
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Text style={{ fontSize: 20, fontWeight: '700', marginLeft: 16, color: '#111' }}>
+              NomaApp
+            </Text>
+          ),
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => router.push('/(onboarding)/plans')}
+              style={{ marginRight: 16 }}
+            >
+              <FontAwesome5 name="crown" size={22} color="#16A34A" />
+            </TouchableOpacity>
+          ),
           tabBarLabel: 'Crops',
           tabBarIcon: ({ color }) => <FontAwesome5 name="seedling" size={22} color={color} />,
-          headerRight: () => (
-                <SafeAreaView style={{ flex: 1 }}>
-                  <View style={styles.headerBar}>
-                    <FontAwesome5 name="globe" size={28} color="#16A34A" />
-                    <HeaderLanguageSelector />
-                  </View>
-                </SafeAreaView>
-          ),
         }}
       />
     {/*  <Tabs.Screen
