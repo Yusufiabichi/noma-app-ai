@@ -25,6 +25,7 @@ export default function OnboardingLayout() {
           name="plans"
           options={{
             headerShown: true,
+            title: "Plans"
           }}
         />
       <Stack.Screen

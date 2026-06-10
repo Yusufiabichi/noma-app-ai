@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/src/hooks/useAuth";
 
 const COLORS = {
   primary: "#16A34A",
@@ -78,10 +79,13 @@ const PLANS = [
 const PlansScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { user } = useAuth();
+  const currentPlanId = user?.subscription?.plan || "free";
   const reason = params.reason as string;
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
   const handleSelectPlan = (plan: (typeof PLANS)[0]) => {
+    if (plan.id === currentPlanId) return;
     if (plan.id === "free") {
       router.replace("/(tabs)");
       return;
@@ -166,6 +170,7 @@ const PlansScreen = () => {
         {PLANS.map((plan) => {
           const isFeatured = plan.id === "basic";
           const isPremium = plan.id === "premium";
+          const isActive = plan.id === currentPlanId;
           return (
             <View
               key={plan.id}
@@ -173,24 +178,25 @@ const PlansScreen = () => {
                 styles.planCard,
                 isFeatured && styles.planCardFeatured,
                 isPremium && styles.planCardPremium,
+                isActive && styles.planCardActive,
               ]}
             >
-              {plan.tag && (
+              {(plan.tag || isActive) && (
                 <View
                   style={[
                     styles.planTag,
-                    isPremium ? styles.planTagPremium : styles.planTagFeatured,
+                    isActive ? styles.planTagActive : (isPremium ? styles.planTagPremium : styles.planTagFeatured),
                   ]}
                 >
                   <Text
                     style={[
                       styles.planTagText,
-                      isPremium
+                      isActive ? styles.planTagTextActive : (isPremium
                         ? styles.planTagTextPremium
-                        : styles.planTagTextFeatured,
+                        : styles.planTagTextFeatured),
                     ]}
                   >
-                    {plan.tag}
+                    {isActive ? "Active Plan" : plan.tag}
                   </Text>
                 </View>
               )}
@@ -257,16 +263,19 @@ const PlansScreen = () => {
                   styles.planButton,
                   isFeatured && styles.planButtonFeatured,
                   isPremium && styles.planButtonPremium,
+                  isActive && styles.planButtonDisabled,
                 ]}
                 onPress={() => handleSelectPlan(plan)}
+                disabled={isActive}
               >
                 <Text
                   style={[
                     styles.planButtonText,
                     (isFeatured || isPremium) && styles.planButtonTextFilled,
+                    isActive && styles.planButtonTextDisabled,
                   ]}
                 >
-                  {plan.id === "free" ? "Continue free" : `Get ${plan.name}`}
+                  {isActive ? "Current Plan" : (plan.id === "free" ? "Continue free" : `Get ${plan.name}`)}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -381,6 +390,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.amber,
     borderWidth: 2,
   },
+  planCardActive: {
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+    backgroundColor: "#f0fdf4",
+  },
   planTag: {
     alignSelf: "flex-start",
     borderRadius: 6,
@@ -394,6 +408,9 @@ const styles = StyleSheet.create({
   planTagPremium: {
     backgroundColor: COLORS.amberLight,
   },
+  planTagActive: {
+    backgroundColor: COLORS.primary,
+  },
   planTagText: {
     fontSize: 11,
     fontWeight: "700",
@@ -403,6 +420,9 @@ const styles = StyleSheet.create({
   },
   planTagTextPremium: {
     color: COLORS.amber,
+  },
+  planTagTextActive: {
+    color: COLORS.white,
   },
   planHeader: {
     flexDirection: "row",
@@ -472,6 +492,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.amber,
     borderColor: COLORS.amber,
   },
+  planButtonDisabled: {
+    backgroundColor: COLORS.border,
+    borderColor: COLORS.border,
+  },
   planButtonText: {
     fontSize: 14,
     fontWeight: "600",
@@ -479,6 +503,9 @@ const styles = StyleSheet.create({
   },
   planButtonTextFilled: {
     color: COLORS.white,
+  },
+  planButtonTextDisabled: {
+    color: COLORS.textLight,
   },
   footNote: {
     fontSize: 11,

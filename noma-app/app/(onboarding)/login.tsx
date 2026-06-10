@@ -58,10 +58,15 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const response = await login(phone, password);
+      const { token, user, meta } = response;
       if (response.token) {
         await setAuthToken(response.token);
         if (response.user) {
-          await setUserData(response.user);
+          await setUserData({
+              ...response.user,
+              trialDaysRemaining: response.meta?.trialDaysRemaining,
+              trialEndDate: response.meta?.trialEndDate,
+          });
         }
         await completeOnboarding();
         if (response.meta?.trialExpired) {
