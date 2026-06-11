@@ -14,6 +14,7 @@ export default function RootLayout(){
         <LanguageProvider>
             <Stack>
                 <Stack.Screen name="index" options={{headerShown: false}} />
+                <Stack.Screen name="(expert)" options={{headerShown: false}} />
                 <Stack.Screen name="(onboarding)" options={{headerShown: false}} />
                 <Stack.Screen name="(tabs)" options={{headerShown: false}} />
                 <Stack.Screen name="treatment-rec" options={{headerShown: false}} />
