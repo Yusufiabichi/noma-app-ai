@@ -16,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#16A34A",
         "foregroundImage": "./assets/nomaapplogo.png",
         "backgroundImage": "./assets/nomaapplogo.png",
         "monochromeImage": "./assets/nomaapplogo.png"

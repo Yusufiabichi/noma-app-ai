@@ -124,15 +124,27 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <FontAwesome5 name="shopping-bag" size={22} color={color} />,
         }}
       /> */}
+
       <Tabs.Screen
         name="community"
         options={{
           title: 'Chat with Experts',
-          tabBarLabel: 'Chat',
-          tabBarIcon: ({ color }) => <MaterialIcons name="forum" size={22} color={color} />,
-          
+          tabBarLabel: 'Community',
+          tabBarIcon: ({ color }) => <MaterialIcons name="groups" size={22} color={color} />,
+
         }}
       />
+
+      <Tabs.Screen
+        name="expertChat"
+        options={{
+          tabBarLabel: 'Experts',
+          headerShown: false,
+          tabBarIcon: ({ color }) => <MaterialIcons name="question-answer" size={22} color={color} />,
+
+        }}
+      />
+
       <Tabs.Screen
         name="profile"
         options={{

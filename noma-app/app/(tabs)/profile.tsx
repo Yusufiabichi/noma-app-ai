@@ -465,12 +465,17 @@ const styles = StyleSheet.create({
   optionCard: {
     backgroundColor: '#fff',
     borderRadius: 18,
+    borderColor: '#bbf7d0',
     paddingVertical: 14,
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   optionLeft: {
     flexDirection: 'row',
