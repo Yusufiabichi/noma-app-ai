@@ -45,6 +45,7 @@ const ProfileFormScreen = () => {
     yearsOfExperience:   "",
     currentOrganization: "",
     currentRole:         "",
+    email:               "",
     bio:                 "",
     linkedIn:            "",
   });
@@ -68,6 +69,7 @@ const ProfileFormScreen = () => {
     if (!form.yearsOfExperience)        e.yearsOfExperience = "Required";
     if (!form.currentOrganization.trim()) e.currentOrganization = "Required";
     if (!form.currentRole)              e.currentRole       = "Select a role";
+    if(!form.email.trim())              e.email             = "Enter your email";
     if (!form.bio.trim())               e.bio               = "Please write a short bio";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -224,6 +226,29 @@ const ProfileFormScreen = () => {
             <TextInput
               style={styles.inputField}
               placeholder="e.g. 7"
+              placeholderTextColor={COLORS.textLight}
+              value={form.email}
+              onChangeText={(v) => {
+                setForm((f) => ({ ...f, email: v }));
+                setErrors((e) => ({ ...e, email: "" }));
+              }}
+            />
+          </View>
+          {errors.email ? (
+            <Text style={styles.errorText}>{errors.email}</Text>
+          ) : null}
+        </View>
+
+        {/* Email */}
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>
+            Email Address <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={[styles.inputWrapper, errors.email && styles.inputError]}>
+            <Ionicons name="mail" size={16} color={COLORS.textLight} style={styles.inputIcon} />
+            <TextInput
+              style={styles.inputField}
+              placeholder="youremail@example.com"
               placeholderTextColor={COLORS.textLight}
               keyboardType="numeric"
               value={form.yearsOfExperience}

@@ -12,6 +12,7 @@ const COLORS = {
   background: "#f8f8f8", white: "#ffffff", textDark: "#1f2937",
   textLight: "#6b7280", border: "#e5e7eb", error: "#dc2626",
   errorLight: "#fef2f2", amber: "#d97706", amberLight: "#fffbeb",
+  amberBorder: "#fde68a",
 };
 
 const TOTAL_SECONDS = 30 * 60; // 30 minutes
@@ -579,8 +580,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
   submitBtnText: { color: COLORS.white, fontSize: 15, fontWeight: "600" },
-  amberBorder: "#fde68a",
-  amberLight: COLORS.amberLight,
 });
 
 export default AssessmentScreen;
