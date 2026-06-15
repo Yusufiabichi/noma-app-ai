@@ -1,11 +1,11 @@
 import { Slot, Tabs, router } from 'expo-router'
 import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons'
-import { Pressable, Text, View, Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native'
+import { Pressable, Text, View, Modal, FlatList, StatusBar, TouchableOpacity, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import React, { useState } from 'react'
 import { LanguageProvider, useLanguage, Lang } from '../../src/context/LanguageContext';
 import {Picker} from '@react-native-picker/picker';
-import { StatusBar } from 'react-native'
+import { useAuth } from '@/src/hooks/useAuth';
 
 
 function HeaderLanguageSelector() {
@@ -17,10 +17,7 @@ function HeaderLanguageSelector() {
   return (
     <>
     <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#000000"
-        translucent={false}
-      />
+        barStyle="dark-content" />
       <Pressable onPress={() => setOpen(true)} style={styles.headerButton}>
         <Text style={styles.headerButtonText}>{language.toUpperCase()}</Text>
       </Pressable>
@@ -60,8 +57,11 @@ function HeaderLanguageSelector() {
 
 
 export default function TabsLayout() {
+      const { user } = useAuth();
+      const isAdmin = user?.role === 'admin';
   return (
     <>
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
     <LanguageProvider initial="english">
     <Tabs
       screenOptions={{
@@ -80,7 +80,6 @@ export default function TabsLayout() {
           height: 65,
           paddingBottom: 4,
           paddingTop: 8,
-          marginBottom: 15,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -97,6 +96,7 @@ export default function TabsLayout() {
               <HeaderLanguageSelector />
             </View>
           ),
+          headerShown: isAdmin ? false : true,
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Text style={{ fontSize: 20, fontWeight: '700', marginLeft: 16, color: '#111' }}>
@@ -111,8 +111,9 @@ export default function TabsLayout() {
               <FontAwesome5 name="crown" size={22} color="#16A34A" />
             </TouchableOpacity>
           ),
-          tabBarLabel: 'Crops',
-          tabBarIcon: ({ color }) => <FontAwesome5 name="seedling" size={22} color={color} />,
+          tabBarLabel: isAdmin ? 'Dashboard' : 'Crops',
+          tabBarIcon: ({ color }) =>
+          isAdmin? ( <Ionicons name="grid-outline" size={22} color={color} /> ) : ( <FontAwesome5 name="seedling" size={22} color={color} /> ),
         }}
       />
     {/*  <Tabs.Screen
@@ -125,15 +126,15 @@ export default function TabsLayout() {
         }}
       /> */}
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="community"
         options={{
           title: 'Chat with Experts',
           tabBarLabel: 'Community',
           tabBarIcon: ({ color }) => <MaterialIcons name="groups" size={22} color={color} />,
-
+          href: isAdmin ? null : undefined,
         }}
-      />
+      /> */}
 
       <Tabs.Screen
         name="expertChat"
@@ -149,12 +150,14 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          headerShown: isAdmin ? false : true,
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color }) => <FontAwesome5 name="user" size={22} color={color} />,
         }}
       />
     </Tabs>
     </LanguageProvider>
+    </SafeAreaView>
     </>
 
   )

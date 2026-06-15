@@ -8,11 +8,16 @@ import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
 import Data from '@/constants/data.json'
 import WeatherCard from '../components/WeatherCard';
+import AdminDashboard from '../(admin)/adminDashboard'
 
 export default function HomeScreen() {
   const { language, setLanguage } = useLanguage();
   const { user } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+   if (user?.role === 'admin') {
+     return <AdminDashboard />;
+   }
 
   const diagnosisHistory = [
     {

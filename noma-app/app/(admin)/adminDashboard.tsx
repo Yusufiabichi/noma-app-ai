@@ -175,7 +175,7 @@ const AdminDashboardScreen = () => {
         title="Expert Verifications"
         subtitle="Review pending documents"
         badge={data?.experts?.pendingReview}
-        onPress={() => router.push("/(admin)/experts" as any)}
+        onPress={() => router.push("/(admin)/adminExpertsList" as any)}
         color={COLORS.primary}
       />
 

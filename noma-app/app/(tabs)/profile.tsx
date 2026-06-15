@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useAuth, setUserData } from '@/src/hooks/useAuth';
 import { getCurrentUser } from '@/src/api/auth.api';
 import { getVerificationStatus } from '@/src/api/expert.api';
+import AdminProfile from '../(admin)/profile';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,8 @@ const getInitials = (name: string): string =>
 const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => void }) => {
   const router = useRouter();
 
+
+
   const user = {
     name:              authUser?.name || 'Guest User',
     phone:             authUser?.phone || '',
@@ -42,6 +45,10 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
                        (authUser?.subscription?.plan === 'premium' ? '∞' : 0),
     trialDaysRemaining: authUser?.trialDaysRemaining,
   };
+
+   if (user?.role === 'admin') {
+     return <AdminProfile />;
+   }
 
   return (
     <ScrollView style={styles.container}>
