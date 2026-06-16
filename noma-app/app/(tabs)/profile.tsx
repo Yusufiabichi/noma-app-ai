@@ -8,13 +8,25 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { Feather, FontAwesome5 } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, setUserData } from '@/src/hooks/useAuth';
 import { getCurrentUser } from '@/src/api/auth.api';
 import { getVerificationStatus } from '@/src/api/expert.api';
 import AdminProfile from '../(admin)/profile';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const COLORS = {
+  primary: "#16A34A",
+  primaryLight: "#f0fdf4",
+  background: "#f8f8f8",
+  white: "#ffffff",
+  textDark: "#1f2937",
+  textLight: "#6b7280",
+  border: "#e5e7eb",
+  error: "#dc2626",
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -30,8 +42,6 @@ const getInitials = (name: string): string =>
 const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => void }) => {
   const router = useRouter();
 
-
-
   const user = {
     name:              authUser?.name || 'Guest User',
     phone:             authUser?.phone || '',
@@ -46,9 +56,9 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
     trialDaysRemaining: authUser?.trialDaysRemaining,
   };
 
-   if (user?.role === 'admin') {
-     return <AdminProfile />;
-   }
+  if (user?.role === 'admin') {
+    return <AdminProfile />;
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -98,7 +108,7 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
           </TouchableOpacity>
         ) : (
           <View style={{ alignItems: 'flex-end' }}>
-            <FontAwesome5 name="crown" size={20} color="#fff" />
+            <FontAwesome5 name=\"crown\" size={20} color=\"#fff\" />
             {user.plan !== 'premium' && (
               <TouchableOpacity
                 onPress={() => router.push('/(onboarding)/plans')}
@@ -116,34 +126,34 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
       {/* Account Settings */}
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
-          <View style={styles.optionIconContainer}>
-            <Feather name="user" size={20} color="#16A34A" />
+          <View style={styles.optionIcon}>
+            <Feather name=\"user\" size={20} color=\"#16A34A\" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Account Settings</Text>
             <Text style={styles.optionSubtitle}>Manage your profile</Text>
           </View>
         </View>
-        <Feather name="chevron-right" size={22} color="#999" />
+        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
       </TouchableOpacity>
 
       {/* Notifications */}
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
-          <View style={styles.optionIconContainer}>
-            <Feather name="bell" size={20} color="#16A34A" />
+          <View style={styles.optionIcon}>
+            <Feather name=\"bell\" size={20} color=\"#16A34A\" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Notifications</Text>
             <Text style={styles.optionSubtitle}>Push notifications & alerts</Text>
           </View>
         </View>
-        <Feather name="chevron-right" size={22} color="#999" />
+        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
       </TouchableOpacity>
 
       {/* Logout */}
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Feather name="log-out" size={20} color="#dc2626" style={{ marginRight: 8 }} />
+        <Feather name=\"log-out\" size={20} color=\"#dc2626\" style={{ marginRight: 8 }} />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -167,7 +177,7 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#16A34A" />
+        <ActivityIndicator size=\"large\" color=\"#16A34A\" />
       </View>
     );
   }
@@ -234,8 +244,8 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
         onPress={() => router.push('/(expert)/dashboard' as any)}
       >
         <View style={styles.optionLeft}>
-          <View style={styles.optionIconContainer}>
-            <Ionicons name="ribbon-outline" size={20} color="#16A34A" />
+          <View style={styles.optionIcon}>
+            <Ionicons name=\"ribbon-outline\" size={20} color=\"#16A34A\" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Verification Status</Text>
@@ -244,7 +254,7 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
             </Text>
           </View>
         </View>
-        <Feather name="chevron-right" size={22} color="#999" />
+        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
       </TouchableOpacity>
 
       {/* Badges */}
@@ -254,7 +264,7 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
           <View style={styles.chipRow}>
             {expertProfile.displayBadges.map((badge: string) => (
               <View key={badge} style={styles.badgeChip}>
-                <Ionicons name="checkmark-circle" size={12} color="#16A34A" />
+                <Ionicons name=\"checkmark-circle\" size={12} color=\"#16A34A\" />
                 <Text style={styles.badgeChipText}>
                   {badge.replace(/_/g, ' ')}
                 </Text>
@@ -267,34 +277,34 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
       {/* Account Settings */}
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
-          <View style={styles.optionIconContainer}>
-            <Feather name="user" size={20} color="#16A34A" />
+          <View style={styles.optionIcon}>
+            <Feather name=\"user\" size={20} color=\"#16A34A\" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Account Settings</Text>
             <Text style={styles.optionSubtitle}>Manage your profile</Text>
           </View>
         </View>
-        <Feather name="chevron-right" size={22} color="#999" />
+        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
       </TouchableOpacity>
 
       {/* Notifications */}
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
-          <View style={styles.optionIconContainer}>
-            <Feather name="bell" size={20} color="#16A34A" />
+          <View style={styles.optionIcon}>
+            <Feather name=\"bell\" size={20} color=\"#16A34A\" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Notifications</Text>
             <Text style={styles.optionSubtitle}>Push notifications & alerts</Text>
           </View>
         </View>
-        <Feather name="chevron-right" size={22} color="#999" />
+        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
       </TouchableOpacity>
 
       {/* Logout */}
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Feather name="log-out" size={20} color="#dc2626" style={{ marginRight: 8 }} />
+        <Feather name=\"log-out\" size={20} color=\"#dc2626\" style={{ marginRight: 8 }} />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -470,38 +480,53 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   optionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    borderColor: '#bbf7d0',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 14,
+    marginBottom: 10,
   },
   optionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  optionIconContainer: {
-    backgroundColor: '#DCFCE7',
-    padding: 9,
-    borderRadius: 10,
-    marginRight: 12,
+  optionIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionTitle: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#111',
+    color: COLORS.textDark,
   },
   optionSubtitle: {
     fontSize: 12.5,
     color: '#666',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingVertical: 13,
+    marginTop: 8,
+  },
+  logoutText: {
+    color: COLORS.error,
+    fontSize: 14,
+    fontWeight: '600',
   },
   sectionLabel: {
     fontSize: 11,
@@ -546,21 +571,6 @@ const styles = StyleSheet.create({
     color: '#16A34A',
     fontWeight: '600',
     textTransform: 'capitalize',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    borderRadius: 14,
-    marginBottom: 24,
-    marginTop: 6,
-  },
-  logoutText: {
-    color: '#dc2626',
-    fontSize: 14.5,
-    fontWeight: '600',
   },
   upgradeBtn: {
     backgroundColor: '#fff',

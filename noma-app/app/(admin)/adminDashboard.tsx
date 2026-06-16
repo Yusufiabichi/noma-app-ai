@@ -1,12 +1,14 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl, Alert,
+  ActivityIndicator, RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { adminGetAnalyticsSummary } from "@/src/api/admin.api";
 import { useAuth } from "@/src/hooks/useAuth";
+import { useApiCall } from "@/src/hooks/useApiCall";
+import ErrorState from "@/app/components/ErrorState";
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -64,29 +66,16 @@ const QuickAction = ({
 const AdminDashboardScreen = () => {
   const router = useRouter();
   const { user } = useAuth();
-  const [data, setData]             = useState<any>(null);
-  const [loading, setLoading]       = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchSummary = useCallback(async () => {
-    try {
-      const res = await adminGetAnalyticsSummary();
-      setData(res.data);
-    } catch (err: any) {
-      Alert.alert("Error", err.response?.data?.error?.message || "Failed to load dashboard");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  // ── Single hook replaces fetchSummary/loading/refreshing/Alert.alert ──────
+  const { data, loading, refreshing, error, retry, refresh } = useApiCall(
+    () => adminGetAnalyticsSummary(),
+    [] // no dependencies — fetch once on mount, manual refresh/retry after
+  );
 
-  useEffect(() => { fetchSummary(); }, []);
+  const isSuperAdmin = user?.adminRole === "super_admin";
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchSummary();
-  };
-
+  // ── Loading state (first load only) ────────────────────────────────────
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -95,15 +84,31 @@ const AdminDashboardScreen = () => {
     );
   }
 
-  const isSuperAdmin = user?.adminRole === "super_admin";
+  // ── Error state (replaces the entire dashboard body) ──────────────────
+  // A failed analytics call means we have nothing reliable to show, so the
+  // whole screen becomes the error + retry rather than partial/broken stats.
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.header, { paddingHorizontal: 20, paddingTop: 52 }]}>
+          <View>
+            <Text style={styles.greeting}>Admin Dashboard</Text>
+            <Text style={styles.headerSub}>{user?.name}</Text>
+          </View>
+        </View>
+        <ErrorState error={error} onRetry={retry} />
+      </View>
+    );
+  }
 
+  // ── Success state ───────────────────────────────────────────────────────
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />
+        <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={COLORS.primary} />
       }
     >
       {/* Header */}

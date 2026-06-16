@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput,
@@ -6,6 +6,8 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { adminListExperts } from "@/src/api/admin.api";
+import { useApiCall } from "@/src/hooks/useApiCall";
+import ErrorState from "@/app/components/ErrorState";
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -41,35 +43,17 @@ const ROLE_LABELS: Record<string, string> = {
 
 const AdminExpertsListScreen = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab]   = useState("pending_review");
-  const [experts, setExperts]       = useState<any[]>([]);
-  const [counts, setCounts]         = useState<Record<string, number>>({});
-  const [search, setSearch]         = useState("");
-  const [loading, setLoading]       = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState("pending_review");
+  const [search, setSearch]       = useState("");
 
-  const fetchExperts = useCallback(async () => {
-    try {
-      const res = await adminListExperts({ status: activeTab, search: search || undefined });
-      setExperts(res.data.experts);
-      setCounts(res.data.statusCounts || {});
-    } catch (err) {
-      console.error("Failed to fetch experts:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [activeTab, search]);
+  // ── Single hook replaces fetchExperts/loading/refreshing/error state ──────
+  const { data, loading, refreshing, error, retry, refresh } = useApiCall(
+    () => adminListExperts({ status: activeTab, search: search || undefined }),
+    [activeTab] // re-fetches automatically when tab changes; search uses retry() on submit
+  );
 
-  useEffect(() => {
-    setLoading(true);
-    fetchExperts();
-  }, [activeTab]);
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchExperts();
-  };
+  const experts = data?.experts || [];
+  const counts  = data?.statusCounts || {};
 
   const getInitials = (name: string) =>
     (name || "?").split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -93,7 +77,8 @@ const AdminExpertsListScreen = () => {
           placeholderTextColor={COLORS.textLight}
           value={search}
           onChangeText={setSearch}
-          onSubmitEditing={fetchExperts}
+          onSubmitEditing={retry}
+          returnKeyType="search"
         />
       </View>
 
@@ -123,17 +108,19 @@ const AdminExpertsListScreen = () => {
         ))}
       </ScrollView>
 
-      {/* List */}
+      {/* ── Three-way render: loading / error / success ──────────────────── */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
+      ) : error ? (
+        <ErrorState error={error} onRetry={retry} />
       ) : (
         <ScrollView
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />
+            <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={COLORS.primary} />
           }
         >
           {experts.length === 0 ? (
@@ -147,7 +134,7 @@ const AdminExpertsListScreen = () => {
               </Text>
             </View>
           ) : (
-            experts.map((expert) => {
+            experts.map((expert: any) => {
               const cfg = STATUS_CONFIG[expert.overallStatus] || STATUS_CONFIG.incomplete;
               return (
                 <TouchableOpacity

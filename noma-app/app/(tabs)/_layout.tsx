@@ -142,7 +142,7 @@ export default function TabsLayout() {
           tabBarLabel: 'Experts',
           headerShown: false,
           tabBarIcon: ({ color }) => <MaterialIcons name="question-answer" size={22} color={color} />,
-
+          tabBarButton: isAdmin ? () => null : undefined,
         }}
       />
 
