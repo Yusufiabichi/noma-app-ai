@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, ActivityIndicator, Alert,
+  StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -53,6 +53,9 @@ const ProfileFormScreen = () => {
   const [loading, setLoading] = useState(false);
   const [showRoleList, setShowRoleList] = useState(false);
 
+  const scrollRef = useRef<ScrollView>(null);
+  const bioRef = useRef<View>(null);
+
   const toggleSpecialization = (value: string) => {
     setForm((prev) => ({
       ...prev,
@@ -99,6 +102,11 @@ const ProfileFormScreen = () => {
     ROLES.find((r) => r.value === form.currentRole)?.label || "Select your role";
 
   return (
+    <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
     <View style={styles.container}>
       {/* Nav Header */}
       <View style={styles.navHeader}>
@@ -110,6 +118,7 @@ const ProfileFormScreen = () => {
       </View>
 
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -227,29 +236,6 @@ const ProfileFormScreen = () => {
               style={styles.inputField}
               placeholder="e.g. 7"
               placeholderTextColor={COLORS.textLight}
-              value={form.email}
-              onChangeText={(v) => {
-                setForm((f) => ({ ...f, email: v }));
-                setErrors((e) => ({ ...e, email: "" }));
-              }}
-            />
-          </View>
-          {errors.email ? (
-            <Text style={styles.errorText}>{errors.email}</Text>
-          ) : null}
-        </View>
-
-        {/* Email */}
-        <View style={styles.fieldGroup}>
-          <Text style={styles.label}>
-            Email Address <Text style={styles.required}>*</Text>
-          </Text>
-          <View style={[styles.inputWrapper, errors.email && styles.inputError]}>
-            <Ionicons name="mail" size={16} color={COLORS.textLight} style={styles.inputIcon} />
-            <TextInput
-              style={styles.inputField}
-              placeholder="youremail@example.com"
-              placeholderTextColor={COLORS.textLight}
               keyboardType="numeric"
               value={form.yearsOfExperience}
               onChangeText={(v) => {
@@ -263,11 +249,46 @@ const ProfileFormScreen = () => {
           ) : null}
         </View>
 
+        {/* Email */}
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>
+            Email Address <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={[styles.inputWrapper, errors.email && styles.inputError]}>
+            <Ionicons
+              name="mail"
+              size={16}
+              color={COLORS.textLight}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.inputField}
+              placeholder="youremail@example.com"
+              placeholderTextColor={COLORS.textLight}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={form.email}
+              onChangeText={(v) => {
+                setForm((f) => ({ ...f, email: v }));
+                setErrors((e) => ({ ...e, email: "" }));
+              }}
+            />
+          </View>
+          {errors.email ? (
+            <Text style={styles.errorText}>{errors.email}</Text>
+          ) : null}
+        </View>
+
         {/* Bio */}
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Bio <Text style={styles.required}>*</Text></Text>
           <Text style={styles.hint}>Max 500 characters. Describe your expertise.</Text>
           <TextInput
+            onFocus={() => {
+              setTimeout(() => {
+                scrollRef.current?.scrollTo({ y: 600, animated: true }); // adjust y to your layout
+              }, 100);
+            }}
             style={[styles.textArea, errors.bio && styles.inputError]}
             placeholder="e.g. 7 years diagnosing maize and rice diseases across Northern Nigeria as an extension officer with NAERLS..."
             placeholderTextColor={COLORS.textLight}
@@ -297,6 +318,9 @@ const ProfileFormScreen = () => {
               keyboardType="url"
               value={form.linkedIn}
               onChangeText={(v) => setForm((f) => ({ ...f, linkedIn: v }))}
+              onFocus={() => {
+                setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
+              }}
             />
           </View>
         </View>
@@ -318,6 +342,7 @@ const ProfileFormScreen = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
+   </KeyboardAvoidingView>
   );
 };
 

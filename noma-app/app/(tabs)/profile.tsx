@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 import { Feather, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -108,7 +109,7 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
           </TouchableOpacity>
         ) : (
           <View style={{ alignItems: 'flex-end' }}>
-            <FontAwesome5 name=\"crown\" size={20} color=\"#fff\" />
+            <FontAwesome5 name="crown" size={20} color="#fff" />
             {user.plan !== 'premium' && (
               <TouchableOpacity
                 onPress={() => router.push('/(onboarding)/plans')}
@@ -127,33 +128,33 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
           <View style={styles.optionIcon}>
-            <Feather name=\"user\" size={20} color=\"#16A34A\" />
+            <Feather name="user" size={20} color="#16A34A" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Account Settings</Text>
             <Text style={styles.optionSubtitle}>Manage your profile</Text>
           </View>
         </View>
-        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
+        <Feather name="chevron-right" size={22} color="#999" />
       </TouchableOpacity>
 
       {/* Notifications */}
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
           <View style={styles.optionIcon}>
-            <Feather name=\"bell\" size={20} color=\"#16A34A\" />
+            <Feather name="bell" size={20} color="#16A34A" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Notifications</Text>
             <Text style={styles.optionSubtitle}>Push notifications & alerts</Text>
           </View>
         </View>
-        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
+        <Feather name="chevron-right" size={22} color="#999" />
       </TouchableOpacity>
 
       {/* Logout */}
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Feather name=\"log-out\" size={20} color=\"#dc2626\" style={{ marginRight: 8 }} />
+        <Feather name="log-out" size={20} color="#dc2626" style={{ marginRight: 8 }} />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -166,6 +167,7 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
   const router = useRouter();
   const [expertProfile, setExpertProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     getVerificationStatus()
@@ -173,11 +175,25 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+  const fetchProfile = useCallback(() => {
+    return getVerificationStatus()
+      .then((res) => setExpertProfile(res.data.profile))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    fetchProfile().finally(() => setLoading(false));
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProfile().finally(() => setRefreshing(false));
+  };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size=\"large\" color=\"#16A34A\" />
+        <ActivityIndicator size="large" color="#16A34A" />
       </View>
     );
   }
@@ -192,6 +208,12 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
 
   return (
     <ScrollView style={styles.container}>
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      tintColor="#16A34A"
+      colors={["#16A34A"]}
+    />
       {/* Profile Card */}
       <View style={styles.profileCard}>
         <View style={[styles.avatar, { backgroundColor: '#1d4ed8' }]}>
@@ -238,6 +260,23 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
         </View>
       )}
 
+      {/* Badges */}
+        {isApproved && expertProfile?.displayBadges?.length > 0 && (
+          <View style={[styles.optionCard, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+            <Text style={styles.sectionLabel}>Badges</Text>
+            <View style={styles.chipRow}>
+              {expertProfile.displayBadges.map((badge: string) => (
+                <View key={badge} style={styles.badgeChip}>
+                  <Ionicons name="checkmark-circle" size={12} color="#16A34A" />
+                  <Text style={styles.badgeChipText}>
+                    {badge.replace(/_/g, ' ')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
       {/* Verification Status */}
       <TouchableOpacity
         style={styles.optionCard}
@@ -245,7 +284,7 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
       >
         <View style={styles.optionLeft}>
           <View style={styles.optionIcon}>
-            <Ionicons name=\"ribbon-outline\" size={20} color=\"#16A34A\" />
+            <Ionicons name="ribbon-outline" size={20} color="#16A34A" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Verification Status</Text>
@@ -254,57 +293,42 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
             </Text>
           </View>
         </View>
-        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
+        <Feather name="chevron-right" size={22} color="#999" />
       </TouchableOpacity>
 
-      {/* Badges */}
-      {isApproved && expertProfile?.displayBadges?.length > 0 && (
-        <View style={[styles.optionCard, { flexDirection: 'column', alignItems: 'flex-start' }]}>
-          <Text style={styles.sectionLabel}>Badges</Text>
-          <View style={styles.chipRow}>
-            {expertProfile.displayBadges.map((badge: string) => (
-              <View key={badge} style={styles.badgeChip}>
-                <Ionicons name=\"checkmark-circle\" size={12} color=\"#16A34A\" />
-                <Text style={styles.badgeChipText}>
-                  {badge.replace(/_/g, ' ')}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
+
 
       {/* Account Settings */}
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
           <View style={styles.optionIcon}>
-            <Feather name=\"user\" size={20} color=\"#16A34A\" />
+            <Feather name="user" size={20} color="#16A34A" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Account Settings</Text>
             <Text style={styles.optionSubtitle}>Manage your profile</Text>
           </View>
         </View>
-        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
+        <Feather name="chevron-right" size={22} color="#999" />
       </TouchableOpacity>
 
       {/* Notifications */}
       <TouchableOpacity style={styles.optionCard}>
         <View style={styles.optionLeft}>
           <View style={styles.optionIcon}>
-            <Feather name=\"bell\" size={20} color=\"#16A34A\" />
+            <Feather name="bell" size={20} color="#16A34A" />
           </View>
           <View>
             <Text style={styles.optionTitle}>Notifications</Text>
             <Text style={styles.optionSubtitle}>Push notifications & alerts</Text>
           </View>
         </View>
-        <Feather name=\"chevron-right\" size={22} color=\"#999\" />
+        <Feather name="chevron-right" size={22} color="#999" />
       </TouchableOpacity>
 
       {/* Logout */}
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Feather name=\"log-out\" size={20} color=\"#dc2626\" style={{ marginRight: 8 }} />
+        <Feather name="log-out" size={20} color="#dc2626" style={{ marginRight: 8 }} />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
