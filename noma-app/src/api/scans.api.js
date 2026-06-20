@@ -61,7 +61,7 @@ export const createScan = async (scanData, onProgress = null) => {
 export const getScans = async (params = {}) => {
   const response = await client.get('/scans', { params });
   return {
-    scans: response,
+    scans: response?.data || [],
     pagination: response?.pagination,
   };
 };

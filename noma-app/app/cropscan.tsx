@@ -28,17 +28,17 @@ import { pollUntilDiagnosed } from '@/src/utils/pollScan'
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
 
 const CROPS = [
-  { id: 'maize', name: 'Maize', scientificName: 'Masara', category: 'Cereals' },
-  { id: 'rice', name: 'Rice', scientificName: 'shinkafa', category: 'Cereals' },
-  { id: 'tomato', name: 'Tomato', scientificName: 'Tumatur', category: 'Vegetables' },
-  { id: 'beans', name: 'Beans', scientificName: 'Wake', category: 'Legumes' },
-  { id: 'cassava', name: 'Cassava', scientificName: 'Rogo', category: 'Tubers' },
-  { id: 'cabbage', name: 'Cabbage', scientificName: 'Kabeji', category: 'Vegetables' },
-  { id: 'cucumber', name: 'Cucumber', scientificName: 'Kokomba', category: 'Vegetables' },
-  { id: 'onion', name: 'Onion', scientificName: 'Albasa', category: 'Vegetables' },
-  { id: 'yam', name: 'Yam', scientificName: 'Doya', category: 'Tubers' },
-  { id: 'potato', name: 'Potato', scientificName: 'Dankali', category: 'Tubers' },
-  { id: 'other', name: 'Other', scientificName: 'Sauransu', category: 'Other' },
+  { id: 'maize', name: 'Maize', scientificName: 'Zea mays (Masara)', category: 'Cereals' },
+  { id: 'rice', name: 'Rice', scientificName: 'Oryza sativa (Shinkafa)', category: 'Cereals' },
+  { id: 'tomato', name: 'Tomato', scientificName: 'Solanum lycopersicum (Tumatur)', category: 'Vegetables' },
+  { id: 'beans', name: 'Beans', scientificName: 'Phaseolus vulgaris (Wake)', category: 'Legumes' },
+  { id: 'cassava', name: 'Cassava', scientificName: 'Manihot esculenta (Rogo)', category: 'Tubers' },
+  { id: 'cabbage', name: 'Cabbage', scientificName: 'Brassica oleracea (Kabeji)', category: 'Vegetables' },
+  { id: 'cucumber', name: 'Cucumber', scientificName: 'Cucumis sativus (Kokomba)', category: 'Vegetables' },
+  { id: 'onion', name: 'Onion', scientificName: 'Allium cepa (Albasa)', category: 'Vegetables' },
+  { id: 'yam', name: 'Yam', scientificName: 'Dioscorea (Doya)', category: 'Tubers' },
+  { id: 'potato', name: 'Potato', scientificName: 'Solanum tuberosum (Dankali)', category: 'Tubers' },
+  { id: 'other', name: 'Other', scientificName: 'Other Crops (Sauransu)', category: 'Other' },
 ];
 
 const CATEGORIES = [
@@ -62,7 +62,6 @@ export default function CropScan() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isProcessing, setIsProcessing] = useState(false);
-  const crop_type = ['tomato', 'rice', 'beans', 'maize', 'other'];
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState<'uploading' | 'analyzing' | null>(null);
   const languageCode = useMemo(() => {
@@ -359,86 +358,97 @@ export default function CropScan() {
 
       {/* Preview modal */}
       <Modal visible={previewVisible} animationType="slide" onRequestClose={() => setPreviewVisible(false)}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
           <View style={{ flex: 1 }}>
             {photo ? (
               <View style={{ flex: 1 }}>
-              <Image
-                source={{ uri: (photo as any).uri }}
-                style={{ flex: 1, resizeMode: 'contain' }}
-              />
+                <View style={{ height: 250, backgroundColor: '#000' }}>
+                  <Image
+                    source={{ uri: (photo as any).uri }}
+                    style={{ flex: 1, resizeMode: 'contain' }}
+                  />
+                  <TouchableOpacity
+                    style={styles.closePreview}
+                    onPress={() => setPreviewVisible(false)}
+                  >
+                    <Ionicons name="close" size={24} color="#fff" />
+                  </TouchableOpacity>
+                </View>
 
-              {/* Step header */}
-              <View style={styles.stepHeader}>
-                <View style={styles.stepBadge}><Text style={styles.stepBadgeText}>1</Text></View>
-                <Text style={styles.stepTitle}>Select your crop</Text>
-              </View>
+                {/* Step header */}
+                <View style={styles.stepHeader}>
+                  <View style={styles.stepBadge}><Text style={styles.stepBadgeText}>1</Text></View>
+                  <Text style={styles.stepTitle}>Select your crop</Text>
+                </View>
 
-              {/* Search */}
-              <View style={styles.searchBox}>
-                <Ionicons name="search-outline" size={16} color="#9CA3AF" />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search crops (e.g. Maize, Tomato, Cassava...)"
-                  placeholderTextColor="#9CA3AF"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
+                {/* Search */}
+                <View style={styles.searchBox}>
+                  <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search crops (e.g. Maize, Tomato, Cassava...)"
+                    placeholderTextColor="#9CA3AF"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+                </View>
+
+                {/* Category pills */}
+                <View>
+                  <FlatList
+                    data={CATEGORIES}
+                    keyExtractor={item => item.id}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.categoryList}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        onPress={() => setSelectedCategory(item.id)}
+                        style={[styles.categoryPill, selectedCategory === item.id && styles.categoryPillActive]}
+                      >
+                        <Ionicons
+                          name={item.icon as any}
+                          size={16}
+                          color={selectedCategory === item.id ? '#fff' : '#6B7280'}
+                        />
+                        <Text style={[styles.categoryText, selectedCategory === item.id && styles.categoryTextActive]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+
+                {/* Crop list */}
+                <FlatList
+                  data={filteredCrops}
+                  keyExtractor={item => item.id}
+                  style={styles.cropList}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  renderItem={({ item }) => {
+                    const isSelected = selectedCrop === item.id;
+                    return (
+                      <TouchableOpacity
+                        onPress={() => setSelectedCrop(item.id)}
+                        style={[styles.cropRow, isSelected && styles.cropRowSelected]}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.cropName, isSelected && { color: '#16A34A' }]}>{item.name}</Text>
+                          <Text style={styles.cropSci}>{item.scientificName}</Text>
+                        </View>
+                        {isSelected && (
+                          <View style={styles.checkCircle}>
+                            <Ionicons name="checkmark" size={14} color="#fff" />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  }}
                 />
               </View>
-
-              {/* Category pills */}
-              <FlatList
-                data={CATEGORIES}
-                keyExtractor={item => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.categoryList}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    onPress={() => setSelectedCategory(item.id)}
-                    style={[styles.categoryPill, selectedCategory === item.id && styles.categoryPillActive]}
-                  >
-                    <Ionicons
-                      name={item.icon as any}
-                      size={14}
-                      color={selectedCategory === item.id ? '#fff' : '#6B7280'}
-                    />
-                    <Text style={[styles.categoryText, selectedCategory === item.id && styles.categoryTextActive]}>
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              />
-
-              {/* Crop list */}
-              <FlatList
-                data={filteredCrops}
-                keyExtractor={item => item.id}
-                style={styles.cropList}
-                renderItem={({ item }) => {
-                  const isSelected = selectedCrop === item.id;
-                  return (
-                    <TouchableOpacity
-                      onPress={() => setSelectedCrop(item.id)}
-                      style={[styles.cropRow, isSelected && styles.cropRowSelected]}
-                    >
-                      <View>
-                        <Text style={styles.cropName}>{item.name}</Text>
-                        <Text style={styles.cropSci}>{item.scientificName}</Text>
-                      </View>
-                      {isSelected && (
-                        <View style={styles.checkCircle}>
-                          <Ionicons name="checkmark" size={14} color="#fff" />
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  );
-                }}
-              />
-            </View>
             ) : (
               <View style={styles.center}>
-                <Text style={{ color: 'white' }}>No image</Text>
+                <Text style={{ color: '#000' }}>No image</Text>
               </View>
             )}
           </View>
@@ -454,15 +464,15 @@ export default function CropScan() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.previewButton, styles.previewButtonPrimary, isProcessing && { opacity: 0.6 }]}
+              style={[styles.previewButton, styles.previewButtonPrimary, (!selectedCrop || isProcessing) && { opacity: 0.6 }]}
               onPress={imgCrop}
-              disabled={isProcessing}
+              disabled={isProcessing || !selectedCrop}
             >
               {isProcessing ? (
                 <>
                   <ActivityIndicator size="small" color="white" />
                   <Text style={[styles.previewButtonPrimaryText, { marginLeft: 8 }]}>
-                    {processingStep == 'uploading' ? 'Uploading...' : 'Analyzing...'}
+                    {processingStep === 'uploading' ? 'Uploading...' : 'Analyzing...'}
                   </Text>
                 </>
               ) : (
@@ -572,6 +582,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
   previewButton: {
     flex: 1,
@@ -635,22 +648,23 @@ cropText: {
 cropTextSelected: {
   color: '#fff',
 },
-stepHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 16, paddingBottom: 0 },
-stepBadge: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' },
-stepBadgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-stepTitle: { fontSize: 15, fontWeight: '600', color: '#111' },
-searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, margin: 12, marginBottom: 0, borderWidth: 0.5, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#F9FAFB' },
-searchInput: { flex: 1, fontSize: 14, color: '#111' },
-categoryList: { paddingHorizontal: 12, paddingVertical: 12, gap: 8 },
-categoryPill: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, backgroundColor: '#F3F4F6', borderWidth: 0.5, borderColor: '#E5E7EB' },
+stepHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, paddingBottom: 8 },
+stepBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' },
+stepBadgeText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+stepTitle: { fontSize: 17, fontWeight: '700', color: '#111' },
+searchBox: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 16, marginBottom: 8, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fff' },
+searchInput: { flex: 1, fontSize: 15, color: '#111' },
+categoryList: { paddingHorizontal: 16, paddingVertical: 8, gap: 10 },
+categoryPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB' },
 categoryPillActive: { backgroundColor: '#16A34A', borderColor: '#16A34A' },
-categoryText: { fontSize: 13, color: '#6B7280', fontWeight: '500' },
+categoryText: { fontSize: 14, color: '#6B7280', fontWeight: '600' },
 categoryTextActive: { color: '#fff' },
-cropList: { flex: 1 },
-cropRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: '#F3F4F6' },
-cropRowSelected: { backgroundColor: '#F0FDF4' },
-cropName: { fontSize: 14, fontWeight: '600', color: '#111' },
-cropSci: { fontSize: 12, color: '#9CA3AF', fontStyle: 'italic', marginTop: 2 },
-checkCircle: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' },
+cropList: { flex: 1, backgroundColor: '#fff' },
+cropRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+cropRowSelected: { backgroundColor: '#F0FDF4', borderBottomColor: '#DCFCE7' },
+cropName: { fontSize: 15, fontWeight: '700', color: '#111' },
+cropSci: { fontSize: 13, color: '#6B7280', fontStyle: 'italic', marginTop: 3 },
+checkCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' },
+closePreview: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, padding: 4 },
 
 });

@@ -4,47 +4,103 @@ import { FontAwesome, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
 import Data from '@/constants/data.json'
 import WeatherCard from '../components/WeatherCard';
 import AdminDashboard from '../(admin)/adminDashboard'
+import { getScans } from '@/src/api/scans.api';
+
+const RECENT_SCANS_CACHE_KEY = '@nomaapp_recent_scans_cache';
 
 export default function HomeScreen() {
   const { language, setLanguage } = useLanguage();
   const { user } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [diagnosisHistory, setDiagnosisHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === 'farmer') {
+      loadCachedHistory();
+      fetchHistory();
+    }
+  }, [user]);
+
+  const loadCachedHistory = async () => {
+    try {
+      const cacheKey = `${RECENT_SCANS_CACHE_KEY}_${user?._id || user?.id}`;
+      const cachedData = await AsyncStorage.getItem(cacheKey);
+      if (cachedData) {
+        setDiagnosisHistory(JSON.parse(cachedData));
+      }
+    } catch (error) {
+      console.error('Failed to load cached diagnosis history', error);
+    }
+  };
+
+  const fetchHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const response = await getScans({ limit: 3 });
+      if (response.scans && Array.isArray(response.scans)) {
+        const topThree = response.scans.slice(0, 3);
+        setDiagnosisHistory(topThree);
+
+        // Update Cache
+        const cacheKey = `${RECENT_SCANS_CACHE_KEY}_${user?._id || user?.id}`;
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(topThree));
+      }
+    } catch (error) {
+      console.error('Failed to fetch diagnosis history', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
    if (user?.role === 'admin') {
      return <AdminDashboard />;
    }
 
-  const diagnosisHistory = [
-    {
-      id: '1',
-      name: 'Tomato leaf spot scan',
-      date: 'May 5, 2026',
-      details: 'AI diagnosis detected possible early blight. Verification needed.',
-      status: 'pending' as const,
-    },
-    {
-      id: '2',
-      name: 'Maize nutrient check',
-      date: 'May 3, 2026',
-      details: 'Successful recommendation sent for fertilizer adjustment.',
-      status: 'completed' as const,
-    },
-    {
-      id: '3',
-      name: 'Cassava root health',
-      date: 'Apr 28, 2026',
-      details: 'Scan failed to get clear results due to low image quality.',
-      status: 'failed' as const,
-    },
-  ];
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(language === 'english' ? 'en-US' : 'ha-NG', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'diagnosed':
+      case 'completed':
+        return styles.completedBadge;
+      case 'pending':
+      case 'processing':
+        return styles.pendingBadge;
+      case 'failed':
+        return styles.failedBadge;
+      default:
+        return styles.pendingBadge;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    if (language === 'hausa') {
+      switch (status) {
+        case 'diagnosed': return 'An kammala';
+        case 'pending': return 'Ana jira';
+        case 'processing': return 'Ana dubawa';
+        case 'failed': return 'Ya gaza';
+        default: return status;
+      }
+    }
+    return status === 'diagnosed' ? 'completed' : status;
+  };
 
   return (
-
     <ScrollView style={styles.container}>
       <WeatherCard />
 
@@ -97,43 +153,73 @@ export default function HomeScreen() {
 
       {/* Recent Diagnosis History */}
       <View style={styles.historyHeader}>
-        <Text style={styles.historyTitle}>Recent diagnosis history</Text>
-        {/* <Text style={styles.historySubtitle}>
-          Review the status of your last AI scans and follow up where needed.
-        </Text> */}
+        <Text style={styles.historyTitle}>
+          {language === 'english' ? 'Recent diagnosis history' : 'Tarihin bincike na kwanan nan'}
+        </Text>
       </View>
 
       <View style={styles.historyList}>
-        {diagnosisHistory.map((item) => (
-          <TouchableOpacity key={item.id} style={styles.historyCard}>
-            <View style={styles.historyRow}>
-              <View style={styles.historyTextBlock}>
-                <Text style={styles.historyName}>{item.name}</Text>
-                <Text style={styles.historyDate}>{item.date}</Text>
-              </View>
-              <View
-                style={[
-                  styles.historyBadge,
-                  item.status === 'completed'
-                    ? styles.completedBadge
-                    : item.status === 'pending'
-                    ? styles.pendingBadge
-                    : styles.failedBadge,
-                ]}
-              >
-                <Text
+        {loadingHistory ? (
+          <ActivityIndicator color="#16A34A" style={{ marginVertical: 20 }} />
+        ) : !Array.isArray(diagnosisHistory) || diagnosisHistory.length === 0 ? (
+          <View style={styles.emptyHistory}>
+            <Text style={styles.emptyHistoryText}>
+              {language === 'english' ? 'No recent scans found' : 'Ba a sami tarihin bincike ba'}
+            </Text>
+          </View>
+        ) : (
+          diagnosisHistory.map((item) => (
+            <TouchableOpacity
+              key={item._id}
+              style={styles.historyCard}
+              onPress={() => {
+                if (item.status === 'diagnosed') {
+                  router.push({
+                    pathname: '/treatment-rec',
+                    params: {
+                      scanResult: JSON.stringify({
+                        disease: item.diagnosis?.disease,
+                        name: item.diagnosis?.name,
+                        cropType: item.cropType,
+                        confidence: item.diagnosis?.confidence,
+                        severity: item.diagnosis?.severity,
+                        recommendations: item.diagnosis?.recommendations,
+                        futurePrevention: item.diagnosis?.futurePrevention,
+                        language: item.diagnosis?.language,
+                        isOnline: true,
+                        scanId: item._id,
+                      })
+                    }
+                  });
+                }
+              }}
+            >
+              <View style={styles.historyRow}>
+                <View style={styles.historyTextBlock}>
+                  <Text style={styles.historyName}>
+                    {item.diagnosis?.name || `${item.cropType.toUpperCase()} scan`}
+                  </Text>
+                  <Text style={styles.historyDate}>{formatDate(item.createdAt)}</Text>
+                </View>
+                <View
                   style={[
-                    styles.historyBadgeText,
-                    item.status === 'failed' && styles.failedBadgeText,
+                    styles.historyBadge,
+                    getStatusBadge(item.status),
                   ]}
                 >
-                  {item.status}
-                </Text>
+                  <Text
+                    style={[
+                      styles.historyBadgeText,
+                      item.status === 'failed' && styles.failedBadgeText,
+                    ]}
+                  >
+                    {getStatusText(item.status)}
+                  </Text>
+                </View>
               </View>
-            </View>
-            {/* <Text style={styles.historyDetails}>{item.details}</Text> */}
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </View>
     </ScrollView>
   );
@@ -332,5 +418,18 @@ const styles = StyleSheet.create({
   },
   failedBadgeText: {
     color: '#C62828',
+  },
+  emptyHistory: {
+    padding: 30,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8F5ED',
+  },
+  emptyHistoryText: {
+    color: '#7C8B88',
+    fontSize: 14,
+    fontStyle: 'italic',
   },
 });

@@ -11,6 +11,7 @@ import logger from '@/src/utils/logger';
 import { useAuth } from '@/src/hooks/useAuth';
 import { getById } from '../../src/data/useTreatment.js';
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
+import IssueCard from '@/app/components/IssueCard';
 
 
 interface ScanResult {
@@ -239,21 +240,13 @@ const TreatmentRecommendationScreen = () => {
         <Text style={styles.header}>Analysis Results</Text>
 
         {/* Detected Issue */}
-        <View style={styles.issueCard}>
-          <View style={styles.issueHeader}>
-            <Ionicons name="warning-outline" size={20} color="#c0392b" />
-            <Text style={styles.issueLabel}>
-              {languageCode === 'ha' ? 'Matsalar da Muka Gano' : 'Detected Issue'}
-            </Text>
-          </View>
-          <Text style={styles.issueTitle}>
-            {scanResult?.name || scanResult?.disease}
-          </Text>
-          <Text style={styles.issueCrop}>Crop: {scanResult?.cropDetected || scanResult?.cropType}</Text>
-          <Text style={styles.issueInfo}>
-            {`Confidence: ${Math.round((scanResult?.confidence || 0) * 100)}% • Severity: ${scanResult?.severity || 'unknown'}`}
-          </Text>
-        </View>
+        {/* ✅ New animated card */}
+        <IssueCard
+          diseaseName={scanResult?.name || scanResult?.disease || 'Unknown issue'}
+          cropType={scanResult?.cropDetected || scanResult?.cropType || 'Unknown crop'}
+          confidence={scanResult?.confidence || 0}
+          severity={scanResult?.severity}
+        />
 
         {/* Low Confidence Warning Banner */}
           {isLowConfidence && (
@@ -360,7 +353,7 @@ const TreatmentRecommendationScreen = () => {
             style={[styles.expertButton,
             isLowConfidence && styles.expertButtonHighlighted,
             ]}
-            onPress={() => router.push('../(tabs)/community')}
+            onPress={() => router.push('../(tabs)/expertChat')}
           >
             <Text style={styles.buttonText}>
               {languageCode === "ha" ? "Tambayi Kwararru" : "Ask Expert"}
@@ -389,40 +382,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginBottom: 15,
     color: "#111",
-  },
-  issueCard: {
-    backgroundColor: "#fdecea",
-    borderWidth: 1,
-    borderColor: "#f5c6cb",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
-  },
-  issueHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 5,
-  },
-  issueLabel: {
-    color: "#c0392b",
-    fontWeight: "600",
-    fontSize: 15,
-    marginLeft: 5,
-  },
-  issueTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#b22222",
-    marginBottom: 5,
-  },
-  issueCrop: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#b34b4b",
-  },
-  issueInfo: {
-    fontSize: 14,
-    color: "#b34b4b",
   },
 fallbackBanner: {
   flexDirection: 'row',
