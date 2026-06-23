@@ -42,6 +42,8 @@ const SignupScreen = () => {
   const { completeOnboarding } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
+    state: "",
+    lga: "",
     phone: "",
     password: "",
     role: "",
@@ -50,6 +52,8 @@ const SignupScreen = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
+    state?: string;
+    lga?: string;
     phone?: string;
     password?: string;
     role?: string;
@@ -62,6 +66,16 @@ const SignupScreen = () => {
       newErrors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
       newErrors.name = "Name must be at least 2 characters";
+    }
+    if (!formData.state.trim()) {
+        newErrors.state = "State is Required";
+    } else if (formData.state.trim().length < 3){
+        newErrors.state = "state must be at least 3 characters"
+    }
+    if (!formData.lga.trim()) {
+        newErrors.lga = "LGA is Required";
+    } else if (formData.lga.trim().length < 3){
+        newErrors.lga = "LGA must be at least 3 characters"
     }
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
@@ -86,6 +100,8 @@ const SignupScreen = () => {
     try {
       const response = await register({
         name: formData.name,
+        state: formData.state,
+        lga: formData.lga,
         phone: formData.phone,
         password: formData.password,
         role: formData.role,
@@ -189,27 +205,79 @@ const SignupScreen = () => {
           </View>
 
           {/* Phone */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Phone Number</Text>
+              <View style={[styles.inputWrapper, errors.phone && styles.inputError]}>
+                <Ionicons
+                  name="call-outline"
+                  size={18}
+                  color={COLORS.textLight}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Enter your phone number"
+                  placeholderTextColor={COLORS.textLight}
+                  keyboardType="phone-pad"
+                  value={formData.phone}
+                  onChangeText={(text) => handleInputChange("phone", text)}
+                  editable={!loading}
+                />
+              </View>
+              {errors.phone && (
+                <Text style={styles.errorText}>{errors.phone}</Text>
+              )}
+            </View>
+
+          {/* State of residence */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Phone Number</Text>
-            <View style={[styles.inputWrapper, errors.phone && styles.inputError]}>
+            <Text style={styles.label}>State</Text>
+            <View style={[styles.inputWrapper, errors.state && styles.inputError]}>
               <Ionicons
-                name="call-outline"
+                name="location-outline"
                 size={18}
                 color={COLORS.textLight}
                 style={styles.inputIcon}
               />
               <TextInput
                 style={styles.inputField}
-                placeholder="Enter your phone number"
+                placeholder="Enter your State of residence"
                 placeholderTextColor={COLORS.textLight}
-                keyboardType="phone-pad"
-                value={formData.phone}
-                onChangeText={(text) => handleInputChange("phone", text)}
+                autoCapitalize="words"
+                value={formData.state}
+                onChangeText={(text) => handleInputChange("state", text)}
                 editable={!loading}
               />
             </View>
-            {errors.phone && (
-              <Text style={styles.errorText}>{errors.phone}</Text>
+            {/* Fixed: was inside Modal before */}
+            {errors.state && (
+              <Text style={styles.errorText}>{errors.state}</Text>
+            )}
+          </View>
+
+          {/* LGA of residence */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>LGA:</Text>
+            <View style={[styles.inputWrapper, errors.lga && styles.inputError]}>
+              <Ionicons
+                name="location-outline"
+                size={18}
+                color={COLORS.textLight}
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.inputField}
+                placeholder="Enter your LGA of residence"
+                placeholderTextColor={COLORS.textLight}
+                autoCapitalize="words"
+                value={formData.lga}
+                onChangeText={(text) => handleInputChange("lga", text)}
+                editable={!loading}
+              />
+            </View>
+            {/* Fixed: was inside Modal before */}
+            {errors.state && (
+              <Text style={styles.errorText}>{errors.lga}</Text>
             )}
           </View>
 
