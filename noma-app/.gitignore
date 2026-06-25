@@ -10,6 +10,9 @@ dist/
 web-build/
 expo-env.d.ts
 
+.easignore
+new.sh
+
 # Native
 .kotlin/
 *.orig.*
