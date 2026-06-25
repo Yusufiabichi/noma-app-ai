@@ -240,7 +240,6 @@ const TreatmentRecommendationScreen = () => {
         <Text style={styles.header}>Analysis Results</Text>
 
         {/* Detected Issue */}
-        {/* ✅ New animated card */}
         <IssueCard
           diseaseName={scanResult?.name || scanResult?.disease || 'Unknown issue'}
           cropType={scanResult?.cropDetected || scanResult?.cropType || 'Unknown crop'}
@@ -265,7 +264,7 @@ const TreatmentRecommendationScreen = () => {
             </View>
           )}
 
-          {scanResult?.isFallback && (
+          {scanResult?.isFallback && !isLowConfidence && (
               <View style={styles.fallbackBanner}>
                 <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
                 <Text style={styles.fallbackText}>

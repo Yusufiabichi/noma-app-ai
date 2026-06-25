@@ -378,7 +378,7 @@ export default function CropScan() {
                 {/* Step header */}
                 <View style={styles.stepHeader}>
                   <View style={styles.stepBadge}><Text style={styles.stepBadgeText}>1</Text></View>
-                  <Text style={styles.stepTitle}>Select your crop</Text>
+                  <Text style={styles.stepTitle}>Select your crop type</Text>
                 </View>
 
                 {/* Search */}

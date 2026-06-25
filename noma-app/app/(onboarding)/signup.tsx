@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   TouchableOpacity,
@@ -11,6 +11,8 @@ import {
   Modal,
   FlatList,
   Image,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -156,12 +158,20 @@ const SignupScreen = () => {
     setShowRoleModal(false);
   };
 
+  const scrollRef = useRef<ScrollView>(null);
+
   const selectedRoleLabel =
     ROLES.find((r) => r.value === formData.role)?.label || "Select your role";
 
   return (
+  <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
     <View style={styles.container}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -322,6 +332,11 @@ const SignupScreen = () => {
                 style={styles.inputIcon}
               />
               <TextInput
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollTo({ y: 600, animated: true });
+                  }, 100);
+                }}
                 style={[styles.inputField, { flex: 1 }]}
                 placeholder="Min. 6 characters"
                 placeholderTextColor={COLORS.textLight}
@@ -606,6 +621,7 @@ const SignupScreen = () => {
         </View>
       </Modal>
     </View>
+  </KeyboardAvoidingView>
   );
 };
 
