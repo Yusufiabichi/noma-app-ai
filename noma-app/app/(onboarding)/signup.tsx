@@ -18,6 +18,9 @@ import { useLanguage } from "@/src/context/LanguageContext";
 import { register } from "@/src/api/auth.api";
 import { setAuthToken } from "@/src/api/client";
 import { setUserData } from "@/src/hooks/useAuth";
+import LOCATIONS_DATA from "@/assets/data/locations.json";
+
+const LOCATIONS = LOCATIONS_DATA as Record<string, string[]>;
 
 const COLORS = {
   primary: "#16A34A",
@@ -59,33 +62,36 @@ const SignupScreen = () => {
     role?: string;
   }>({});
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showStateModal, setShowStateModal] = useState(false);
+  const [showLGAModal, setShowLGAModal] = useState(false);
+  const [locationSearch, setLocationSearch] = useState("");
+
+  const states = Object.keys(LOCATIONS).sort();
+  const filteredStates = states.filter(s =>
+    s.toLowerCase().includes(locationSearch.toLowerCase())
+  );
+
+  const lgas = formData.state ? LOCATIONS[formData.state].sort() : [];
+  const filteredLGAs = lgas.filter(l =>
+    l.toLowerCase().includes(locationSearch.toLowerCase())
+  );
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
     }
-    if (!formData.state.trim()) {
-        newErrors.state = "State is Required";
-    } else if (formData.state.trim().length < 3){
-        newErrors.state = "state must be at least 3 characters"
+    if (!formData.state) {
+      newErrors.state = "State is required";
     }
-    if (!formData.lga.trim()) {
-        newErrors.lga = "LGA is Required";
-    } else if (formData.lga.trim().length < 3){
-        newErrors.lga = "LGA must be at least 3 characters"
+    if (!formData.lga) {
+      newErrors.lga = "LGA is required";
     }
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\d{10,}$/.test(formData.phone.replace(/\D/g, ""))) {
-      newErrors.phone = "Please enter a valid phone number";
     }
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
     }
     if (!formData.role) {
       newErrors.role = "Please select a role";
@@ -128,6 +134,20 @@ const SignupScreen = () => {
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData({ ...formData, [field]: value });
     setErrors({ ...errors, [field]: undefined });
+  };
+
+  const handleStateSelect = (state: string) => {
+    setFormData({ ...formData, state, lga: "" });
+    setErrors({ ...errors, state: undefined, lga: undefined });
+    setShowStateModal(false);
+    setLocationSearch("");
+  };
+
+  const handleLGASelect = (lga: string) => {
+    setFormData({ ...formData, lga });
+    setErrors({ ...errors, lga: undefined });
+    setShowLGAModal(false);
+    setLocationSearch("");
   };
 
   const handleRoleSelect = (role: string) => {
@@ -198,7 +218,6 @@ const SignupScreen = () => {
                 editable={!loading}
               />
             </View>
-            {/* Fixed: was inside Modal before */}
             {errors.name && (
               <Text style={styles.errorText}>{errors.name}</Text>
             )}
@@ -232,24 +251,25 @@ const SignupScreen = () => {
           {/* State of residence */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>State</Text>
-            <View style={[styles.inputWrapper, errors.state && styles.inputError]}>
+            <TouchableOpacity
+              style={[styles.inputWrapper, errors.state && styles.inputError]}
+              onPress={() => {
+                setLocationSearch("");
+                setShowStateModal(true);
+              }}
+              disabled={loading}
+            >
               <Ionicons
                 name="location-outline"
                 size={18}
                 color={COLORS.textLight}
                 style={styles.inputIcon}
               />
-              <TextInput
-                style={styles.inputField}
-                placeholder="Enter your State of residence"
-                placeholderTextColor={COLORS.textLight}
-                autoCapitalize="words"
-                value={formData.state}
-                onChangeText={(text) => handleInputChange("state", text)}
-                editable={!loading}
-              />
-            </View>
-            {/* Fixed: was inside Modal before */}
+              <Text style={[styles.inputField, !formData.state && { color: COLORS.textLight }]}>
+                {formData.state || "Select State"}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color={COLORS.textLight} />
+            </TouchableOpacity>
             {errors.state && (
               <Text style={styles.errorText}>{errors.state}</Text>
             )}
@@ -257,26 +277,31 @@ const SignupScreen = () => {
 
           {/* LGA of residence */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>LGA:</Text>
-            <View style={[styles.inputWrapper, errors.lga && styles.inputError]}>
+            <Text style={styles.label}>LGA</Text>
+            <TouchableOpacity
+              style={[styles.inputWrapper, errors.lga && styles.inputError, !formData.state && { opacity: 0.6 }]}
+              onPress={() => {
+                if (!formData.state) {
+                  Alert.alert("Select State First", "Please select a state to see available LGAs.");
+                  return;
+                }
+                setLocationSearch("");
+                setShowLGAModal(true);
+              }}
+              disabled={loading || !formData.state}
+            >
               <Ionicons
-                name="location-outline"
+                name="map-outline"
                 size={18}
                 color={COLORS.textLight}
                 style={styles.inputIcon}
               />
-              <TextInput
-                style={styles.inputField}
-                placeholder="Enter your LGA of residence"
-                placeholderTextColor={COLORS.textLight}
-                autoCapitalize="words"
-                value={formData.lga}
-                onChangeText={(text) => handleInputChange("lga", text)}
-                editable={!loading}
-              />
-            </View>
-            {/* Fixed: was inside Modal before */}
-            {errors.state && (
+              <Text style={[styles.inputField, !formData.lga && { color: COLORS.textLight }]}>
+                {formData.lga || "Select LGA"}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color={COLORS.textLight} />
+            </TouchableOpacity>
+            {errors.lga && (
               <Text style={styles.errorText}>{errors.lga}</Text>
             )}
           </View>
@@ -464,6 +489,118 @@ const SignupScreen = () => {
               onPress={() => setShowRoleModal(false)}
             >
               <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* State Modal */}
+      <Modal
+        visible={showStateModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowStateModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { height: '80%' }]}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Select State</Text>
+
+            <View style={styles.modalSearchBox}>
+              <Ionicons name="search-outline" size={18} color={COLORS.textLight} />
+              <TextInput
+                style={styles.modalSearchInput}
+                placeholder="Search states..."
+                value={locationSearch}
+                onChangeText={setLocationSearch}
+                autoFocus={false}
+              />
+            </View>
+
+            <FlatList
+              data={filteredStates}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.roleOption,
+                    formData.state === item && styles.roleOptionSelected,
+                  ]}
+                  onPress={() => handleStateSelect(item)}
+                >
+                  <Text style={[
+                    styles.roleOptionText,
+                    formData.state === item && styles.roleOptionTextSelected,
+                  ]}>
+                    {item}
+                  </Text>
+                  {formData.state === item && (
+                    <Ionicons name="checkmark-circle" size={22} color={COLORS.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowStateModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* LGA Modal */}
+      <Modal
+        visible={showLGAModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowLGAModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { height: '80%' }]}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Select LGA in {formData.state}</Text>
+
+            <View style={styles.modalSearchBox}>
+              <Ionicons name="search-outline" size={18} color={COLORS.textLight} />
+              <TextInput
+                style={styles.modalSearchInput}
+                placeholder="Search LGAs..."
+                value={locationSearch}
+                onChangeText={setLocationSearch}
+                autoFocus={false}
+              />
+            </View>
+
+            <FlatList
+              data={filteredLGAs}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.roleOption,
+                    formData.lga === item && styles.roleOptionSelected,
+                  ]}
+                  onPress={() => handleLGASelect(item)}
+                >
+                  <Text style={[
+                    styles.roleOptionText,
+                    formData.lga === item && styles.roleOptionTextSelected,
+                  ]}>
+                    {item}
+                  </Text>
+                  {formData.lga === item && (
+                    <Ionicons name="checkmark-circle" size={22} color={COLORS.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowLGAModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -729,6 +866,21 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "600",
+  },
+  modalSearchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+  },
+  modalSearchInput: {
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: COLORS.textDark,
+    marginLeft: 8,
   },
 });
 
