@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { uploadExpertDocuments } from "@/src/api/expert.api";
+import StageSuccessModal from "@/app/components/StageSuccessModal";
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -18,7 +19,6 @@ const COLORS = {
 
 const GOV_ID_TYPES = [
   { label: "National Identification Number (NIN)", value: "NIN"      },
-  { label: "National ID Card",                     value: "NationalID"},
   { label: "Driver's License",                     value: "DriversLicense" },
   { label: "International Passport",               value: "Passport"  },
   { label: "Voter's Card",                         value: "VotersCard"},
@@ -50,6 +50,7 @@ const DocumentUploadScreen = () => {
   const [loading, setLoading] = useState(false);
   const [showGovDropdown,  setShowGovDropdown]  = useState(false);
   const [showProfDropdown, setShowProfDropdown] = useState(false);
+  const [successVisible, setSuccessVisible] = useState(false);
 
   const pickFile = async (
     setter: (f: PickedFile) => void,
@@ -130,12 +131,7 @@ const DocumentUploadScreen = () => {
       } as any);
 
       await uploadExpertDocuments(formData);
-
-      Alert.alert(
-        "Documents submitted!",
-        "Our team will review your documents within 48 hours. You'll be notified when approved.",
-        [{ text: "Back to Dashboard", onPress: () => router.back() }]
-      );
+      setSuccessVisible(true);
     } catch (err: any) {
       Alert.alert("Upload failed", err.response?.data?.message || "Please try again.");
     } finally {
@@ -357,6 +353,14 @@ const DocumentUploadScreen = () => {
           )}
         </TouchableOpacity>
       </ScrollView>
+      <StageSuccessModal
+        visible={successVisible}
+        stage={2}
+        onContinue={() => {
+          setSuccessVisible(false);
+          router.push("/(expert)/dashboard");
+        }}
+      />
     </View>
   );
 };

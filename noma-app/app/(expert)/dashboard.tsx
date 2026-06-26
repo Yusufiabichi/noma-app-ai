@@ -239,6 +239,15 @@ const ExpertVerificationDashboard = () => {
   const isFullyApproved = overallStatus === "approved" && currentStage === "complete";
 
   return (
+
+  <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+    <View style={styles.navHeader}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => router.push('../(tabs)/profile')}>
+        <Ionicons name="arrow-back-outline" size={20} color={COLORS.textDark} />
+      </TouchableOpacity>
+      <Text style={styles.navTitle}>Verification</Text>
+      <View style={{ width: 36 }} />
+    </View>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -392,6 +401,7 @@ const ExpertVerificationDashboard = () => {
         </View>
       )}
     </ScrollView>
+  </View>
   );
 };
 
@@ -401,6 +411,31 @@ const styles = StyleSheet.create({
   container:        { flex: 1, backgroundColor: COLORS.background },
   content:          { paddingHorizontal: 20, paddingTop: 48, paddingBottom: 40 },
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
+
+  navHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 52,
+    paddingBottom: 14,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.textDark,
+  },
 
   header: {
     flexDirection: "row",

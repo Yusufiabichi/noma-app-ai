@@ -6,6 +6,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { saveExpertProfile } from "@/src/api/expert.api";
+import StageSuccessModal from '@/app/components/StageSuccessModal';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -52,6 +53,7 @@ const ProfileFormScreen = () => {
   const [errors,  setErrors]  = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [showRoleList, setShowRoleList] = useState(false);
+  const [successVisible, setSuccessVisible] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
   const bioRef = useRef<View>(null);
@@ -86,11 +88,7 @@ const ProfileFormScreen = () => {
         ...form,
         yearsOfExperience: Number(form.yearsOfExperience),
       });
-      Alert.alert(
-        "Profile saved!",
-        "Move on to Stage 2 — document upload.",
-        [{ text: "Next", onPress: () => router.back() }]
-      );
+      setSuccessVisible(true);
     } catch (err: any) {
       Alert.alert("Error", err.response?.data?.message || "Failed to save profile");
     } finally {
@@ -202,10 +200,10 @@ const ProfileFormScreen = () => {
           ) : null}
         </View>
 
-        {/* Organization */}
+        {/* Organization Institute */}
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>
-            Current Organization <Text style={styles.required}>*</Text>
+            Institute/University <Text style={styles.required}>*</Text>
           </Text>
           <View style={[styles.inputWrapper, errors.currentOrganization && styles.inputError]}>
             <Ionicons name="business-outline" size={16} color={COLORS.textLight} style={styles.inputIcon} />
@@ -342,6 +340,14 @@ const ProfileFormScreen = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
+    <StageSuccessModal
+      visible={successVisible}
+      stage={1}
+      onContinue={() => {
+        setSuccessVisible(false);
+        router.push("/(expert)/documents");
+      }}
+    />
    </KeyboardAvoidingView>
   );
 };
