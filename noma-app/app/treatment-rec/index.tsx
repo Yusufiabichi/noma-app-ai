@@ -9,7 +9,6 @@ import { syncPendingScans } from '@/src/services/syncService';
 import * as localScanService from '@/src/services/localScanService';
 import logger from '@/src/utils/logger';
 import { useAuth } from '@/src/hooks/useAuth';
-import { getById } from '../../src/data/useTreatment.js';
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
 import IssueCard from '@/app/components/IssueCard';
 
@@ -17,6 +16,7 @@ import IssueCard from '@/app/components/IssueCard';
 interface ScanResult {
   status?: string;
   disease?: string;
+  name?: string; // Human-readable name from backend
   cropType?: string;
   cropDetected?: string;
   confidence?: number;
@@ -25,6 +25,7 @@ interface ScanResult {
   futurePrevention?: string[];
   language?: string;
   isOnline?: boolean;
+  isFallback?: boolean;
   localScanId?: string;
   scanId?: string;
 }
@@ -36,7 +37,6 @@ const TreatmentRecommendationScreen = () => {
   
   const [loading, setLoading] = useState(true);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
-  const [treatmentData, setTreatmentData] = useState(null);
   const [isPending, setIsPending] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const CONFIDENCE_THRESHOLD = 0.6;
@@ -65,15 +65,7 @@ const TreatmentRecommendationScreen = () => {
           }
 
           setScanResult(result);
-          
-          // If online and we have disease, try to get treatment data
-          if (result.isOnline && result.disease) {
-            const treatData = getById(result.disease);
-            if (treatData) {
-              setTreatmentData(treatData);
-            }
-          }
-          
+
           // If offline/pending, show pending UI
           if (result.status === 'pending') {
             setIsPending(true);
@@ -120,18 +112,15 @@ const TreatmentRecommendationScreen = () => {
           setScanResult({
             isOnline: true,
             disease: updatedScan.disease,
+            name: updatedScan.diseaseName, // Use name stored from backend
             cropType: updatedScan.cropDetected,
             confidence: updatedScan.confidence,
             severity: updatedScan.severity,
             recommendations: updatedScan.parseRecommendations(),
             futurePrevention: updatedScan.parseFuturePrevention(),
+            isFallback: updatedScan.isFallback,
           });
-          
-          const treatData = getById(updatedScan.disease);
-          if (treatData) {
-            setTreatmentData(treatData);
-          }
-          
+
           setIsPending(false);
           Alert.alert('Success', 'Scan analysis complete!');
         }

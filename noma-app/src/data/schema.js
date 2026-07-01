@@ -6,7 +6,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: 'scans',
@@ -28,6 +28,7 @@ export const schema = appSchema({
         
         // Diagnosis result (stored as JSON string)
         { name: 'disease', type: 'string' },
+        { name: 'disease_name', type: 'string' }, // Human readable name from backend
         { name: 'crop_detected', type: 'string' },
         { name: 'confidence', type: 'number' },
         { name: 'severity', type: 'string' }, // 'low', 'medium', 'high'

@@ -92,6 +92,7 @@ export const updateScanWithDiagnosis = async (scanId, diagnosis) => {
       await scan.update((record) => {
         record.status = 'diagnosed';
         record.disease = diagnosis.disease;
+        record.diseaseName = diagnosis.name; // Human readable name from backend
         record.cropDetected = diagnosis.cropType;
         record.confidence = diagnosis.confidence;
         record.severity = diagnosis.severity;

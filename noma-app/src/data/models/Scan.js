@@ -26,6 +26,7 @@ export class Scan extends Model {
 
   // Diagnosis result
   @field('disease') disease;
+  @field('disease_name') diseaseName;
   @field('crop_detected') cropDetected;
   @field('confidence') confidence;
   @field('severity') severity;
