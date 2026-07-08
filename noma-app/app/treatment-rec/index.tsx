@@ -16,7 +16,7 @@ import IssueCard from '@/app/components/IssueCard';
 interface ScanResult {
   status?: string;
   disease?: string;
-  name?: string; // Human-readable name from backend
+  name?: string;
   cropType?: string;
   cropDetected?: string;
   confidence?: number;
