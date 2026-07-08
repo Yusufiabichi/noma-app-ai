@@ -23,6 +23,13 @@ interface ScanResult {
   severity?: string;
   recommendations?: string[];
   futurePrevention?: string[];
+  applicationSteps?: string[];
+  dosage?: string[];
+  timing?: string[];
+  safetyWarnings?: string[];
+  expectedOutcome?: string[];
+  followUpDays?: string[];
+  inputSourcing?: string[];
   language?: string;
   isOnline?: boolean;
   isFallback?: boolean;
@@ -34,7 +41,7 @@ const TreatmentRecommendationScreen = () => {
   const params = useLocalSearchParams();
   const { language } = useLanguage();
   const { user } = useAuth();
-  
+
   const [loading, setLoading] = useState(true);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -104,7 +111,7 @@ const TreatmentRecommendationScreen = () => {
 
       // Call sync service
       const result = await syncPendingScans(user.id);
-      
+
       if (result.synced > 0) {
         // Reload the scan result
         const updatedScan = await localScanService.getScanById(scanResult?.localScanId);
@@ -112,12 +119,19 @@ const TreatmentRecommendationScreen = () => {
           setScanResult({
             isOnline: true,
             disease: updatedScan.disease,
-            name: updatedScan.diseaseName, // Use name stored from backend
+            name: updatedScan.diseaseName,
             cropType: updatedScan.cropDetected,
             confidence: updatedScan.confidence,
             severity: updatedScan.severity,
             recommendations: updatedScan.parseRecommendations(),
             futurePrevention: updatedScan.parseFuturePrevention(),
+            applicationSteps: updatedScan.parseApplicationSteps(),
+            dosage: updatedScan.parseDosage(),
+            timing: updatedScan.parseTiming(),
+            safetyWarnings: updatedScan.parseSafetyWarnings(),
+            expectedOutcome: updatedScan.parseExpectedOutcome(),
+            followUpDays: updatedScan.parseFollowUpDays(),
+            inputSourcing: updatedScan.parseInputSourcing(),
             isFallback: updatedScan.isFallback,
           });
 
@@ -134,17 +148,6 @@ const TreatmentRecommendationScreen = () => {
       setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator color="#000" size="large" />
-        <Text style={{ color: "#000", fontSize: 15 }}>
-          {isPending ? 'Your scan is pending analysis...' : 'Our AI Model is analysing the picture.....'}
-        </Text>
-      </View>
-    );
-  }
 
   // Pending analysis UI
   if (isPending || scanResult?.status === 'pending') {
@@ -178,7 +181,7 @@ const TreatmentRecommendationScreen = () => {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.syncButton}
               onPress={handleSyncNow}
               disabled={loading}
@@ -189,7 +192,7 @@ const TreatmentRecommendationScreen = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.push('./')}
             >
@@ -210,7 +213,7 @@ const TreatmentRecommendationScreen = () => {
           <View style={styles.issueCard}>
             <Text style={styles.issueTitle}>No analysis results available</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.confirmButton}
             onPress={() => router.push('./')}
           >
@@ -221,7 +224,43 @@ const TreatmentRecommendationScreen = () => {
     );
   }
 
+  // Helper function to render section
+  const renderSection = (
+    icon: string,
+    title: string,
+    items: string[] | undefined,
+    isList: boolean = true,
+    showFallback: boolean = false
+  ) => {
+    if (!items || items.length === 0) return null;
 
+    return (
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name={icon as any} size={20} color="#2e7d32" />
+          <Text style={styles.sectionTitle}>{title}</Text>
+        </View>
+        {isList ? (
+          items.map((item, index) => (
+            <View key={index} style={styles.listContainer}>
+              <View style={styles.listHeader}>
+                <View style={styles.listNumberBox}>
+                  <Text style={styles.listNumber}>{index + 1}</Text>
+                </View>
+                <Text style={styles.listText}>{item}</Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          items.map((item, index) => (
+            <View key={index} style={styles.textContainer}>
+              <Text style={styles.textContent}>{item}</Text>
+            </View>
+          ))
+        )}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']}>
@@ -237,53 +276,104 @@ const TreatmentRecommendationScreen = () => {
         />
 
         {/* Low Confidence Warning Banner */}
-          {isLowConfidence && (
-            <View style={styles.lowConfidenceBanner}>
-              <Ionicons name="alert-circle-outline" size={22} color="#7c4a00" />
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.lowConfidenceTitle}>
-                  {languageCode === 'ha' ? 'Rashin Tabbas' : 'Low Confidence Result'}
-                </Text>
-                <Text style={styles.lowConfidenceText}>
-                  {languageCode === 'ha'
-                    ? 'Ingancin binciken ya yi ƙasa da kashi 60%. Don Allah tuntubi ƙwararren masanin aikin gona don tabbataccen bayani.'
-                    : 'Our model is less than 60% confident in this diagnosis. Please consult an agronomist for an accurate assessment before taking action.'}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {scanResult?.isFallback && !isLowConfidence && (
-              <View style={styles.fallbackBanner}>
-                <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
-                <Text style={styles.fallbackText}>
-                  {languageCode === 'ha'
-                    ? 'Ba mu sami bayanan wannan cuta a cikin kundin mu ba. Muna bada shawarar tintubar Masana.'
-                    : 'Specific data for this disease is not yet in our database. Showing general recommendations — consult an agronomist for targeted advice.'}
-                </Text>
-              </View>
-            )}
-
-        {/* Recommended Treatment */}
-        {!isLowConfidence && scanResult?.recommendations && scanResult.recommendations.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="medkit-outline" size={20} color="#2e7d32" />
-              <Text style={styles.sectionTitle}>
-                {languageCode === 'ha' ? 'Yi wannan Yanzu' : 'Recommended Treatment'}
+        {isLowConfidence && (
+          <View style={styles.lowConfidenceBanner}>
+            <Ionicons name="alert-circle-outline" size={22} color="#7c4a00" />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.lowConfidenceTitle}>
+                {languageCode === 'ha' ? 'Rashin Tabbas' : 'Low Confidence Result'}
+              </Text>
+              <Text style={styles.lowConfidenceText}>
+                {languageCode === 'ha'
+                  ? 'Ingancin binciken ya yi ƙasa da kashi 60%. Don Allah tuntubi ƙwararren masanin aikin gona don tabbataccen bayani.'
+                  : 'Our model is less than 60% confident in this diagnosis. Please consult an agronomist for an accurate assessment before taking action.'}
               </Text>
             </View>
-            {scanResult.recommendations.map((item, index) => (
-              <View key={index} style={styles.listContainer}>
-                <View style={styles.listHeader}>
-                  <View style={styles.listNumberBox}>
-                    <Text style={styles.listNumber}>{index + 1}</Text>
-                  </View>
-                  <Text style={styles.listText}>{item}</Text>
-                </View>
-              </View>
-            ))}
           </View>
+        )}
+
+        {scanResult?.isFallback && !isLowConfidence && (
+          <View style={styles.fallbackBanner}>
+            <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
+            <Text style={styles.fallbackText}>
+              {languageCode === 'ha'
+                ? 'Ba mu sami bayanan wannan cuta a cikin kundin mu ba. Muna bada shawarar tintubar Masana.'
+                : 'Specific data for this disease is not yet in our database. Showing general recommendations — consult an agronomist for targeted advice.'}
+            </Text>
+          </View>
+        )}
+
+        {/* Only show detailed recommendations if confidence is not low */}
+        {!isLowConfidence && (
+          <>
+            {/* Recommended Treatment */}
+            {renderSection(
+              'medkit-outline',
+              languageCode === 'ha' ? 'Yi wannan Yanzu' : 'Recommended Treatment',
+              scanResult?.recommendations
+            )}
+
+            {/* Application Steps */}
+            {renderSection(
+              'list-outline',
+              languageCode === 'ha' ? 'Yadda ake Aiwatarwa' : 'Application Steps',
+              scanResult?.applicationSteps
+            )}
+
+            {/* Dosage */}
+            {renderSection(
+              'flask-outline',
+              languageCode === 'ha' ? 'Adadin da za a yi amfani da shi' : 'Dosage',
+              scanResult?.dosage,
+              false
+            )}
+
+            {/* Timing */}
+            {renderSection(
+              'time-outline',
+              languageCode === 'ha' ? 'Lokacin da za a yi' : 'Timing',
+              scanResult?.timing,
+              false
+            )}
+
+            {/* Safety Warnings */}
+            {renderSection(
+              'warning-outline',
+              languageCode === 'ha' ? 'Gargadin Lafiya' : 'Safety Warnings',
+              scanResult?.safetyWarnings
+            )}
+
+            {/* Expected Outcome */}
+            {renderSection(
+              'trending-up-outline',
+              languageCode === 'ha' ? 'Sakamakon da za ayi Tsammani' : 'Expected Outcome',
+              scanResult?.expectedOutcome,
+              false
+            )}
+
+            {/* Follow-up Days */}
+            {renderSection(
+              'calendar-outline',
+              languageCode === 'ha' ? 'Kwanakin Bibiyar' : 'Follow-up Days',
+              scanResult?.followUpDays,
+              false
+            )}
+
+            {/* Input Sourcing */}
+            {renderSection(
+              'storefront-outline',
+              languageCode === 'ha' ? 'Inda za a Sayi Magunguna' : 'Where to Buy Inputs',
+              scanResult?.inputSourcing,
+              false
+            )}
+
+            {/* Future Prevention */}
+            {renderSection(
+              'shield-checkmark-outline',
+              languageCode === 'ha' ? 'Hanyoyin Rigakafi' : 'Future Prevention',
+              scanResult?.futurePrevention
+            )}
+          </>
         )}
 
         {/* Show this instead of recommendations when confidence is low */}
@@ -301,45 +391,24 @@ const TreatmentRecommendationScreen = () => {
           </View>
         )}
 
-        {/* Future Prevention */}
-        {!isLowConfidence && scanResult?.futurePrevention && scanResult.futurePrevention.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="shield-checkmark-outline" size={20} color="#0052cc" />
-              <Text style={styles.sectionTitle}>
-                {languageCode === 'ha' ? 'Hanyoyin Rigakafi' : 'Future Prevention'}
-              </Text>
-            </View>
-
-            {scanResult.futurePrevention.map((item, index) => (
-              <View key={index} style={styles.listContainer}>
-                <View style={styles.listHeader}>
-                  <Ionicons name="checkmark-circle-outline" size={20} color="#2e7d32" />
-                  <Text style={styles.listText}>{item}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-              style={[
-                styles.confirmButton,
-                isLowConfidence && styles.confirmButtonDisabled,
-                scanResult?.isFallback && styles.confirmButtonDisabled,
-              ]}
-              onPress={() => router.push('./')}
-              disabled={isLowConfidence, scanResult?.isFallback}
-            >
+            style={[
+              styles.confirmButton,
+              (isLowConfidence || scanResult?.isFallback) && styles.confirmButtonDisabled,
+            ]}
+            onPress={() => router.push('./')}
+            disabled={isLowConfidence || !!scanResult?.isFallback}
+          >
             <Text style={styles.buttonText}>
               {languageCode === 'ha' ? "Zanyi wannan" : "I will do this"}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.expertButton,
-            isLowConfidence && styles.expertButtonHighlighted,
+          <TouchableOpacity
+            style={[
+              styles.expertButton,
+              isLowConfidence && styles.expertButtonHighlighted,
             ]}
             onPress={() => router.push('../(tabs)/expertChat')}
           >
@@ -360,10 +429,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   loader: {
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: '#f0fff4' 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0fff4'
   },
   header: {
     fontSize: 22,
@@ -371,23 +440,23 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: "#111",
   },
-fallbackBanner: {
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  backgroundColor: '#fff8e1',
-  borderWidth: 1,
-  borderColor: '#ffe0b2',
-  borderRadius: 10,
-  padding: 12,
-  marginBottom: 16,
-  gap: 8,
-},
-fallbackText: {
-  flex: 1,
-  fontSize: 13,
-  color: '#7c4a00',
-  lineHeight: 18,
-},
+  fallbackBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff8e1',
+    borderWidth: 1,
+    borderColor: '#ffe0b2',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  fallbackText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#7c4a00',
+    lineHeight: 18,
+  },
   section: {
     marginBottom: 25,
   },
@@ -431,6 +500,19 @@ fallbackText: {
     flex: 1,
     fontSize: 15,
     color: "#333",
+  },
+  textContainer: {
+    backgroundColor: "#f9f9f9",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
+  textContent: {
+    fontSize: 15,
+    color: "#333",
+    lineHeight: 22,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -539,55 +621,66 @@ fallbackText: {
     fontSize: 12,
     textAlign: "center",
   },
-lowConfidenceBanner: {
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  backgroundColor: '#fff3e0',
-  borderWidth: 1,
-  borderColor: '#ffb74d',
-  borderRadius: 12,
-  padding: 14,
-  marginBottom: 20,
-},
-lowConfidenceTitle: {
-  fontSize: 15,
-  fontWeight: '700',
-  color: '#7c4a00',
-  marginBottom: 4,
-},
-lowConfidenceText: {
-  fontSize: 13,
-  color: '#7c4a00',
-  lineHeight: 18,
-},
-expertPromptCard: {
-  alignItems: 'center',
-  backgroundColor: '#e8f0fe',
-  borderWidth: 1,
-  borderColor: '#b3c8f5',
-  borderRadius: 12,
-  padding: 24,
-  marginBottom: 25,
-},
-expertPromptTitle: {
-  fontSize: 17,
-  fontWeight: '700',
-  color: '#0052cc',
-  marginTop: 12,
-  marginBottom: 8,
-},
-expertPromptText: {
-  fontSize: 14,
-  color: '#0052cc',
-  textAlign: 'center',
-  lineHeight: 20,
-},
-confirmButtonDisabled: {
-  backgroundColor: '#b0bec5',  // greyed out
-},
-expertButtonHighlighted: {
-  backgroundColor: '#0041a8',  // darker blue, more prominent
-},
+  lowConfidenceBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff3e0',
+    borderWidth: 1,
+    borderColor: '#ffb74d',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+  },
+  lowConfidenceTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#7c4a00',
+    marginBottom: 4,
+  },
+  lowConfidenceText: {
+    fontSize: 13,
+    color: '#7c4a00',
+    lineHeight: 18,
+  },
+  expertPromptCard: {
+    alignItems: 'center',
+    backgroundColor: '#e8f0fe',
+    borderWidth: 1,
+    borderColor: '#b3c8f5',
+    borderRadius: 12,
+    padding: 24,
+    marginBottom: 25,
+  },
+  expertPromptTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0052cc',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  expertPromptText: {
+    fontSize: 14,
+    color: '#0052cc',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  confirmButtonDisabled: {
+    backgroundColor: '#b0bec5',
+  },
+  expertButtonHighlighted: {
+    backgroundColor: '#0041a8',
+  },
+  issueCard: {
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  issueTitle: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+  }
 });
 
 export default TreatmentRecommendationScreen;

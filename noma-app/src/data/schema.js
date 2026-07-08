@@ -6,7 +6,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 2,
+  version: 3,
   tables: [
     tableSchema({
       name: 'scans',
@@ -34,7 +34,15 @@ export const schema = appSchema({
         { name: 'severity', type: 'string' }, // 'low', 'medium', 'high'
         { name: 'recommendations', type: 'string' }, // JSON string array
         { name: 'future_prevention', type: 'string' }, // JSON string array
-        
+        { name: 'application_steps', type: 'string' }, // New: JSON string array
+        { name: 'dosage', type: 'string' }, // New: JSON string array
+        { name: 'timing', type: 'string' }, // New: JSON string array
+        { name: 'safety_warnings', type: 'string' }, // New: JSON string array
+        { name: 'expected_outcome', type: 'string' }, // New: JSON string array
+        { name: 'follow_up_days', type: 'string' }, // New: JSON string array
+        { name: 'input_sourcing', type: 'string' }, // New: JSON string array
+        { name: 'is_fallback', type: 'boolean' },
+
         // AI service metadata
         { name: 'model_version', type: 'string' },
         { name: 'processing_time', type: 'number' },

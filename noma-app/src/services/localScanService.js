@@ -83,27 +83,36 @@ export const createLocalScan = async (scanData) => {
  * @param {string} scanId - Scan ID (local WatermelonDB ID)
  * @param {Object} diagnosis - Diagnosis data from AI
  */
+
 export const updateScanWithDiagnosis = async (scanId, diagnosis) => {
   try {
     const scansCollection = database.get('scans');
     const scan = await scansCollection.find(scanId);
-    
+
     await database.write(async () => {
       await scan.update((record) => {
         record.status = 'diagnosed';
         record.disease = diagnosis.disease;
-        record.diseaseName = diagnosis.name; // Human readable name from backend
+        record.diseaseName = diagnosis.name;
         record.cropDetected = diagnosis.cropType;
         record.confidence = diagnosis.confidence;
         record.severity = diagnosis.severity;
         record.recommendations = JSON.stringify(diagnosis.recommendations || []);
         record.futurePrevention = JSON.stringify(diagnosis.futurePrevention || []);
+        // New fields
+        record.applicationSteps = JSON.stringify(diagnosis.applicationSteps || []);
+        record.dosage = JSON.stringify(diagnosis.dosage || []);
+        record.timing = JSON.stringify(diagnosis.timing || []);
+        record.safetyWarnings = JSON.stringify(diagnosis.safetyWarnings || []);
+        record.expectedOutcome = JSON.stringify(diagnosis.expectedOutcome || []);
+        record.followUpDays = JSON.stringify(diagnosis.followUpDays || []);
+        record.inputSourcing = JSON.stringify(diagnosis.inputSourcing || []);
         record.modelVersion = diagnosis.modelVersion;
         record.processingTime = diagnosis.processingTime;
         record.requestId = diagnosis.requestId;
       });
     });
-    
+
     logger.info('Scan updated with diagnosis', { scanId });
     return scan;
   } catch (error) {
@@ -111,6 +120,7 @@ export const updateScanWithDiagnosis = async (scanId, diagnosis) => {
     throw error;
   }
 };
+
 
 /**
  * Update scan with server ID after sync
@@ -233,6 +243,112 @@ export const deleteScan = async (scanId) => {
   } catch (error) {
     logger.error('Failed to delete scan', error);
     throw error;
+  }
+};
+
+
+/**
+ * Parse application steps from stored JSON
+ */
+export const parseApplicationSteps = (scan) => {
+  try {
+    if (scan.applicationSteps) {
+      return JSON.parse(scan.applicationSteps);
+    }
+    return [];
+  } catch (e) {
+    logger.warn('Failed to parse application steps', e);
+    return [];
+  }
+};
+
+/**
+ * Parse dosage from stored JSON
+ */
+export const parseDosage = (scan) => {
+  try {
+    if (scan.dosage) {
+      return JSON.parse(scan.dosage);
+    }
+    return [];
+  } catch (e) {
+    logger.warn('Failed to parse dosage', e);
+    return [];
+  }
+};
+
+/**
+ * Parse timing from stored JSON
+ */
+export const parseTiming = (scan) => {
+  try {
+    if (scan.timing) {
+      return JSON.parse(scan.timing);
+    }
+    return [];
+  } catch (e) {
+    logger.warn('Failed to parse timing', e);
+    return [];
+  }
+};
+
+/**
+ * Parse safety warnings from stored JSON
+ */
+export const parseSafetyWarnings = (scan) => {
+  try {
+    if (scan.safetyWarnings) {
+      return JSON.parse(scan.safetyWarnings);
+    }
+    return [];
+  } catch (e) {
+    logger.warn('Failed to parse safety warnings', e);
+    return [];
+  }
+};
+
+/**
+ * Parse expected outcome from stored JSON
+ */
+export const parseExpectedOutcome = (scan) => {
+  try {
+    if (scan.expectedOutcome) {
+      return JSON.parse(scan.expectedOutcome);
+    }
+    return [];
+  } catch (e) {
+    logger.warn('Failed to parse expected outcome', e);
+    return [];
+  }
+};
+
+/**
+ * Parse follow up days from stored JSON
+ */
+export const parseFollowUpDays = (scan) => {
+  try {
+    if (scan.followUpDays) {
+      return JSON.parse(scan.followUpDays);
+    }
+    return [];
+  } catch (e) {
+    logger.warn('Failed to parse follow up days', e);
+    return [];
+  }
+};
+
+/**
+ * Parse input sourcing from stored JSON
+ */
+export const parseInputSourcing = (scan) => {
+  try {
+    if (scan.inputSourcing) {
+      return JSON.parse(scan.inputSourcing);
+    }
+    return [];
+  } catch (e) {
+    logger.warn('Failed to parse input sourcing', e);
+    return [];
   }
 };
 

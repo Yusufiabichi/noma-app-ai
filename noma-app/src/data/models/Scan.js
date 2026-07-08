@@ -32,6 +32,14 @@ export class Scan extends Model {
   @field('severity') severity;
   @field('recommendations') recommendations; // JSON string
   @field('future_prevention') futurePrevention; // JSON string
+  @field('application_steps') applicationSteps; // JSON string
+  @field('dosage') dosage; // JSON string
+  @field('timing') timing; // JSON string
+  @field('safety_warnings') safetyWarnings; // JSON string
+  @field('expected_outcome') expectedOutcome; // JSON string
+  @field('follow_up_days') followUpDays; // JSON string
+  @field('input_sourcing') inputSourcing; // JSON string
+  @field('is_fallback') isFallback;
 
   // AI service metadata
   @field('model_version') modelVersion;
@@ -68,6 +76,62 @@ export class Scan extends Model {
   parseFuturePrevention() {
     try {
       return this.futurePrevention ? JSON.parse(this.futurePrevention) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  parseApplicationSteps() {
+    try {
+      return this.applicationSteps ? JSON.parse(this.applicationSteps) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  parseDosage() {
+    try {
+      return this.dosage ? JSON.parse(this.dosage) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  parseTiming() {
+    try {
+      return this.timing ? JSON.parse(this.timing) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  parseSafetyWarnings() {
+    try {
+      return this.safetyWarnings ? JSON.parse(this.safetyWarnings) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  parseExpectedOutcome() {
+    try {
+      return this.expectedOutcome ? JSON.parse(this.expectedOutcome) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  parseFollowUpDays() {
+    try {
+      return this.followUpDays ? JSON.parse(this.followUpDays) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  parseInputSourcing() {
+    try {
+      return this.inputSourcing ? JSON.parse(this.inputSourcing) : [];
     } catch {
       return [];
     }
