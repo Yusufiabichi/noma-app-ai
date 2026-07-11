@@ -12,7 +12,6 @@ import { useAuth } from '@/src/hooks/useAuth';
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
 import IssueCard from '@/app/components/IssueCard';
 
-
 interface ScanResult {
   status?: string;
   disease?: string;
