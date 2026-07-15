@@ -4,12 +4,16 @@ import { LanguageProvider } from "@/src/context/LanguageContext";
 import { useSync } from '@/src/hooks/useSync';
 import { useEffect } from 'react';
 import { useUpdateChecker } from '@/src/hooks/useUpdateChecker';
-import UpdateModal from '@/src/components/UpdateModal';
+import UpdateModal from '@/app/components/UpdateModal';
+
+function UpdateCheckerWrapper() {
+  const { updateInfo, showModal, closeModal } = useUpdateChecker();
+  return <UpdateModal visible={showModal} updateInfo={updateInfo} onClose={closeModal} />;
+}
 
 export default function RootLayout(){
     // Initialize sync hook for network monitoring
     useSync();
-    const { updateInfo, showModal, closeModal } = useUpdateChecker();
 
     return (
         <>
@@ -27,7 +31,7 @@ export default function RootLayout(){
                 <Stack.Screen name="fertilizer-advice" options={{headerShown: false,  title: "Fertilizer Advice"}} />
                 <Stack.Screen name="disease-guide" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
             </Stack>
-            <UpdateModal visible={showModal} updateInfo={updateInfo} onClose={closeModal} />
+            <UpdateCheckerWrapper />
         </LanguageProvider>
         </>
     )

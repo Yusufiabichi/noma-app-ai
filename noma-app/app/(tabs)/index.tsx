@@ -10,6 +10,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 import Data from '@/constants/data.json'
 import WeatherCard from '../components/WeatherCard';
 import AdminDashboard from '../(admin)/adminDashboard'
+import ExpertDashboard from '../(expert)/expertDashboard'
 import { getScans } from '@/src/api/scans.api';
 
 const RECENT_SCANS_CACHE_KEY = '@nomaapp_recent_scans_cache';
@@ -63,6 +64,10 @@ export default function HomeScreen() {
      return <AdminDashboard />;
    }
 
+//    if(user?.role === 'expert'){
+//        return <ExpertDashboard />
+//    }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(language === 'english' ? 'en-US' : 'ha-NG', {
@@ -107,7 +112,7 @@ export default function HomeScreen() {
       {/* Welcome Message */}
       <Text style={styles.welcomeTitle}>
         {language === "english"
-          ? `Welcome ${user?.name || "Farmer"}!`
+          ? `Welcome, ${user?.name || "Farmer"}!`
           : `Barka da Zuwa, ${user?.name || "Manomi"}!`}
       </Text>
       <Text style={styles.subtitle}>
@@ -126,29 +131,57 @@ export default function HomeScreen() {
 
       {/* Quick Options */}
       <View style={styles.cardRow}>
-        <TouchableOpacity style={styles.card}
-        onPress={()=> router.push("/fertilizer-advice")}>
-          <MaterialCommunityIcons name="spray-bottle" size={30} color="#16A34A" />
-          <Text style={styles.cardText}>
-            {language==="english" ? Data.en.home.cards_text[0] : Data.ha.home.cards_text[0]}
-          </Text>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/fertilizer-advice")}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.iconWrap, { backgroundColor: '#F0FDF4' }]}>
+            <MaterialCommunityIcons name="spray-bottle" size={26} color="#16A34A" />
+          </View>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardText}>
+              {language === "english" ? Data.en.home.cards_text[0] : Data.ha.home.cards_text[0]}
+            </Text>
+            <Text style={styles.cardSub}>Soil nutrients</Text>
+          </View>
+          <View style={[styles.dot, { backgroundColor: '#16A34A' }]} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}
-        onPress={()=> router.push("/disease-guide")}>
-          <MaterialIcons name="pest-control" size={30} color="#c62828" />
-          <Text style={styles.cardText}>
-            {language==="english" ? Data.en.home.cards_text[1] : Data.ha.home.cards_text[1]}
-          </Text>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/disease-guide")}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.iconWrap, { backgroundColor: '#FEF2F2' }]}>
+            <MaterialIcons name="pest-control" size={26} color="#DC2626" />
+          </View>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardText}>
+              {language === "english" ? Data.en.home.cards_text[1] : Data.ha.home.cards_text[1]}
+            </Text>
+            <Text style={styles.cardSub}>Pest control</Text>
+          </View>
+          <View style={[styles.dot, { backgroundColor: '#DC2626' }]} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}
-        onPress={()=> router.push("/farming-tips")}>
-          <FontAwesome5 name="leaf" size={28} color="#1a73e8" />
-          <Text style={styles.cardText}>
-            {language==="english" ? Data.en.home.cards_text[2]: Data.ha.home.cards_text[2]}
-          </Text>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/farming-tips")}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.iconWrap, { backgroundColor: '#EFF6FF' }]}>
+            <FontAwesome5 name="leaf" size={24} color="#2563EB" />
+          </View>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardText}>
+              {language === "english" ? Data.en.home.cards_text[2] : Data.ha.home.cards_text[2]}
+            </Text>
+            <Text style={styles.cardSub}>Best practices</Text>
+          </View>
+          <View style={[styles.dot, { backgroundColor: '#2563EB' }]} />
         </TouchableOpacity>
+
       </View>
 
       {/* Recent Diagnosis History */}
@@ -315,28 +348,52 @@ const styles = StyleSheet.create({
   cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 45,
+    marginTop: 20,
+    gap: 10,
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    width: '30%',
+    borderRadius: 18,
+    flex: 1,
     alignItems: 'center',
-    paddingVertical: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    paddingVertical: 18,
+    paddingHorizontal: 8,
     borderWidth: 0.5,
-    borderColor: "#16A34A",
+    borderColor: '#E5E7EB',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    gap: 10,
+  },
+  iconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardBody: {
+    alignItems: 'center',
+    gap: 3,
   },
   cardText: {
-    marginTop: 10,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     textAlign: 'center',
-    color: '#2C2C2C',
-    paddingHorizontal: 6,
+    color: '#111827',
+    paddingHorizontal: 4,
+  },
+  cardSub: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    textAlign: 'center',
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   historyHeader: {
     marginTop: 32,

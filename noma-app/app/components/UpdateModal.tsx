@@ -8,8 +8,8 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-import { useLanguage } from '../context/LanguageContext';
-import { UpdateCheckResponse } from '../services/update.service';
+import { useLanguage } from '@/src/context/LanguageContext';
+import { UpdateCheckResponse } from '@/src/services/update.service';
 
 interface UpdateModalProps {
   visible: boolean;

@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import apiClient from './api.client'; // your axios instance
+import apiClient from '../api/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VERSION_CHECK_KEY = '@update_check_last_shown';

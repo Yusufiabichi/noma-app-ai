@@ -6,6 +6,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getAssessmentQuestions, submitAssessment } from "@/src/api/expert.api";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
