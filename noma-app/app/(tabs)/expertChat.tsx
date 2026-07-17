@@ -226,7 +226,7 @@ const ExpertChatScreen = () => {
 
   const handleSelectExpert = (expert: any) => {
     router.push({
-      pathname: "/(farmer)/file-case",
+      pathname: "../fileCaseScreen",
       params: {
         expertUserId: expert.userId,
         expertName: expert.name,
