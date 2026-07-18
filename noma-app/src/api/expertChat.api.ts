@@ -6,6 +6,9 @@ export const listExperts = (params: {
   sortBy?: "rating" | "cases" | "experience";
 }) => client.get("/experts", { params });
 
+export const getExpertAssignedCases = (params?: { status?: string }) =>
+  client.get('/experts/cases/assigned', { params });
+
 export const createCase = (data: {
   expertUserId: string;
   scanId: string;

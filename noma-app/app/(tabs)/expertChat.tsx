@@ -194,7 +194,7 @@ const ExpertChatScreen = () => {
 
   const plan = user?.subscription?.plan;
   const role = user?.role;
-  const isLocked = plan === "free" || !plan;
+  const isLocked = plan != "free" || !plan;
 
   const fetchExperts = useCallback(async () => {
     try {

@@ -10,7 +10,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 import Data from '@/constants/data.json'
 import WeatherCard from '../components/WeatherCard';
 import AdminDashboard from '../(admin)/adminDashboard'
-import ExpertDashboard from '../(expert)/expertDashboard'
+import ExpertHomeView from '../(expert)/expertHomeView';
 import { getScans } from '@/src/api/scans.api';
 
 const RECENT_SCANS_CACHE_KEY = '@nomaapp_recent_scans_cache';
@@ -64,9 +64,9 @@ export default function HomeScreen() {
      return <AdminDashboard />;
    }
 
-//    if(user?.role === 'expert'){
-//        return <ExpertDashboard />
-//    }
+   if (user?.role === 'expert') {
+       return <ExpertHomeView userName={user?.name || 'Expert'} />;
+   }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

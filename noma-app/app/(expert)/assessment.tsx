@@ -180,7 +180,7 @@ const AssessmentScreen = () => {
   // ── PHASE: Intro ──────────────────────────────────────────────────────────
   if (phase === "intro") {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <View style={styles.navHeader}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back-outline" size={20} color={COLORS.textDark} />
@@ -237,7 +237,7 @@ const AssessmentScreen = () => {
             )}
           </TouchableOpacity>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -245,7 +245,7 @@ const AssessmentScreen = () => {
   if (phase === "result" && result) {
     const passed = result.passed;
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <ScrollView contentContainerStyle={styles.resultContent}>
           <View style={[styles.resultIcon, passed ? styles.resultIconPass : styles.resultIconFail]}>
             <Ionicons
@@ -302,7 +302,7 @@ const AssessmentScreen = () => {
             </Text>
           </TouchableOpacity>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -312,7 +312,7 @@ const AssessmentScreen = () => {
   const progress  = (current + 1) / questions.length;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       {/* Timer bar */}
       <View style={[styles.timerBar, isTimeCritical && styles.timerBarCritical]}>
         <Ionicons
@@ -439,7 +439,7 @@ const AssessmentScreen = () => {
           {answered}/{questions.length} answered
         </Text>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   container:  { flex: 1, backgroundColor: COLORS.background },
   navHeader:  {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingTop: 52, paddingBottom: 14,
+    paddingHorizontal: 20, paddingTop: 14, paddingBottom: 14,
     backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
   backBtn:    {
