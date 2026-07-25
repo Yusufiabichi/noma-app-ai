@@ -7,7 +7,6 @@ import { LanguageProvider, useLanguage, Lang } from '../../src/context/LanguageC
 import {Picker} from '@react-native-picker/picker';
 import { useAuth } from '@/src/hooks/useAuth';
 
-
 function HeaderLanguageSelector() {
   const { language, setLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -53,12 +52,13 @@ function HeaderLanguageSelector() {
   );
 }
 
-
-
-
 export default function TabsLayout() {
       const { user } = useAuth();
       const isAdmin = user?.role === 'admin';
+      const isExpert = user?.role === 'expert';
+      const isFarmer = user?.role === 'farmer';
+//       const isVerified = profile?.overallStatus === 'approved' && profile?.stage === 'complete';
+
   return (
     <>
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
@@ -103,17 +103,24 @@ export default function TabsLayout() {
               NomaApp
             </Text>
           ),
-          headerRight: () => (
-            <TouchableOpacity
-              onPress={() => router.push('/(onboarding)/plans')}
-              style={{ marginRight: 16 }}
-            >
-              <FontAwesome5 name="crown" size={22} color="#16A34A" />
-            </TouchableOpacity>
-          ),
-          tabBarLabel: isAdmin ? 'Dashboard' : 'Crops',
+           headerRight: () => (isFarmer ? (
+              <TouchableOpacity
+                onPress={() => router.push('../farmerCases')}
+                style={{ marginRight: 16 }}
+              >
+                <Ionicons name="file-tray-full-outline" size={22} color="#16A34A" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => router.push('/(onboarding)/plans')}
+                style={{ marginRight: 16 }}
+              >
+                <FontAwesome5 name="crown" size={22} color="#16A34A" />
+              </TouchableOpacity>
+            )),
+          tabBarLabel: isAdmin || isExpert ? 'Dashboard' : 'Crops',
           tabBarIcon: ({ color }) =>
-          isAdmin? ( <Ionicons name="grid-outline" size={22} color={color} /> ) : ( <FontAwesome5 name="seedling" size={22} color={color} /> ),
+          isAdmin || isExpert? ( <Ionicons name="grid-outline" size={22} color={color} /> ) : ( <FontAwesome5 name="seedling" size={22} color={color} /> ),
         }}
       />
     {/*  <Tabs.Screen
@@ -139,9 +146,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="expertChat"
         options={{
-          tabBarLabel: 'Experts',
+          tabBarLabel: isExpert? 'Crops' : 'Experts',
           headerShown: false,
-          tabBarIcon: ({ color }) => <MaterialIcons name="question-answer" size={22} color={color} />,
+          tabBarIcon: ({ color }) =>
+          isExpert? (<FontAwesome5 name="seedling" size={22} color={color} />) : (<MaterialIcons name="question-answer" size={22} color={color} />),
           tabBarButton: isAdmin ? () => null : undefined,
         }}
       />

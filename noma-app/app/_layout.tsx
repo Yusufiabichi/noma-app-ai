@@ -5,6 +5,7 @@ import { useSync } from '@/src/hooks/useSync';
 import { useEffect } from 'react';
 import { useUpdateChecker } from '@/src/hooks/useUpdateChecker';
 import UpdateModal from '@/app/components/UpdateModal';
+import { AlertProvider } from '@/src/context/AlertContext';
 
 function UpdateCheckerWrapper() {
   const { updateInfo, showModal, closeModal } = useUpdateChecker();
@@ -19,6 +20,7 @@ export default function RootLayout(){
         <>
 
         <LanguageProvider>
+        <AlertProvider>
             <Stack>
                 <Stack.Screen name="index" options={{headerShown: false}} />
                 <Stack.Screen name="(expert)" options={{headerShown: false}} />
@@ -31,8 +33,11 @@ export default function RootLayout(){
                 <Stack.Screen name="fertilizer-advice" options={{headerShown: false,  title: "Fertilizer Advice"}} />
                 <Stack.Screen name="disease-guide" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
                 <Stack.Screen name="fileCaseScreen" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
+                <Stack.Screen name="farmerCases" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
+                <Stack.Screen name="farmerCaseDetail" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
             </Stack>
             <UpdateCheckerWrapper />
+        </AlertProvider>
         </LanguageProvider>
         </>
     )

@@ -15,6 +15,18 @@ export default function ExpertLayout() {
           headerShown: false,
         }}
       />
+       <Stack.Screen
+          name="expertWeather"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="caseDetail"
+          options={{
+            headerShown: false,
+          }}
+        />
       <Stack.Screen
         name="documents"
         options={{
