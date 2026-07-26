@@ -7,6 +7,9 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getCaseDetail } from '@/src/api/expertChat.api';
 import client from '@/src/api/client';
+import { useAlert } from '@/src/context/AlertContext';
+import { useLanguage } from '@/src/context/LanguageContext';
+import DiagnosisCard from '@/app/components/DiagnosisCard';
 
 const COLORS = {
   primary: '#16A34A', primaryLight: '#f0fdf4', primaryBorder: '#bbf7d0',
@@ -26,6 +29,9 @@ const SEVERITY_CONFIG: Record<string, { color: string; bg: string }> = {
 const ExpertCaseDetailScreen = () => {
   const router = useRouter();
   const { caseId } = useLocalSearchParams<{ caseId: string }>();
+  const { showAlert } = useAlert();
+  const { language } = useLanguage();
+  const isHausa = language === 'ha';
 
   const [caseData, setCaseData]     = useState<any>(null);
   const [loading, setLoading]       = useState(true);
@@ -50,40 +56,68 @@ const ExpertCaseDetailScreen = () => {
 
   const handleSubmitResponse = async () => {
     if (!response.trim()) {
-      Alert.alert('Response required', 'Please write your expert response before submitting.');
+      showAlert({
+        title: isHausa ? 'Ana Bukatar Amsa' : 'Response Required',
+        message: isHausa
+          ? 'Da fatan za a rubuta amsar ku kafin aikawa.'
+          : 'Please write your expert response before submitting.',
+        buttons: [
+          {
+            text: isHausa ? 'Yarda' : 'OK',
+            onPress: () => console.log('OK pressed'),
+          },
+        ],
+      });
       return;
     }
-    Alert.alert(
-      'Submit Response',
-      'Once submitted, the farmer will be notified. Are you ready?',
-      [
-        { text: 'Review', style: 'cancel' },
+    showAlert({
+      title: isHausa ? 'Tabbatarwa' : 'Confirm Submission',
+      message: isHausa
+        ? 'Bayan kun aika, za a sanar da manomin. Kun shirya?'
+        : 'Once submitted, the farmer will be notified. Are you ready?',
+      buttons: [
         {
-          text: 'Submit',
+          text: isHausa ? 'Yarda' : 'OK',
           onPress: async () => {
-            setSubmitting(true);
-            try {
-              await client.patch(`/experts/cases/${caseId}/respond`, {
-                message: response.trim(),
-              });
-              setSubmitted(true);
-              Alert.alert(
-                'Response sent!',
-                'The farmer has been notified of your expert advice.',
-                [{ text: 'Back', onPress: () => router.back() }]
-              );
-            } catch (err: any) {
-              Alert.alert(
-                'Error',
-                err.response?.data?.error?.message || 'Failed to submit response. Please try again.'
-              );
-            } finally {
-              setSubmitting(false);
-            }
-          },
+              setSubmitting(true);
+              try {
+                await client.patch(`/experts/cases/${caseId}/respond`, {
+                  message: response.trim(),
+                });
+                setSubmitted(true);
+                showAlert({
+                  title: isHausa ? 'An Aika' : 'Success',
+                  message: isHausa
+                    ? 'An aika karar ku. Za mu sanar da ku idan an amsa.'
+                    : 'The farmer has been notified of your expert advice.',
+                  buttons: [
+                    {
+                      text: isHausa ? 'Baya' : 'Back',
+                      onPress: () => router.back(),
+                    },
+                  ],
+                });
+              } catch (err: any) {
+                showAlert({
+                  title: isHausa ? 'Kuskure' : 'Error',
+                  message: isHausa
+                    ? err.response?.data?.error?.message || 'Wani abu ba daidai ba. Da fatan a sake gwadawa.'
+                    : err.response?.data?.error?.message || 'Failed to submit response. Please try again.',
+                  buttons: [
+                    {
+                      text: isHausa ? 'Sake Gwadawa' : 'Retry',
+                      onPress: () => console.log('Retry'),
+                      style: 'default',
+                    },
+                  ],
+                });
+              } finally {
+                setSubmitting(false);
+              }
+            },
         },
-      ]
-    );
+      ],
+    });
   };
 
   if (loading) {
@@ -110,6 +144,7 @@ const ExpertCaseDetailScreen = () => {
   const sevCfg   = SEVERITY_CONFIG[snap.severity] || SEVERITY_CONFIG.moderate;
   const isPending = caseData.status === 'pending';
   const isResolved = caseData.status === 'resolved';
+  const imageUrl = snap.imageUrl;
   const confidence = snap.confidence
     ? `${Math.round(snap.confidence * 100)}%`
     : '—';
@@ -154,33 +189,11 @@ const ExpertCaseDetailScreen = () => {
 
           {/* Diagnosis snapshot */}
           <Text style={styles.sectionTitle}>Diagnosis Report</Text>
-          <View style={styles.diagnosisCard}>
-            <View style={styles.diagnosisHeader}>
-              <View style={styles.bugIcon}>
-                <Ionicons name="bug-outline" size={18} color={COLORS.error} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.diseaseName}>
-                  {snap.disease?.replace(/_/g, ' ') || 'Unknown disease'}
-                </Text>
-                <Text style={styles.cropName}>
-                  {snap.cropType || '—'}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.diagnosisMeta}>
-              <View style={[styles.severityPill, { backgroundColor: sevCfg.bg }]}>
-                <Ionicons name="warning-outline" size={12} color={sevCfg.color} />
-                <Text style={[styles.severityText, { color: sevCfg.color }]}>
-                  {snap.severity || '—'} severity
-                </Text>
-              </View>
-              <View style={styles.confidencePill}>
-                <Text style={styles.confidenceText}>{confidence} confidence</Text>
-              </View>
-            </View>
-          </View>
+          <DiagnosisCard
+            snap={snap}
+            sevCfg={sevCfg}
+            confidence={confidence}
+          />
 
           {/* Farmer info */}
           <Text style={styles.sectionTitle}>Farmer</Text>
@@ -353,30 +366,6 @@ const styles = StyleSheet.create({
   resolvedBannerText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
 
   sectionTitle: { fontSize: 13, fontWeight: '700', color: COLORS.textDark, marginBottom: 10, marginTop: 4 },
-
-  // Diagnosis card
-  diagnosisCard: {
-    backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1,
-    borderColor: COLORS.border, padding: 14, marginBottom: 16,
-  },
-  diagnosisHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
-  bugIcon: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.errorLight,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  diseaseName: { fontSize: 16, fontWeight: '700', color: COLORS.textDark, textTransform: 'capitalize' },
-  cropName:    { fontSize: 12, color: COLORS.textLight, marginTop: 2, textTransform: 'capitalize' },
-  diagnosisMeta: { flexDirection: 'row', gap: 8 },
-  severityPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10,
-  },
-  severityText: { fontSize: 11, fontWeight: '600' },
-  confidencePill: {
-    backgroundColor: COLORS.background, borderRadius: 20,
-    paddingVertical: 4, paddingHorizontal: 10,
-  },
-  confidenceText: { fontSize: 11, color: COLORS.textLight, fontWeight: '500' },
 
   // Info card
   infoCard: {

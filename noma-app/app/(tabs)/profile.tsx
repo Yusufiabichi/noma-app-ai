@@ -12,6 +12,8 @@ import {
 import { Feather, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, setUserData } from '@/src/hooks/useAuth';
+import { useAlert } from '@/src/context/AlertContext';
+import { useLanguage } from '@/src/context/LanguageContext';
 import { getCurrentUser } from '@/src/api/auth.api';
 import { getVerificationStatus } from '@/src/api/expert.api';
 import AdminProfile from '../(admin)/profile';
@@ -340,8 +342,10 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
   const { user: authUser, logout, refreshUser } = useAuth();
+  const { showAlert } = useAlert();
+  const { language } = useLanguage();
+  const isHausa = language === 'hausa';
 
-  // ✅ useEffect always runs — no early returns before hooks
   useEffect(() => {
     const fetchLatestUser = async () => {
       try {
@@ -362,21 +366,36 @@ const ProfileScreen: React.FC = () => {
   }, []);
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          const success = await logout();
-          if (success) {
-            router.replace('/(onboarding)/login');
-          } else {
-            Alert.alert('Error', 'Failed to log out. Please try again.');
-          }
+    showAlert({
+      title: isHausa ? 'Fita Daga Akawun' : 'Logout',
+      message: isHausa
+        ? 'Shin kana da tabbacin kana son fita daga akawun ka?'
+        : 'Are you sure you want to log out of your account?',
+      buttons: [
+        {
+          text: isHausa ? 'Soke' : 'Cancel',
+          style: 'cancel'
         },
-      },
-    ]);
+        {
+          text: isHausa ? 'Fita' : 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            const success = await logout();
+            if (success) {
+              router.replace('/(onboarding)/login');
+            } else {
+              showAlert({
+                title: isHausa ? 'Kuskure' : 'Error',
+                message: isHausa
+                  ? 'An kasa fita. Da fatan a sake gwadawa.'
+                  : 'Failed to log out. Please try again.',
+                buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+              });
+            }
+          },
+        },
+      ],
+    });
   };
 
   // ✅ Role-based render happens AFTER hooks

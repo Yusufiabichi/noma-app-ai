@@ -12,6 +12,7 @@ export const saveExpertProfile = (data: {
   currentOrganization: string;
   currentRole: string;
   bio: string;
+  email: string;
   linkedIn?: string;
 }) => client.post("/expert/profile", data);
 
@@ -22,6 +23,9 @@ export const uploadExpertDocuments = (formData: FormData) =>
 
 export const getAssessmentQuestions = () =>
   client.get("/expert/assessment/questions");
+
+// export const createCase = () =>
+//   client.post()
 
 export const submitAssessment = (data: {
   answers: { questionId: string; selectedAnswer: string }[];

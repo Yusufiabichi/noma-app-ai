@@ -13,6 +13,8 @@ import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
 import { verifySubscription } from "@/src/api/subscription.api";
 import { getUserData, setUserData } from "@/src/hooks/useAuth";
+import { useAlert } from '@/src/context/AlertContext';
+import { useLanguage } from '@/src/context/LanguageContext';
 
 const COLORS = {
   primary: "#16A34A",
@@ -31,6 +33,9 @@ const PAYSTACK_PUBLIC_KEY = "pk_test_5610b18c5f7d77ae91ac1d74968773165fa29925";
 const CheckoutScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { showAlert } = useAlert();
+  const { language } = useLanguage();
+  const isHausa = language === 'hausa';
   const webViewRef = useRef(null);
 
   const planId = params.planId as string;
@@ -109,24 +114,30 @@ const CheckoutScreen = () => {
               ...currentUser,
               subscription: result.user.subscription,
             });
-            Alert.alert(
-              "Payment successful!",
-              `Your ${planName} plan is now active. Welcome to NomaApp!`,
-              [{ text: "Get started", onPress: () => router.replace("/(tabs)") }]
-            );
+            showAlert({
+              title: isHausa ? 'An Yi Nasara' : 'Payment successful!',
+              message: isHausa
+                ? `Tsarin ku na ${planName} yanzu yana aiki. Barka da zuwa NomaApp!`
+                : `Your ${planName} plan is now active. Welcome to NomaApp!`,
+              buttons: [{ text: isHausa ? 'Fara yanzu' : 'Get started', onPress: () => router.replace("/(tabs)") }]
+            });
           } else {
-            Alert.alert(
-              "Verification failed",
-              "Payment was received but could not be verified. Please contact support.",
-              [{ text: "OK" }]
-            );
+            showAlert({
+              title: isHausa ? 'Tantancewa Ta Gaza' : 'Verification failed',
+              message: isHausa
+                ? 'An karbi biya amma an kasa tantancewa. Tuntubi sashen taimako.'
+                : 'Payment was received but could not be verified. Please contact support.',
+              buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+            });
           }
         } catch (err) {
-          Alert.alert(
-            "Error",
-            "Payment received but verification failed. Please contact support.",
-            [{ text: "OK" }]
-          );
+          showAlert({
+            title: isHausa ? 'Kuskure' : 'Error',
+            message: isHausa
+              ? 'An karbi biya amma an samu kuskure yayin tantancewa. Tuntubi sashen taimako.'
+              : 'Payment received but verification failed. Please contact support.',
+            buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+          });
         } finally {
           setLoading(false);
         }

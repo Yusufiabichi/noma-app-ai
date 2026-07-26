@@ -13,9 +13,11 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLanguage } from "@/src/context/LanguageContext";
+import { useAlert } from '@/src/context/AlertContext';
 import { login } from "@/src/api/auth.api";
 import { setAuthToken } from "@/src/api/client";
 import { setUserData } from "@/src/hooks/useAuth";
+import { registerPushToken } from "@/src/hooks/useAuth";
 
 const COLORS = {
   primary: "#16A34A",
@@ -30,7 +32,9 @@ const COLORS = {
 
 const LoginScreen = () => {
   const router = useRouter();
-  const { completeOnboarding } = useLanguage();
+  const { completeOnboarding, language } = useLanguage();
+  const { showAlert } = useAlert();
+  const isHausa = language === 'hausa';
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -67,10 +71,12 @@ const LoginScreen = () => {
               trialDaysRemaining: response.meta?.trialDaysRemaining,
               trialEndDate: response.meta?.trialEndDate,
           });
+        registerPushToken()
         }
         await completeOnboarding();
         if (response.meta?.trialExpired) {
-          router.replace("/(onboarding)/plans");
+//           router.replace("/(onboarding)/plans");
+          router.replace("/(tabs)");
         } else {
           router.replace("/(tabs)");
         }
@@ -79,7 +85,11 @@ const LoginScreen = () => {
       console.error("Login error:", error);
       const errorMessage =
         error.response?.data?.message || "Login failed. Please try again.";
-      Alert.alert("Error", errorMessage);
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: isHausa ? 'Shigarwa ta gaza. Da fatan a sake gwadawa.' : errorMessage,
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
       setErrors({ phone: errorMessage });
     } finally {
       setLoading(false);

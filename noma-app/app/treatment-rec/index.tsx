@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useLanguage } from '@/src/context/LanguageContext';
+import { useAlert } from '@/src/context/AlertContext';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isOnline } from '@/src/utils/network';
 import { syncPendingScans } from '@/src/services/syncService';
@@ -39,6 +40,8 @@ interface ScanResult {
 const TreatmentRecommendationScreen = () => {
   const params = useLocalSearchParams();
   const { language } = useLanguage();
+  const { showAlert } = useAlert();
+  const isHausa = language === 'hausa';
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -82,7 +85,11 @@ const TreatmentRecommendationScreen = () => {
           message: error.message,
           params: params.scanResult
         });
-        Alert.alert('Error', 'Failed to load scan results: ' + (error.message || 'Unknown error'));
+        showAlert({
+          title: isHausa ? 'Kuskure' : 'Error',
+          message: isHausa ? 'An kasa loda sakamakon binciken.' : ('Failed to load scan results: ' + (error.message || 'Unknown error')),
+          buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+        });
       } finally {
         setLoading(false);
       }
@@ -94,7 +101,11 @@ const TreatmentRecommendationScreen = () => {
 
   const handleSyncNow = async () => {
     if (!user?.id) {
-      Alert.alert('Error', 'User not authenticated');
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: isHausa ? 'Ba a tantance mai amfani ba.' : 'User not authenticated',
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
       return;
     }
 
@@ -135,7 +146,11 @@ const TreatmentRecommendationScreen = () => {
           });
 
           setIsPending(false);
-          Alert.alert('Success', 'Scan analysis complete!');
+          showAlert({
+            title: isHausa ? 'Nasara' : 'Success',
+            message: isHausa ? 'An kammala binciken hoton!' : 'Scan analysis complete!',
+            buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+          });
         }
       } else if (result.failed > 0) {
         setSyncError('Analysis failed. Please try again later.');
@@ -409,7 +424,13 @@ const TreatmentRecommendationScreen = () => {
               styles.expertButton,
               isLowConfidence && styles.expertButtonHighlighted,
             ]}
-            onPress={() => router.push('../(tabs)/expertChat')}
+            onPress={() => router.push({
+                pathname: '../(tabs)/expertChat',
+                params: {
+                  scanId: scanResult?._id || scanResult?.scanId,
+                  isLowConfidence: isLowConfidence ? 'true' : 'false',
+                },
+            })}
           >
             <Text style={styles.buttonText}>
               {languageCode === "ha" ? "Tambayi Kwararru" : "Ask Expert"}

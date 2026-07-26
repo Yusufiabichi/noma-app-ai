@@ -3,6 +3,7 @@ import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
   ActivityIndicator, RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getVerificationStatus } from '@/src/api/expert.api';
@@ -41,6 +42,8 @@ const UnverifiedView = ({ overallStatus }: { overallStatus: string }) => {
   const { language, setLanguage } = useLanguage();
 
   return (
+
+
     <View style={styles.unverifiedContainer}>
       <View style={[styles.unverifiedIcon, isPending && { backgroundColor: COLORS.amberLight }]}>
         <Ionicons
@@ -49,8 +52,6 @@ const UnverifiedView = ({ overallStatus }: { overallStatus: string }) => {
           color={isPending ? COLORS.amber : COLORS.textLight}
         />
       </View>
-
-      <WeatherCard />
 
       <Text style={styles.unverifiedTitle}>
         {isPending ? 'Verification Under Review' : 'Account Not Verified'}
@@ -221,18 +222,6 @@ const VerifiedView = ({
       }
     >
 
-    <WeatherCard />
-
-    {/* Scan Button */}
-          <TouchableOpacity style={styles.scanButton}
-            onPress={()=> router.push("/cropscan")}
-          >
-            <Ionicons name="camera" size={20} color="#fff" />
-            <Text style={styles.scanText}>
-                {language==="english" ? Data.en.home.scan_text : Data.ha.home.scan_text}
-            </Text>
-          </TouchableOpacity>
-
       {/* Greeting */}
       <View style={styles.greetingRow}>
         <View>
@@ -244,9 +233,9 @@ const VerifiedView = ({
         </View>
         <TouchableOpacity
           style={styles.profileIconBtn}
-          onPress={() => router.push('/(tabs)/profile' as any)}
+          onPress={() => router.push('./expertWeather' as any)}
         >
-          <Ionicons name="person-outline" size={18} color={COLORS.primary} />
+          <Ionicons name="camera" size={18} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
 
@@ -412,6 +401,31 @@ const styles = StyleSheet.create({
     width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.border,
     alignItems: 'center', justifyContent: 'center', marginBottom: 20,
   },
+
+
+
+  scanButton: {
+    backgroundColor: '#16A34A',
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  scanText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+
+
+
+
   unverifiedTitle: { fontSize: 20, fontWeight: '700', color: COLORS.textDark, textAlign: 'center', marginBottom: 10 },
   unverifiedDesc: { fontSize: 14, color: COLORS.textLight, textAlign: 'center', lineHeight: 21, marginBottom: 24 },
   verifyBtn: {

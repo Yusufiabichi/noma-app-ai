@@ -17,9 +17,11 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLanguage } from "@/src/context/LanguageContext";
+import { useAlert } from '@/src/context/AlertContext';
 import { register } from "@/src/api/auth.api";
 import { setAuthToken } from "@/src/api/client";
 import { setUserData } from "@/src/hooks/useAuth";
+import { registerPushToken } from "@/src/hooks/useAuth";
 import LOCATIONS_DATA from "@/assets/data/locations.json";
 
 const LOCATIONS = LOCATIONS_DATA as Record<string, string[]>;
@@ -44,7 +46,9 @@ const ROLES = [
 
 const SignupScreen = () => {
   const router = useRouter();
-  const { completeOnboarding } = useLanguage();
+  const { completeOnboarding, language } = useLanguage();
+  const { showAlert } = useAlert();
+  const isHausa = language === 'hausa';
   const [formData, setFormData] = useState({
     name: "",
     state: "",
@@ -118,6 +122,7 @@ const SignupScreen = () => {
         await setAuthToken(response.token);
         if (response.user) {
           await setUserData(response.user);
+          registerPushToken()
         }
         await completeOnboarding();
         // Trial starts automatically — go straight to app
@@ -127,7 +132,11 @@ const SignupScreen = () => {
       console.error("Signup error:", error);
       const errorMessage =
         error.response?.data?.message || "Signup failed. Please try again.";
-      Alert.alert("Error", errorMessage);
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: isHausa ? 'Rijista ta gaza. Da fatan a sake gwadawa.' : errorMessage,
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
     } finally {
       setLoading(false);
     }
@@ -292,7 +301,11 @@ const SignupScreen = () => {
               style={[styles.inputWrapper, errors.lga && styles.inputError, !formData.state && { opacity: 0.6 }]}
               onPress={() => {
                 if (!formData.state) {
-                  Alert.alert("Select State First", "Please select a state to see available LGAs.");
+                  showAlert({
+                    title: isHausa ? 'Zabi Jiha Tukuna' : 'Select State First',
+                    message: isHausa ? 'Da fatan za a zabi jiha don ganin kananan hukumomin da ke akwai.' : 'Please select a state to see available LGAs.',
+                    buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+                  });
                   return;
                 }
                 setLocationSearch("");

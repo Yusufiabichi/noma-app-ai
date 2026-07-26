@@ -150,15 +150,25 @@ export default function TabsLayout() {
           headerShown: false,
           tabBarIcon: ({ color }) =>
           isExpert? (<FontAwesome5 name="seedling" size={22} color={color} />) : (<MaterialIcons name="question-answer" size={22} color={color} />),
-          tabBarButton: isAdmin ? () => null : undefined,
+          tabBarButton: isAdmin || isExpert ? () => null : undefined,
         }}
       />
+
+       <Tabs.Screen
+          name="scan"
+          options={{
+            title: 'Scan',
+            tabBarLabel: 'Scan',
+            tabBarButton: !isExpert ? () => null : undefined,
+            tabBarIcon: ({ color }) => <Ionicons name="camera" size={22} color={color} />
+          }}
+        />
 
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          headerShown: isAdmin ? false : true,
+          headerShown: isAdmin || isExpert ? false : true,
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color }) => <FontAwesome5 name="user" size={22} color={color} />,
         }}

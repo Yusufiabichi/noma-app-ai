@@ -59,6 +59,17 @@ export const getCurrentUser = async () => {
   return response.data;
 };
 
+export const savePushToken = async () => {
+    router.post('/auth/push-token', authenticate, async (req, res, next) => {
+       try {
+         await User.findByIdAndUpdate(req.user._id, {
+           expoPushToken: req.body.expoPushToken
+         });
+         return successResponse(res, 200, {}, 'Push token saved');
+       } catch (err) { next(err); }
+     });
+}
+
 export default {
   register,
   login,

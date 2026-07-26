@@ -19,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
+import { useAlert } from '@/src/context/AlertContext';
 import client from '@/src/api/client';
 import * as localScanService from '@/src/services/localScanService';
 import { isOnline } from '@/src/utils/network';
@@ -52,6 +53,8 @@ const CATEGORIES = [
 export default function CropScan() {
   const router = useRouter();
   const { language } = useLanguage();
+  const { showAlert } = useAlert();
+  const isHausa = language === 'hausa';
   const { user } = useAuth();
   const cameraRef = useRef<any>(null);
   const [permission, requestPermission] = useCameraPermissions();
@@ -96,7 +99,11 @@ export default function CropScan() {
       setPreviewVisible(true);
     } catch (err) {
       console.error('takePicture error', err);
-      Alert.alert('Error', 'Could not take photo. Try again.');
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: isHausa ? 'An kasa daukar hoto. Da fatan a sake gwadawa.' : 'Could not take photo. Try again.',
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
     } finally {
       setTaking(false);
     }
@@ -104,12 +111,20 @@ export default function CropScan() {
 
   async function imgCrop(){
     if (!selectedCrop) {
-      Alert.alert('Error', 'Please select a crop type');
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: isHausa ? 'Da fatan za a zabi nau\'in amfanin gona' : 'Please select a crop type',
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
       return;
     }
 
     if (!photo?.uri) {
-      Alert.alert('Error', 'No image selected');
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: isHausa ? 'Ba a zabi hoto ba' : 'No image selected',
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
       return;
     }
 
@@ -136,11 +151,16 @@ export default function CropScan() {
       console.log("SERVER RESPONSE:", error.originalError?.response?.data);
       console.log("------------------------");
 
-      Alert.alert('Error', error.message || 'Failed to process scan');
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: isHausa ? 'An kasa aiwatar da binciken' : (error.message || 'Failed to process scan'),
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
       // Reset processing state on error so user can try again
       setIsProcessing(false);
       setProcessingStep(null);
     }
+    // Note: finally block removed to avoid resetting state if navigation is in progress
   }
 
   async function processScanOnline(imageUri: string, cropType: string) {
@@ -328,10 +348,13 @@ export default function CropScan() {
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() =>
-              Alert.alert(
-                'Scan tips',
-                'Ensure the leaf fills the frame and avoid strong backlight.'
-              )
+              showAlert({
+                title: isHausa ? 'Shawarwari' : 'Scan tips',
+                message: isHausa
+                  ? 'Tabbatar ganyen ya cika hoton kuma a guji hasken rana mai karfi daga baya.'
+                  : 'Ensure the leaf fills the frame and avoid strong backlight.',
+                buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+              })
             }
           >
             <Ionicons name="help-circle-outline" size={26} color="white" />
@@ -355,7 +378,11 @@ export default function CropScan() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => Alert.alert('Info', 'Implement flash or camera switch here.')}
+            onPress={() => showAlert({
+              title: isHausa ? 'Bayani' : 'Info',
+              message: isHausa ? 'Za a kara wannan fasalin nan ba da jimawa ba.' : 'This feature will be added soon.',
+              buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+            })}
             style={styles.sideButton}
           >
             <Ionicons name="camera-reverse-outline" size={28} color="white" />

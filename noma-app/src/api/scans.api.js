@@ -11,7 +11,7 @@
  * - DELETE /scans/:id
  */
 
-import client from './client';
+import apiClient from './client';
 
 /**
  * Create a new scan with image upload
@@ -58,12 +58,45 @@ export const createScan = async (scanData, onProgress = null) => {
  * @param {string} [params.cropType] - Filter by crop type
  * @returns {Promise<{scans: Object[], pagination: Object}>}
  */
+//export const getScans = async (params = {}) => {
+//  const response = await client.get('/scans', { params });
+//  return {
+//    scans: response?.data || [],
+//    pagination: response?.pagination,
+//  };
+//};
+
 export const getScans = async (params = {}) => {
-  const response = await client.get('/scans', { params });
-  return {
-    scans: response?.data || [],
-    pagination: response?.pagination,
-  };
+  try {
+    const { page = 1, limit = 10, cropType, status } = params;
+    const query = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      ...(cropType && { cropType }),
+      ...(status && { status }),
+    }).toString();
+
+    const response = await apiClient.get(`/scans?${query}`);
+
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return {
+        scans: data,
+        pagination: {
+          total: data.length,
+          page,
+          limit,
+        },
+      };
+    }
+    const scans = data?.data?.scans || data?.scans || [];
+    const pagination = data?.data?.pagination || data?.pagination || { total: scans.length, page, limit };
+
+    return { scans, pagination };
+  } catch (error) {
+    console.error('getScans error:', error);
+    return { scans: [], pagination: { total: 0, page: 1, limit: 10 } };
+  }
 };
 
 /**

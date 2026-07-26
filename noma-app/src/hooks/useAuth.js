@@ -7,6 +7,8 @@ import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import logger from '../utils/logger';
 import { clearAuthTokens } from '../api/client';
+import * as Notifications from 'expo-notifications';
+import client from '@/src/api/client';
 
 const USER_KEY = '@nomaapp_user';
 
@@ -54,6 +56,18 @@ export const setUserData = async (userData) => {
     await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
   } catch (error) {
     logger.error('Failed to save user data', error);
+  }
+};
+
+export const registerPushToken = async () => {
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') return;
+    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    await client.post('/auth/push-token', { expoPushToken: token });
+  } catch (err) {
+    // Non-fatal — don't block login if this fails
+    console.log('Push token registration failed:', err);
   }
 };
 

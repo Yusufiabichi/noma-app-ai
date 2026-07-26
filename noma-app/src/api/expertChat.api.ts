@@ -13,6 +13,7 @@ export const createCase = (data: {
   expertUserId: string;
   scanId: string;
   farmerNote?: string;
+  isLowConfidence?: boolean;
 }) => client.post("/experts/cases", data);
 
 export const getMyCases = () => client.get("/experts/cases/mine");

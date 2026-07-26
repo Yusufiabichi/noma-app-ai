@@ -6,7 +6,9 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { createCase } from "@/src/api/expertChat.api";
-import { getScanById } from "@/src/api/scan.api"; // assumes this exists for fetching scan detail
+import { getScanById } from "@/src/api/scans.api";
+import { useAlert } from '@/src/context/AlertContext';
+import { useLanguage } from '@/src/context/LanguageContext';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -25,10 +27,18 @@ const SEVERITY_CONFIG: Record<string, { color: string; bg: string }> = {
 const FileCaseScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { showAlert } = useAlert();
+  const { language } = useLanguage();
+  const isHausa = language === 'hausa';
 
-  const expertUserId = params.expertUserId as string;
-  const expertName   = params.expertName as string;
-  const scanId       = params.scanId as string;
+  const { expertUserId, expertName, scanId, isLowConfidence } = useLocalSearchParams<{
+    expertUserId: string;
+    expertName: string;
+    scanId: string;
+    isLowConfidence?: string;
+  }>();
+
+  const showLowConfidenceWarning = isLowConfidence === 'true';
 
   const [scan, setScan]       = useState<any>(null);
   const [note, setNote]       = useState("");
@@ -57,7 +67,11 @@ const FileCaseScreen = () => {
 
   const handleSubmit = async () => {
     if (!scanId) {
-      Alert.alert("No diagnosis selected", "Please select a diagnosis to attach to this case.");
+      showAlert({
+        title: isHausa ? 'Babu Binciken da Aka Zaba' : 'No diagnosis selected',
+        message: isHausa ? 'Da fatan za a zabi bincike don hadawa da wannan karar.' : 'Please select a diagnosis to attach to this case.',
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
       return;
     }
 
@@ -67,31 +81,38 @@ const FileCaseScreen = () => {
         expertUserId,
         scanId,
         farmerNote: note.trim() || undefined,
+        isLowConfidence,
       });
       setSessionsRemaining(res.data.sessionsRemaining);
       setSubmitted(true);
     } catch (err: any) {
       const errCode = err.response?.data?.error?.code;
       if (errCode === "FEATURE_LOCKED") {
-        Alert.alert(
-          "Upgrade required",
-          "Expert consultations require Basic or Premium plan.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "View Plans", onPress: () => router.push("/(onboarding)/plans") },
+        showAlert({
+          title: isHausa ? 'Ana Bukatar Haɓakawa' : 'Upgrade required',
+          message: isHausa ? 'Tuntubar masana na bukatar tsarin Basic ko Premium.' : 'Expert consultations require Basic or Premium plan.',
+          buttons: [
+            { text: isHausa ? 'Soke' : 'Cancel', style: 'cancel' },
+            { text: isHausa ? 'Duba Tsare-tsare' : 'View Plans', onPress: () => router.push("/(onboarding)/plans") },
           ]
-        );
+        });
       } else if (errCode === "SESSION_LIMIT_REACHED") {
-        Alert.alert(
-          "Session limit reached",
-          err.response?.data?.error?.message || "Upgrade to Premium for unlimited sessions.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Upgrade", onPress: () => router.push("/(onboarding)/plans") },
+        showAlert({
+          title: isHausa ? 'Kimanin Zama Ya Cika' : 'Session limit reached',
+          message: isHausa
+            ? 'Ka gama adadin zaman ka na wannan watan. Haɓaka zuwa Premium don zama marar iyaka.'
+            : (err.response?.data?.error?.message || "Upgrade to Premium for unlimited sessions."),
+          buttons: [
+            { text: isHausa ? 'Soke' : 'Cancel', style: 'cancel' },
+            { text: isHausa ? 'Haɓaka' : 'Upgrade', onPress: () => router.push("/(onboarding)/plans") },
           ]
-        );
+        });
       } else {
-        Alert.alert("Error", err.response?.data?.error?.message || "Failed to submit case.");
+        showAlert({
+          title: isHausa ? 'Kuskure' : 'Error',
+          message: isHausa ? 'An kasa aika kara. Da fatan a sake gwadawa.' : (err.response?.data?.error?.message || "Failed to submit case."),
+          buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+        });
       }
     } finally {
       setSubmitting(false);
@@ -123,14 +144,14 @@ const FileCaseScreen = () => {
 
           <TouchableOpacity
             style={styles.primaryBtn}
-            onPress={() => router.push("/(farmer)/cases" as any)}
+            onPress={() => router.push("./farmerCases" as any)}
           >
             <Text style={styles.primaryBtnText}>View My Cases</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.secondaryBtn}
-            onPress={() => router.push("/(tabs)" as any)}
+            onPress={() => router.push("./(tabs)" as any)}
           >
             <Text style={styles.secondaryBtnText}>Back to Home</Text>
           </TouchableOpacity>
@@ -165,6 +186,18 @@ const FileCaseScreen = () => {
         </View>
 
         {/* Diagnosis preview */}
+        {showLowConfidenceWarning && (
+          <View style={styles.lowConfidenceBanner}>
+            <Ionicons name="alert-circle" size={18} color="#7c4a00" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.lowConfidenceTitle}>Low confidence diagnosis attached</Text>
+              <Text style={styles.lowConfidenceText}>
+                Our AI is less than 60% confident in this result. This case has been
+                automatically flagged so the expert can provide a more accurate assessment.
+              </Text>
+            </View>
+          </View>
+        )}
         <Text style={styles.sectionTitle}>Attached Diagnosis</Text>
         {loading ? (
           <View style={styles.scanLoading}>
@@ -343,6 +376,28 @@ const styles = StyleSheet.create({
     alignItems: "center", width: "100%", marginBottom: 12,
     shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
+  },
+  lowConfidenceBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: '#fff8e1',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+  },
+  lowConfidenceTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#7c4a00',
+    marginBottom: 3,
+  },
+  lowConfidenceText: {
+    fontSize: 12,
+    color: '#92400e',
+    lineHeight: 17,
   },
   primaryBtnText: { color: COLORS.white, fontSize: 15, fontWeight: "600" },
   secondaryBtn: { paddingVertical: 12, alignItems: "center", width: "100%" },

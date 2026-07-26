@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { listExperts } from "@/src/api/expertChat.api";
@@ -54,6 +55,7 @@ const ROLE_LABELS: Record<string, string> = {
   agribusiness_professional: "Agribusiness Professional",
   other: "Agricultural Expert",
 };
+
 
 // ─── Expert Card ──────────────────────────────────────────────────────────────
 
@@ -177,8 +179,14 @@ const LockedScreen = ({ onUpgrade }: { onUpgrade: () => void }) => (
 
 const ExpertChatScreen = () => {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const { user } = useAuth();
+
+  const params = useLocalSearchParams<{
+    scanId?: string;
+    isLowConfidence?: string;
+  }>();
+
+  const isLowConfidence = params.isLowConfidence === 'true';
 
   const scanId = params.scanId as string | undefined;
 
@@ -194,7 +202,7 @@ const ExpertChatScreen = () => {
 
   const plan = user?.subscription?.plan;
   const role = user?.role;
-  const isLocked = plan != "free" || !plan;
+  const isLocked = plan === "free" || !plan;
 
   const fetchExperts = useCallback(async () => {
     try {
@@ -230,7 +238,8 @@ const ExpertChatScreen = () => {
       params: {
         expertUserId: expert.userId,
         expertName: expert.name,
-        scanId: scanId || "",
+        scanId: params.scanId || '',
+        isLowConfidence: isLowConfidence ? 'true' : 'false',
       },
     });
   };
