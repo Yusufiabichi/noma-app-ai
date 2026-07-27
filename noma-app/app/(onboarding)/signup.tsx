@@ -131,11 +131,16 @@ const SignupScreen = () => {
     } catch (error: any) {
       console.error("Signup error:", error);
       const errorMessage =
-        error.response?.data?.message || "Signup failed. Please try again.";
+        error.response?.data?.message || error.message || "Signup failed. Please try again.";
       showAlert({
         title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'Rijista ta gaza. Da fatan a sake gwadawa.' : errorMessage,
-        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+        message: errorMessage,
+        buttons: [
+          {
+            text: isHausa ? 'Yarda' : 'OK',
+            style: 'destructive'
+          }
+        ]
       });
     } finally {
       setLoading(false);

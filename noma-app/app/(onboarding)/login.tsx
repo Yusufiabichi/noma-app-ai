@@ -84,11 +84,16 @@ const LoginScreen = () => {
     } catch (error: any) {
       console.error("Login error:", error);
       const errorMessage =
-        error.response?.data?.message || "Login failed. Please try again.";
+        error.response?.data?.message || error.message || "Login failed. Please try again.";
       showAlert({
         title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'Shigarwa ta gaza. Da fatan a sake gwadawa.' : errorMessage,
-        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+        message: errorMessage,
+        buttons: [
+          {
+            text: isHausa ? 'Yarda' : 'OK',
+            style: 'destructive'
+          }
+        ]
       });
       setErrors({ phone: errorMessage });
     } finally {
@@ -146,9 +151,6 @@ const LoginScreen = () => {
                 editable={!loading}
               />
             </View>
-            {errors.phone && (
-              <Text style={styles.errorText}>{errors.phone}</Text>
-            )}
           </View>
 
           {/* Password */}
@@ -194,6 +196,10 @@ const LoginScreen = () => {
               <Text style={styles.errorText}>{errors.password}</Text>
             )}
           </View>
+          {errors.phone && (
+            <Text style={styles.errorText}>{errors.phone}</Text>
+          )}
+
 
           {/* Forgot Password */}
           <TouchableOpacity

@@ -8,6 +8,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { listExperts } from "@/src/api/expertChat.api";
 import { useAuth } from "@/src/hooks/useAuth";
+import FarmerHomeScreen from "@/app/components/FarmerHomeScreen";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -55,7 +57,6 @@ const ROLE_LABELS: Record<string, string> = {
   agribusiness_professional: "Agribusiness Professional",
   other: "Agricultural Expert",
 };
-
 
 // ─── Expert Card ──────────────────────────────────────────────────────────────
 
@@ -243,6 +244,14 @@ const ExpertChatScreen = () => {
       },
     });
   };
+
+  if(user?.role === 'expert'){
+      return (
+          <SafeAreaView style={{ flex: 1, backgroundColor: '#F8FFFB' }}>
+            <FarmerHomeScreen />
+          </SafeAreaView>
+      )
+  }
 
   if (isLocked) {
     return (

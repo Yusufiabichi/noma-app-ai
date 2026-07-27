@@ -42,8 +42,6 @@ const UnverifiedView = ({ overallStatus }: { overallStatus: string }) => {
   const { language, setLanguage } = useLanguage();
 
   return (
-
-
     <View style={styles.unverifiedContainer}>
       <View style={[styles.unverifiedIcon, isPending && { backgroundColor: COLORS.amberLight }]}>
         <Ionicons

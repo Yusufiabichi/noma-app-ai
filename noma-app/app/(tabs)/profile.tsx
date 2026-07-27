@@ -17,6 +17,7 @@ import { useLanguage } from '@/src/context/LanguageContext';
 import { getCurrentUser } from '@/src/api/auth.api';
 import { getVerificationStatus } from '@/src/api/expert.api';
 import AdminProfile from '../(admin)/profile';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -127,7 +128,9 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
       </View>
 
       {/* Account Settings */}
-      <TouchableOpacity style={styles.optionCard}>
+      <TouchableOpacity style={styles.optionCard}
+        onPress={() => router.push('/(onboarding)/accountSettings')}
+      >
         <View style={styles.optionLeft}>
           <View style={styles.optionIcon}>
             <Feather name="user" size={20} color="#16A34A" />
@@ -209,6 +212,8 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
   ];
 
   return (
+
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F8FFFB' }}>
     <ScrollView style={styles.container}>
     <RefreshControl
       refreshing={refreshing}
@@ -301,7 +306,9 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
 
 
       {/* Account Settings */}
-      <TouchableOpacity style={styles.optionCard}>
+      <TouchableOpacity style={styles.optionCard}
+        onPress={() => router.push('/(onboarding)/accountSettings')}
+      >
         <View style={styles.optionLeft}>
           <View style={styles.optionIcon}>
             <Feather name="user" size={20} color="#16A34A" />
@@ -334,6 +341,7 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

@@ -180,7 +180,7 @@ const AssessmentScreen = () => {
   // ── PHASE: Intro ──────────────────────────────────────────────────────────
   if (phase === "intro") {
     return (
-      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.navHeader}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back-outline" size={20} color={COLORS.textDark} />
@@ -245,7 +245,7 @@ const AssessmentScreen = () => {
   if (phase === "result" && result) {
     const passed = result.passed;
     return (
-      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.resultContent}>
           <View style={[styles.resultIcon, passed ? styles.resultIconPass : styles.resultIconFail]}>
             <Ionicons
@@ -312,7 +312,7 @@ const AssessmentScreen = () => {
   const progress  = (current + 1) / questions.length;
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+    <SafeAreaView style={styles.container}>
       {/* Timer bar */}
       <View style={[styles.timerBar, isTimeCritical && styles.timerBarCritical]}>
         <Ionicons

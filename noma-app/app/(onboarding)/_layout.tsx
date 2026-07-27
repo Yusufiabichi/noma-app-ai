@@ -21,6 +21,12 @@ export default function OnboardingLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="accountSettings"
+        options={{
+          headerShown: false,
+        }}
+      />
         <Stack.Screen
           name="plans"
           options={{

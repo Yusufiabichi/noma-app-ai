@@ -146,23 +146,13 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="expertChat"
         options={{
-          tabBarLabel: isExpert? 'Crops' : 'Experts',
+          tabBarLabel: isExpert? 'Scan' : 'Experts',
           headerShown: false,
           tabBarIcon: ({ color }) =>
-          isExpert? (<FontAwesome5 name="seedling" size={22} color={color} />) : (<MaterialIcons name="question-answer" size={22} color={color} />),
-          tabBarButton: isAdmin || isExpert ? () => null : undefined,
+          isExpert? (<FontAwesome5 name="camera" size={22} color={color} />) : (<MaterialIcons name="question-answer" size={22} color={color} />),
+          tabBarButton: isAdmin ? () => null : undefined,
         }}
       />
-
-       <Tabs.Screen
-          name="scan"
-          options={{
-            title: 'Scan',
-            tabBarLabel: 'Scan',
-            tabBarButton: !isExpert ? () => null : undefined,
-            tabBarIcon: ({ color }) => <Ionicons name="camera" size={22} color={color} />
-          }}
-        />
 
       <Tabs.Screen
         name="profile"

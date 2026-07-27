@@ -50,6 +50,16 @@ export const changePassword = async (currentPassword, newPassword) => {
   return response.data;
 };
 
+export const updateProfile = async (data) => {
+  const response = await apiClient.patch('/auth/profile', data);
+  return response.data.data; // updated user object
+};
+
+export const deleteAccount = async () => {
+  const response = await apiClient.delete('/auth/me');
+  return response.data;
+};
+
 /**
  * Get current authenticated user
  * @returns {Promise<{user: Object}>}
