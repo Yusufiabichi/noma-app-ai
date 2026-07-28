@@ -129,7 +129,7 @@ export default function AccountSettings() {
   const handleDeleteAccount = async () => {
     setLoading(true);
     try {
-      await deleteAccount();
+      await deleteAccount(true);
       await logout();
       router.replace('/login');
     } catch (err: any) {

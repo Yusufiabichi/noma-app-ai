@@ -42,21 +42,21 @@ export const login = async (phone, password) => {
  * @param {string} newPassword 
  * @returns {Promise<{token: string}>}
  */
-export const changePassword = async (currentPassword, newPassword) => {
+export const changePassword = async ({ currentPassword, newPassword }) => {
   const response = await client.post('/auth/change-password', {
     currentPassword,
-    newPassword, 
+    newPassword,
   });
   return response.data;
 };
 
 export const updateProfile = async (data) => {
-  const response = await apiClient.patch('/auth/profile', data);
-  return response.data.data; // updated user object
+  const response = await client.patch('/auth/me', data);
+  return response.data.data;
 };
 
-export const deleteAccount = async () => {
-  const response = await apiClient.delete('/auth/me');
+export const deleteAccount = async (confirm = true) => {
+  const response = await client.delete('/auth/me', { data: { confirm } });
   return response.data;
 };
 
@@ -85,4 +85,6 @@ export default {
   login,
   changePassword,
   getCurrentUser,
+  updateProfile,
+  deleteAccount,
 };
