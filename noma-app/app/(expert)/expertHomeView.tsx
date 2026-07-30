@@ -272,6 +272,9 @@ const VerifiedView = ({
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Action Required</Text>
+              <TouchableOpacity onPress={() => router.push('/expertCases' as any)}>
+                <Text style={{ fontSize: 12, color: COLORS.primary, fontWeight: '600' }}>View all</Text>
+              </TouchableOpacity>
             <View style={styles.urgentBadge}>
               <Text style={styles.urgentBadgeText}>{pendingCases.length} pending</Text>
             </View>

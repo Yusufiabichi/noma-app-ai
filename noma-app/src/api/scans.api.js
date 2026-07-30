@@ -44,7 +44,7 @@ export const createScan = async (scanData, onProgress = null) => {
   if (cropType) formData.append('cropType', cropType);
   if (language) formData.append('language', language);
 
-  const response = await client.uploadFile('/scans', formData, onProgress);
+  const response = await apiClient.uploadFile('/scans', formData, onProgress);
   return response;
 };
 
@@ -58,13 +58,6 @@ export const createScan = async (scanData, onProgress = null) => {
  * @param {string} [params.cropType] - Filter by crop type
  * @returns {Promise<{scans: Object[], pagination: Object}>}
  */
-//export const getScans = async (params = {}) => {
-//  const response = await client.get('/scans', { params });
-//  return {
-//    scans: response?.data || [],
-//    pagination: response?.pagination,
-//  };
-//};
 
 export const getScans = async (params = {}) => {
   try {
@@ -104,7 +97,7 @@ export const getScans = async (params = {}) => {
  * @returns {Promise<{stats: Object}>}
  */
 export const getScanStats = async () => {
-  return await client.get('/scans/stats');
+  return await apiClient.get('/scans/stats');
 };
 
 /**
@@ -113,7 +106,7 @@ export const getScanStats = async () => {
  * @returns {Promise<{scan: Object}>}
  */
 export const getScanById = async (scanId) => {
-  return await client.get(`/scans/${scanId}`);
+  return await apiClient.get(`/scans/${scanId}`);
 };
 
 /**
@@ -122,7 +115,7 @@ export const getScanById = async (scanId) => {
  * @returns {Promise<{scan: Object}>}
  */
 export const retryScanDiagnosis = async (scanId) => {
-  const response = await client.post(`/scans/${scanId}/retry`);
+  const response = await apiClient.post(`/scans/${scanId}/retry`);
   return response;
 };
 
@@ -132,7 +125,7 @@ export const retryScanDiagnosis = async (scanId) => {
  * @returns {Promise<void>}
  */
 export const deleteScan = async (scanId) => {
-  const response = await client.del(`/scans/${scanId}`);
+  const response = await apiClient.del(`/scans/${scanId}`);
   return response;
 };
 

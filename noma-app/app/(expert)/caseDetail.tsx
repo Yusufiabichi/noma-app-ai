@@ -202,10 +202,6 @@ const ExpertCaseDetailScreen = () => {
               <Text style={styles.infoLabel}>Name</Text>
               <Text style={styles.infoValue}>{caseData.farmer?.name || '—'}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Phone</Text>
-              <Text style={styles.infoValue}>{caseData.farmer?.phone || '—'}</Text>
-            </View>
             <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
               <Text style={styles.infoLabel}>Case submitted</Text>
               <Text style={styles.infoValue}>

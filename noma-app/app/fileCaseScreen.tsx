@@ -65,6 +65,9 @@ const FileCaseScreen = () => {
     fetchScan();
   }, [scanId]);
 
+  const formatDiseaseName = (raw) =>
+    raw?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
   const handleSubmit = async () => {
     if (!scanId) {
       showAlert({
@@ -205,9 +208,6 @@ const FileCaseScreen = () => {
           </View>
         ) : scan ? (
           <View style={styles.scanCard}>
-            {scan.imageUrl && (
-              <Image source={{ uri: scan.imageUrl }} style={styles.scanImage} />
-            )}
             <View style={styles.scanInfo}>
               <View style={styles.scanRow}>
                 <Text style={styles.scanCrop}>{scan.cropType}</Text>
@@ -225,10 +225,9 @@ const FileCaseScreen = () => {
                   </View>
                 )}
               </View>
-              <Text style={styles.scanDisease}>{scan.diagnosis?.disease || "Unknown"}</Text>
-              {scan.diagnosis?.confidence && (
+                <Text style={styles.scanDisease}>{formatDiseaseName(scan.diagnosis?.disease) || "Unknown"}</Text>              {scan.diagnosis?.confidence && (
                 <Text style={styles.scanConfidence}>
-                  {Math.round(scan.diagnosis.confidence)}% confidence
+                  {Math.round(scan.diagnosis.confidence * 100)}% confidence
                 </Text>
               )}
             </View>

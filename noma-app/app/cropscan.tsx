@@ -20,7 +20,6 @@ import { useRouter } from 'expo-router';
 import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
 import { useAlert } from '@/src/context/AlertContext';
-import client from '@/src/api/client';
 import * as localScanService from '@/src/services/localScanService';
 import { isOnline } from '@/src/utils/network';
 import logger from '@/src/utils/logger';
@@ -145,15 +144,18 @@ export default function CropScan() {
       logger.error('Error processing scan', error);
       // Detailed debug logs for production troubleshooting
       console.log("--- SCAN ERROR DEBUG ---");
-      console.log("TYPE:", error.name);
-      console.log("MESSAGE:", error.message);
-      console.log("STATUS CODE:", error.statusCode);
-      console.log("SERVER RESPONSE:", error.originalError?.response?.data);
+      console.log("TYPE:", error?.name);
+      console.log("MESSAGE:", error?.message);
+      console.log("STATUS CODE:", error?.statusCode);
+      if (error?.originalError) {
+        console.log("ORIGINAL ERROR MESSAGE:", error.originalError.message);
+        console.log("SERVER RESPONSE:", error.originalError.response?.data);
+      }
       console.log("------------------------");
 
       showAlert({
         title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'An kasa aiwatar da binciken' : (error.message || 'Failed to process scan'),
+        message: isHausa ? 'An kasa aiwatar da binciken' : (error?.message || 'Failed to process scan'),
         buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
       });
       // Reset processing state on error so user can try again
@@ -254,7 +256,7 @@ export default function CropScan() {
             language,
             isOnline: false,
             localScanId: scan.id,
-            isFallback: diagnosedScan.diagnosis?.isFallback ?? false,
+            isFallback: false,
           }),
         },
       });

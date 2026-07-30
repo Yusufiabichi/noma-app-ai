@@ -22,7 +22,7 @@ export default function HomeScreen() {
 
 
 
- if (user?.role === 'admin')  return <AdminDashboardScreen />;
+ if (user?.role === 'admin')  return <AdminDashboard />;
  if (user?.role === 'expert') return <ExpertHomeView userName={user?.name || ''} />;
  if (user?.role === 'farmer') return <FarmerHomeScreen />;
 

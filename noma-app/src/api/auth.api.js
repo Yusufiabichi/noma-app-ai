@@ -56,7 +56,7 @@ export const updateProfile = async (data) => {
 };
 
 export const deleteAccount = async (confirm = true) => {
-  const response = await client.delete('/auth/me', { data: { confirm } });
+  const response = await client.del('/auth/me', { data: { confirm } });
   return response.data;
 };
 

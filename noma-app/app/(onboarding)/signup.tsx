@@ -55,8 +55,16 @@ const SignupScreen = () => {
     lga: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     role: "",
   });
+
+  const passwordsMatch = formData.confirmPassword.length > 0 &&
+    formData.password === formData.confirmPassword;
+
+  const passwordsMismatch = formData.confirmPassword.length > 0 &&
+    formData.password !== formData.confirmPassword;
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
@@ -82,29 +90,24 @@ const SignupScreen = () => {
     l.toLowerCase().includes(locationSearch.toLowerCase())
   );
 
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-    if (!formData.state) {
-      newErrors.state = "State is required";
-    }
-    if (!formData.lga) {
-      newErrors.lga = "LGA is required";
-    }
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
-    if (!formData.role) {
-      newErrors.role = "Please select a role";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    const validateForm = () => {
+      const newErrors: typeof errors = {};
+      if (!formData.name.trim())     newErrors.name     = "Name is required";
+      if (!formData.phone.trim())    newErrors.phone    = "Phone number is required";
+      if (!formData.password)        newErrors.password = "Password is required";
+      else if (formData.password.length < 6)
+        newErrors.password = "Password must be at least 6 characters";
+
+      // ← add this
+      if (!formData.confirmPassword)
+        newErrors.confirmPassword = "Please confirm your password";
+      else if (formData.password !== formData.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match";
+
+      if (!formData.role) newErrors.role = "Please select a role";
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
 
   const handleSignup = async () => {
     if (!validateForm()) return;
@@ -377,6 +380,67 @@ const SignupScreen = () => {
             </View>
             {errors.password && (
               <Text style={styles.errorText}>{errors.password}</Text>
+            )}
+          </View>
+
+          {/* Confirm Password */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <View style={[
+              styles.inputWrapper,
+              passwordsMatch    && styles.inputSuccess,   // green border
+              passwordsMismatch && styles.inputError,     // red border
+            ]}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={18}
+                color={
+                  passwordsMatch    ? "#16A34A" :
+                  passwordsMismatch ? "#dc2626" :
+                  COLORS.textLight
+                }
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={[styles.inputField, { flex: 1 }]}
+                placeholder="Re-enter your password"
+                placeholderTextColor={COLORS.textLight}
+                secureTextEntry={!showPassword}
+                value={formData.confirmPassword}
+                onChangeText={(v) => {
+                  setFormData((f) => ({ ...f, confirmPassword: v }));
+                  setErrors((e) => ({ ...e, confirmPassword: "" }));
+                }}
+                editable={!loading}
+              />
+              {/* Match/mismatch icon */}
+              {formData.confirmPassword.length > 0 && (
+                <Ionicons
+                  name={passwordsMatch ? "checkmark-circle" : "close-circle"}
+                  size={20}
+                  color={passwordsMatch ? "#16A34A" : "#dc2626"}
+                />
+              )}
+            </View>
+
+            {/* Feedback line */}
+            {formData.confirmPassword.length > 0 && (
+              <View style={styles.matchFeedback}>
+                <View style={[
+                  styles.matchLine,
+                  { backgroundColor: passwordsMatch ? "#16A34A" : "#dc2626" }
+                ]} />
+                <Text style={[
+                  styles.matchText,
+                  { color: passwordsMatch ? "#16A34A" : "#dc2626" }
+                ]}>
+                  {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                </Text>
+              </View>
+            )}
+
+            {errors.confirmPassword && (
+              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
             )}
           </View>
 
@@ -749,6 +813,25 @@ const styles = StyleSheet.create({
   inputError: {
     borderColor: COLORS.error,
   },
+inputSuccess: {
+  borderColor: "#16A34A",
+  borderWidth: 1.5,
+},
+matchFeedback: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 6,
+  marginTop: 6,
+},
+matchLine: {
+  width: 3,
+  height: 14,
+  borderRadius: 2,
+},
+matchText: {
+  fontSize: 12,
+  fontWeight: "600",
+},
   errorText: {
     color: COLORS.error,
     fontSize: 12,
