@@ -4,7 +4,7 @@
     "slug": "mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/AppIcon.jpg",
     "scheme": "mobileapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,11 +15,12 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 2,
       "adaptiveIcon": {
         "backgroundColor": "#16A34A",
-        "foregroundImage": "./assets/nomaapplogo.png",
-        "backgroundImage": "./assets/nomaapplogo.png",
-        "monochromeImage": "./assets/nomaapplogo.png"
+        "foregroundImage": "./assets/images/Foreground.png",
+        "backgroundImage": "./assets/images/Background.jpg",
+        "monochromeImage": "./assets/images/Monochrome.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -27,14 +28,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/nomaapplogo.png",
+          "image": "./assets/images/Splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -46,7 +47,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
+          "icon": "./assets/images/Notification.png",
           "color": "#16A34A"
         }
       ]

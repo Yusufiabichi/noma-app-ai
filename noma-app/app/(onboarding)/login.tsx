@@ -111,7 +111,7 @@ const LoginScreen = () => {
         {/* Logo */}
         <View style={styles.logoContainer}>
           <Image
-            source={require("@/assets/nomaapplogo.png")}
+            source={require("@/assets/images/NomaApp_logo.png")}
             style={styles.logo}
             resizeMode="contain"
           />

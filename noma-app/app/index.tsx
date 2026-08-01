@@ -66,7 +66,7 @@ const AppSplashScreen = () => {
     <View style={styles.container}>
       <Animated.View style={[styles.logoContainer, { opacity: fadeAnim }]}>
         <Image
-          source={require("@/assets/nomaapplogo.png")}
+          source={require("@/assets/images/Splash.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 320,
+    height: 320,
   },
 });
 

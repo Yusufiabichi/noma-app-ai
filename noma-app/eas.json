@@ -36,9 +36,8 @@
         "ENVIRONMENT": "production"
       }
     }
+  },
+  "cli": {
+    "appVersionSource": "remote"
   }
 }
-
-
-
-

@@ -90,7 +90,63 @@ const ProfileFormScreen = () => {
       });
       setSuccessVisible(true);
     } catch (err: any) {
-      Alert.alert("Error", err.response?.data?.message || "Failed to save profile");
+      const status  = err.statusCode;
+      const code    = err.errorCode;
+      const message = err.message;
+
+      // Genuine network failure — no status code at all
+      if (!status) {
+        Alert.alert(
+          "No connection",
+          "Check your internet connection and try again."
+        );
+        return;
+      }
+
+      switch (code) {
+        case "DUPLICATE_ERROR":
+        case "CONFLICT":
+          setErrors(e => ({
+            ...e,
+            email: "This email is already linked to another expert account",
+          }));
+          setTimeout(() => scrollRef.current?.scrollTo({ y: 400, animated: true }), 100);
+          break;
+
+        case "VALIDATION_ERROR": {
+          const details = err.data?.error?.details;
+          if (details?.length) {
+            const fieldErrors: Record<string, string> = {};
+            details.forEach((d: { field: string; message: string }) => {
+              fieldErrors[d.field] = d.message;
+            });
+            setErrors(e => ({ ...e, ...fieldErrors }));
+          } else {
+            Alert.alert("Validation Error", message || "Please check your inputs");
+          }
+          break;
+        }
+
+        case "UNAUTHORIZED":
+        case "UNAUTHORIZED_ROLE":
+          Alert.alert(
+            "Session expired",
+            "Please log in again to continue.",
+            [{
+              text: "Log in",
+              onPress: () => router.replace("/(onboarding)/login" as any)
+            }]
+          );
+          break;
+
+        default:
+          Alert.alert(
+            "Error",
+            message && message !== "An unexpected error occurred"
+              ? message
+              : "Failed to save profile. Please try again."
+          );
+      }
     } finally {
       setLoading(false);
     }
