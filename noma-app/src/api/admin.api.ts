@@ -18,6 +18,10 @@ export const adminReviewExpert = (id: string, data: {
   notes?: string;
 }) => client.patch(`/admin/experts/${id}/review`, data);
 
+export const adminForceVerifyExpert = (id: string, data: {
+  adminNotes?: string;
+}) => client.patch(`/admin/experts/${id}/force-verify`, data);
+
 // ─── Assessment Questions ──────────────────────────────────────────────────────
 
 export const adminListQuestions = (params: {

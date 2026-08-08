@@ -334,7 +334,6 @@ const FarmerCaseDetailScreen = () => {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.expertName}>{caseData.expert?.name || "—"}</Text>
-            <Text style={styles.expertPhone}>{caseData.expert?.phone || ""}</Text>
           </View>
           <View style={styles.expertVerifiedBadge}>
             <Ionicons name="shield-checkmark" size={12} color={COLORS.primary} />

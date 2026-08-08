@@ -5,9 +5,10 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { adminGetExpertDetail, adminReviewExpert } from "@/src/api/admin.api";
+import { adminGetExpertDetail, adminReviewExpert, adminForceVerifyExpert } from "@/src/api/admin.api";
 import { useApiCall } from "@/src/hooks/useApiCall";
 import ErrorState from "@/app/components/ErrorState";
+import { useAuth } from '@/src/hooks/useAuth';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -208,6 +209,10 @@ const RejectModal = ({
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 const AdminExpertDetailScreen = () => {
+
+  const { user } = useAuth();
+  const isSuperAdmin = user?.adminRole === 'super_admin';
+  const [forceVerifyLoading, setForceVerifyLoading] = useState(false);
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -261,6 +266,36 @@ const AdminExpertDetailScreen = () => {
     } finally {
       setRejectLoading(false);
     }
+  };
+
+  const handleForceVerify = () => {
+    Alert.alert(
+      '⚡ Force Verify Expert',
+      `Grant ${profile?.user?.name} full verified expert status without requiring the assessment?\n\nOnly do this for trusted, known experts.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes, Verify',
+          onPress: async () => {
+            setForceVerifyLoading(true);
+            try {
+              await adminForceVerifyExpert(id, {
+                adminNotes: 'Force verified — trusted expert, assessment waived'
+              });
+              Alert.alert(
+                '✅ Expert Verified',
+                `${profile?.user?.name} is now a verified NomaApp expert.`,
+                [{ text: 'OK', onPress: () => retry() }]
+              );
+            } catch (err: any) {
+              Alert.alert('Error', err.message || 'Failed to verify expert');
+            } finally {
+              setForceVerifyLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getInitials = (name: string) =>
@@ -431,29 +466,48 @@ const AdminExpertDetailScreen = () => {
           </ScrollView>
 
           {/* Sticky action bar — only when pending review */}
-          {profile.overallStatus === "pending_review" && (
+          {/* Show force verify for super admin when expert is not yet approved */}
+          {isSuperAdmin && profile?.overallStatus !== 'approved' && (
             <View style={styles.actionBar}>
+              {profile?.overallStatus === 'pending_review' && (
+                <>
+                  <TouchableOpacity
+                    style={styles.rejectActionBtn}
+                    onPress={() => setRejectModalVisible(true)}
+                    disabled={approveLoading || forceVerifyLoading}
+                  >
+                    <Ionicons name="close" size={18} color={COLORS.error} />
+                    <Text style={styles.rejectActionText}>Reject</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.approveActionBtn, approveLoading && { opacity: 0.65 }]}
+                    onPress={handleApprove}
+                    disabled={approveLoading || forceVerifyLoading}
+                  >
+                    {approveLoading
+                      ? <ActivityIndicator size="small" color={COLORS.white} />
+                      : <>
+                          <Ionicons name="checkmark" size={18} color={COLORS.white} />
+                          <Text style={styles.approveActionText}>Approve Docs</Text>
+                        </>
+                    }
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {/* Force verify — always visible for super admin if not yet approved */}
               <TouchableOpacity
-                style={styles.rejectActionBtn}
-                onPress={() => setRejectModalVisible(true)}
-                disabled={approveLoading}
+                style={[styles.forceVerifyBtn, forceVerifyLoading && { opacity: 0.65 }]}
+                onPress={handleForceVerify}
+                disabled={forceVerifyLoading || approveLoading}
               >
-                <Ionicons name="close" size={18} color={COLORS.error} />
-                <Text style={styles.rejectActionText}>Reject</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.approveActionBtn, approveLoading && { opacity: 0.65 }]}
-                onPress={handleApprove}
-                disabled={approveLoading}
-              >
-                {approveLoading
+                {forceVerifyLoading
                   ? <ActivityIndicator size="small" color={COLORS.white} />
-                  : (
-                    <>
-                      <Ionicons name="checkmark" size={18} color={COLORS.white} />
-                      <Text style={styles.approveActionText}>Approve</Text>
+                  : <>
+                      <Ionicons name="flash" size={16} color={COLORS.white} />
+                      <Text style={styles.forceVerifyText}>Force Verify</Text>
                     </>
-                  )
                 }
               </TouchableOpacity>
             </View>
@@ -580,6 +634,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
   approveActionText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
+  forceVerifyBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#7c3aed',   // purple — visually distinct from normal approve
+    borderRadius: 12,
+    paddingVertical: 13,
+    shadowColor: '#7c3aed',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  forceVerifyText: {
+    color: COLORS.white,
+    fontWeight: '700',
+    fontSize: 14,
+  },
 });
 
 const modal = StyleSheet.create({
