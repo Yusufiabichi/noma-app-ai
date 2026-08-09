@@ -28,6 +28,12 @@ export default function OnboardingLayout() {
         }}
       />
         <Stack.Screen
+          name="forgot-password"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="plans"
           options={{
             headerShown: true,

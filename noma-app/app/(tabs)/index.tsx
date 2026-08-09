@@ -2,7 +2,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { FontAwesome, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
-import { router } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '@/src/context/LanguageContext';
@@ -17,9 +17,24 @@ const RECENT_SCANS_CACHE_KEY = '@nomaapp_recent_scans_cache';
 
 export default function HomeScreen() {
   const { language, setLanguage } = useLanguage();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+useEffect(() => {
+  // If not loading and no user — redirect to login
+  if (!loading && !user) {
+    router.replace('../(onboarding)/login');
+  }
+}, [user, loading]);
+
+if (loading || !user) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FFFB' }}>
+        <ActivityIndicator size="large" color="#16A34A" />
+      </View>
+    );
+}
 
 
  if (user?.role === 'admin')  return <AdminDashboard />;

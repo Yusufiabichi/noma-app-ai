@@ -2,7 +2,7 @@ import { Slot, Tabs, router } from 'expo-router'
 import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons'
 import { Pressable, Text, View, Modal, FlatList, StatusBar, TouchableOpacity, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { LanguageProvider, useLanguage, Lang } from '../../src/context/LanguageContext';
 import {Picker} from '@react-native-picker/picker';
 import { useAuth } from '@/src/hooks/useAuth';
