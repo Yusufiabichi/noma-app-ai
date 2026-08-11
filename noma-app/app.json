@@ -2,7 +2,7 @@
   "expo": {
     "name": "NomaApp AI",
     "slug": "mobile-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/AppIcon.jpg",
     "scheme": "mobileapp",

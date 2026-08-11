@@ -33,7 +33,7 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ visible, updateInfo, onClose 
       storeUrl = `https://apps.apple.com/app/idYOUR_APP_ID`;
     } else {
       // Replace with your package name
-      storeUrl = `https://play.google.com/store/apps/details?id=com.your.package`;
+      storeUrl = `https://play.google.com/store/apps/details?id=com.yusufiabichi.mobileapp`;
     }
     Linking.openURL(storeUrl).catch(err => console.error('Failed to open store:', err));
   };
