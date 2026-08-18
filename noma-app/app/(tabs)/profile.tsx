@@ -143,20 +143,6 @@ const FarmerProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
         <Feather name="chevron-right" size={22} color="#999" />
       </TouchableOpacity>
 
-      {/* Notifications */}
-      <TouchableOpacity style={styles.optionCard}>
-        <View style={styles.optionLeft}>
-          <View style={styles.optionIcon}>
-            <Feather name="bell" size={20} color="#16A34A" />
-          </View>
-          <View>
-            <Text style={styles.optionTitle}>Notifications</Text>
-            <Text style={styles.optionSubtitle}>Push notifications & alerts</Text>
-          </View>
-        </View>
-        <Feather name="chevron-right" size={22} color="#999" />
-      </TouchableOpacity>
-
       {/* Logout */}
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
         <Feather name="log-out" size={20} color="#dc2626" style={{ marginRight: 8 }} />
@@ -303,8 +289,6 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
         <Feather name="chevron-right" size={22} color="#999" />
       </TouchableOpacity>
 
-
-
       {/* Account Settings */}
       <TouchableOpacity style={styles.optionCard}
         onPress={() => router.push('/(onboarding)/accountSettings')}
@@ -316,20 +300,6 @@ const ExpertProfile = ({ authUser, onLogout }: { authUser: any; onLogout: () => 
           <View>
             <Text style={styles.optionTitle}>Account Settings</Text>
             <Text style={styles.optionSubtitle}>Manage your profile</Text>
-          </View>
-        </View>
-        <Feather name="chevron-right" size={22} color="#999" />
-      </TouchableOpacity>
-
-      {/* Notifications */}
-      <TouchableOpacity style={styles.optionCard}>
-        <View style={styles.optionLeft}>
-          <View style={styles.optionIcon}>
-            <Feather name="bell" size={20} color="#16A34A" />
-          </View>
-          <View>
-            <Text style={styles.optionTitle}>Notifications</Text>
-            <Text style={styles.optionSubtitle}>Push notifications & alerts</Text>
           </View>
         </View>
         <Feather name="chevron-right" size={22} color="#999" />

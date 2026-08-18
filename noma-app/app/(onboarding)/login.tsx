@@ -231,10 +231,6 @@ const LoginScreen = () => {
           </View>
 
           {/* Google */}
-          <TouchableOpacity style={styles.socialButton} disabled={loading}>
-            <Ionicons name="logo-google" size={18} color="#EA4335" />
-            <Text style={styles.socialButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Sign Up Link */}

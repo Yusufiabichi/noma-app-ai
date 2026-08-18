@@ -432,13 +432,26 @@ const styles = StyleSheet.create({
   filterScroll: { backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.border, flexGrow: 0 },
   filterScrollContent: { paddingHorizontal: 16, paddingVertical: 10, gap: 8, alignItems: "center" },
   filterChip: {
-    borderWidth: 1, borderColor: COLORS.border, borderRadius: 20,
-    paddingVertical: 6, paddingHorizontal: 14, backgroundColor: COLORS.white, alignSelf: "flex-start"
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: COLORS.white,
+    alignSelf: "flex-start",
+    minHeight: 32,
+    justifyContent: "center",
   },
-  filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  filterChipText: { fontSize: 12, color: COLORS.textDark, fontWeight: "500" },
-  filterChipTextActive: { color: COLORS.white },
-
+  filterChipText: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: COLORS.textDark,
+    fontWeight: "500",
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+    filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+    filterChipTextActive: { color: COLORS.white },
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
   listContent: { padding: 16, paddingBottom: 40 },
 
