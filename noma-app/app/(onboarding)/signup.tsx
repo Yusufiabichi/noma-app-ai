@@ -496,15 +496,6 @@ const SignupScreen = () => {
               <Text style={styles.primaryButtonText}>Create Account</Text>
             )}
           </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.divider} />
-          </View>
-
-          {/* Google */}
         </View>
 
         {/* Sign In Link */}

@@ -223,14 +223,6 @@ const LoginScreen = () => {
             )}
           </TouchableOpacity>
 
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.divider} />
-          </View>
-
-          {/* Google */}
         </View>
 
         {/* Sign Up Link */}
