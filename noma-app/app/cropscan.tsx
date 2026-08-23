@@ -1,17 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  Image,
-  Platform,
-  Alert,
-  ActivityIndicator,
-  FlatList,
-  TextInput
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Image, Platform, Alert, ActivityIndicator, FlatList, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
@@ -26,6 +14,7 @@ import logger from '@/src/utils/logger';
 import { createScan } from '@/src/api/scans.api'
 import { pollUntilDiagnosed } from '@/src/utils/pollScan'
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
+import CaptureGuideOverlay from '@/app/components/CaptureGuideOverlay'
 
 const CROPS = [
   { id: 'maize', name: 'Maize', scientificName: 'Zea mays (Masara)', category: 'Cereals' },
