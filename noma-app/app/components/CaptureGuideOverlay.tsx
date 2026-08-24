@@ -5,7 +5,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Svg, Rect, Defs, Mask } from 'react-native-svg';
-import * as Brightness from 'expo-brightness';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
@@ -144,26 +143,27 @@ const CaptureGuideOverlay: React.FC<CaptureGuideOverlayProps> = ({
   }, [lightLevel]);
 
   // ── Lighting detection ────────────────────────────────────────────────────────
-  const checkLighting = useCallback(async () => {
-    try {
-      let brightness: number;
+    const checkLighting = useCallback(async () => {
+      try {
+        // expo-brightness has a getSystemBrightnessAsync that
+        // reads screen brightness without the scary permission.
+        // But safest of all — just skip ambient detection on Android
+        // and use a static "good" state, letting the tips do the work.
+        if (Platform.OS === 'android') {
+          setLightLevel('good'); // skip sensor on Android — no permission needed
+          return;
+        }
 
-      if (brightnessOverride !== null) {
-        brightness = brightnessOverride;
-      } else {
-        const { status } = await Brightness.requestPermissionsAsync();
-        if (status !== 'granted') { setLightLevel('unknown'); return; }
-        brightness = await Brightness.getBrightnessAsync();
+        // iOS doesn't need special permission for brightness reading
+        const { Brightness } = await import('expo-brightness');
+        const brightness = await Brightness.getBrightnessAsync();
+        if (brightness < 0.15)      setLightLevel('dark');
+        else if (brightness > 0.85) setLightLevel('bright');
+        else                        setLightLevel('good');
+      } catch {
+        setLightLevel('good'); // fail silently — tips still show
       }
-
-      // brightness is 0–1 on Android, same on iOS
-      if (brightness < 0.15)      setLightLevel('dark');
-      else if (brightness > 0.85) setLightLevel('bright');
-      else                        setLightLevel('good');
-    } catch {
-      setLightLevel('unknown');
-    }
-  }, [brightnessOverride]);
+    }, []);
 
   useEffect(() => {
     checkLighting();
@@ -187,6 +187,7 @@ const CaptureGuideOverlay: React.FC<CaptureGuideOverlayProps> = ({
         width={SCREEN_W}
         height={SCREEN_H}
         style={StyleSheet.absoluteFill}
+        pointerEvents="none"
       >
         <Defs>
           <Mask id="cutout">

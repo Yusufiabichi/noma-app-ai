@@ -302,12 +302,21 @@ export default function CropScan() {
     <SafeAreaView style={styles.container}>
       <View style={styles.cameraWrapper}>
         {Platform.OS !== 'web' ? (
+
+          <>
           <CameraView
             ref={cameraRef}
             style={styles.camera}
             facing="back"
             onCameraReady={() => setIsCameraReady(true)}
           />
+
+        {/* Overlay sits on top of camera preview */}
+        <CaptureGuideOverlay
+          language={language === 'hausa' ? 'ha' : 'en'}
+        />
+        </>
+
         ) : (
           <View
             style={[
@@ -318,18 +327,6 @@ export default function CropScan() {
             <Text style={{ color: 'white' }}>Camera not available on web</Text>
           </View>
         )}
-
-        {/* Overlay: frame */}
-        <View pointerEvents="none" style={styles.overlayContainer}>
-          <View style={styles.overlayInner}>
-            <View style={styles.frame} />
-          </View>
-        </View>
-
-        {/* Hint bubble */}
-        <View style={styles.hintBubble}>
-          <Text style={styles.hintText}>Place your crop's leaf in the frame</Text>
-        </View>
 
         {/* Top controls */}
         <View style={styles.topBar}>
