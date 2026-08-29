@@ -8,12 +8,12 @@ const FertilizerAdvice: React.FC = () => {
     {
       title: 'Best Fertilizer for Maize',
       description: 'Use NPK 15:15:15 during planting and urea at knee height for strong growth.',
-      image: require('../assets/fertilizer1.jpg'),
+//       image: require('../assets/fertilizer1.jpg'),
     },
     {
       title: 'Organic Compost Benefits',
       description: 'Compost improves soil structure and helps retain water naturally.',
-      image: require('../assets/fertilizer2.jpg'),
+//       image: require('../assets/fertilizer2.jpg'),
     },
   ];
 

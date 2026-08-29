@@ -8,12 +8,12 @@ const FarmingTips: React.FC = () => {
     {
       title: 'Soil Testing Before Planting',
       description: 'Check soil pH and nutrient levels to determine the best crops to plant.',
-      image: require('../assets/tips1.jpg'),
+//       image: require('../assets/tips1.jpg'),
     },
     {
       title: 'Smart Watering Techniques',
       description: 'Use drip irrigation to save water and ensure consistent soil moisture.',
-      image: require('../assets/tips2.jpg'),
+//       image: require('../assets/tips2.jpg'),
     },
   ];
 

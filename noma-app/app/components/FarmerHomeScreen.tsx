@@ -144,7 +144,7 @@ const FarmerHomeScreen = () => {
               <Text style={styles.cardText}>
                 {language === "english" ? Data.en.home.cards_text[2] : Data.ha.home.cards_text[2]}
               </Text>
-              <Text style={styles.cardSub}>Best practices</Text>
+              <Text style={styles.cardSub}>Farming Tips</Text>
             </View>
             <View style={[styles.dot, { backgroundColor: '#2563EB' }]} />
           </TouchableOpacity>

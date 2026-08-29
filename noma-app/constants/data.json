@@ -10,7 +10,7 @@
         "welcome_title": "Welcome Farmer!",
         "welcome_subtitle": "Diagnose your crops with AI",
         "scan_text": "Scan Your Crop",
-        "cards_text": ["Fertilizer Advice", "Pest & Disease Guide", "Climate Smart Practices"]
+        "cards_text": ["Fertilizer Advice", "Pest & Disease Guide", "Farming Tips"]
     }},
     "ha": {
         "home": {

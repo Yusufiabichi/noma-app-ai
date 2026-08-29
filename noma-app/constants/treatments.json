@@ -1,0 +1,1436 @@
+[
+  {
+    "id": "bean_angular_leaf_spot",
+    "name_en": "Bean Angular Leaf Spot",
+    "name_ha": "Tabon kusurwa a wake",
+    "crop": "Beans",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Remove and burn infected leaves or plants",
+          "Apply copper-based fungicide (e.g., Copper Oxychloride)",
+          "Avoid wetting leaves during watering"
+        ],
+        "recommended_treatment_ha": [
+          "Cire kuma ƙone ganyen da cuta ta kama",
+          "Yi amfani da maganin fungal da ke ɗauke da jan karfe (misali Copper Oxychloride)",
+          "Guji zuba ruwa a saman ganye"
+        ],
+        "application_steps_en": [
+          "Mix 20g Copper Oxychloride in 15L of water",
+          "Wear gloves and mask before mixing",
+          "Spray all infected leaves thoroughly early morning",
+          "Repeat after 5 days if spots persist"
+        ],
+        "application_steps_ha": [
+          "Haɗa Copper Oxychloride gram 20 a cikin ruwa lita 15",
+          "Sa safar hannu da rufe hanci kafin haɗawa",
+          "Yi feshi sosai a kan ganyen da cuta ta kama da safe",
+          "Maimaita bayan kwana 5 idan tabon ba su ƙare ba"
+        ],
+        "dosage_en": "20g per 15L water. Apply to all infected areas. Repeat weekly if needed.",
+        "dosage_ha": "Gram 20 a cikin ruwa lita 15. Yi amfani a duk wuraren da cuta ta kama. Maimaita kowane mako idan ya cancanta.",
+        "timing_en": "Spray early morning (before 9AM) or late evening. Avoid spraying in hot sun.",
+        "timing_ha": "Yi feshi da safe kafin karfe 9 ko da maraice. Kada ka yi feshi lokacin zafin rana.",
+        "safety_warnings_en": [
+          "Wear protective gear (gloves, mask)",
+          "Keep children and livestock away during spraying",
+          "Wash hands after handling chemicals"
+        ],
+        "safety_warnings_ha": [
+          "Sanya kayan kariya (safar hannu, rufe hanci)",
+          "Guji yara da dabbobi a lokacin feshi",
+          "Wanke hannaye bayan amfani da magunguna"
+        ],
+        "expected_outcome_en": "Leaf spots should dry and stop spreading within 5-7 days. New growth will be healthy.",
+        "expected_outcome_ha": "Tabon ganye ya kamata su bushe su daina yaɗuwa cikin kwana 5-7. Sabbin ganye zasu zama lafiya.",
+        "follow_up_days_en": "Check plants after 5 days",
+        "follow_up_days_ha": "A sake dubawa bayan kwana 5",
+        "input_sourcing_en": "Available at agro-dealer shops. Copper Oxychloride is common. Organic option: Bordeaux mixture.",
+        "input_sourcing_ha": "Ana samunsa a kantunan taki da magani. Copper Oxychloride ya zama ruwan dare. Madadin gargajiya: ruwan Bordeaux.",
+        "future_prevention_en": [
+          "Rotate with non-host crops (maize or sorghum)",
+          "Use certified disease-free seed"
+        ],
+        "future_prevention_ha": [
+          "Yi juyin amfanin gona da masara ko dawa",
+          "Yi amfani da iri masu kyau ba tare da cuta ba"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Remove infected leaves manually",
+          "Spray Mancozeb fungicide"
+        ],
+        "recommended_treatment_ha": [
+          "Cire ganyen da ke ɗauke da cuta",
+          "Yi feshi da maganin Mancozeb"
+        ],
+        "application_steps_en": [
+          "Pick off all spotted leaves and burn them",
+          "Mix 15g Mancozeb in 15L of water",
+          "Spray only the remaining healthy leaves",
+          "Repeat after 7 days if new spots appear"
+        ],
+        "application_steps_ha": [
+          "Cire duk ganyen da ke da tabo ka ƙone su",
+          "Haɗa Mancozeb gram 15 a cikin ruwa lita 15",
+          "Yi feshi kawai a kan ganyen da suka rage lafiya",
+          "Maimaita bayan kwana 7 idan sababbin tabo suka bayyana"
+        ],
+        "dosage_en": "15g per 15L water. Apply only to affected areas.",
+        "dosage_ha": "Gram 15 a cikin ruwa lita 15. Yi amfani kawai a wuraren da cuta ta kama.",
+        "timing_en": "Spray in the morning or evening. Avoid windy days.",
+        "timing_ha": "Yi feshi da safe ko da yamma. Kada ka yi feshi lokacin iska.",
+        "safety_warnings_en": [
+          "Wear gloves and mask",
+          "Do not eat or drink while spraying",
+          "Store chemicals away from food"
+        ],
+        "safety_warnings_ha": [
+          "Sanya safar hannu da rufe hanci",
+          "Kada ka ci ko sha yayin feshi",
+          "Ajiye magunguna nesa da abinci"
+        ],
+        "expected_outcome_en": "Remaining leaves should stay healthy. Disease spread should stop within 3-5 days.",
+        "expected_outcome_ha": "Ganyen da suka rage su kasance lafiya. Yaɗuwar cuta ya kamata ta tsaya cikin kwana 3-5.",
+        "follow_up_days_en": [
+          "Check plants after 5 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 5"
+        ],
+        "input_sourcing_en": "Mancozeb is widely available at agro-dealers. Also sold as Dithane M-45.",
+        "input_sourcing_ha": "Ana samun Mancozeb sosai a kantunan taki. Ana sayar da shi da sunan Dithane M-45.",
+        "future_prevention_en": [
+          "Avoid overcrowding at planting",
+          "Keep good field hygiene"
+        ],
+        "future_prevention_ha": [
+          "Guji shuka wake da yawa a wuri ɗaya",
+          "Kula da tsaftar gona"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Spray neem extract as organic control",
+          "Monitor weekly"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da ruwan ganyen neem a matsayin magani",
+          "Kula akai-akai kowane mako"
+        ],
+        "application_steps_en": [
+          "Soak 1kg neem leaves in 10L water overnight",
+          "Strain and spray on all leaves",
+          "Repeat weekly for 3 weeks"
+        ],
+        "application_steps_ha": [
+          "Jika ganyen neem kilogiram 1 a cikin ruwa lita 10 dare ɗaya",
+          "Tace ka yi feshi a kan ganye duka",
+          "Maimaita kowane mako na makonni 3"
+        ],
+        "dosage_en": "1kg neem leaves per 10L water. Apply liberally.",
+        "dosage_ha": "Ganyen neem kilogiram 1 a cikin ruwa lita 10. Yi amfani da yawa.",
+        "timing_en": "Spray early morning or late afternoon.",
+        "timing_ha": "Yi feshi da safe ko da yamma.",
+        "safety_warnings_en": [
+          "Neem extract is safe, but avoid contact with eyes.",
+          "Wash hands after spraying."
+        ],
+        "safety_warnings_ha": [
+          "Ruwan neem ba shi da laifi, amma ka guji shiga ido.",
+          "Wanke hannaye bayan feshi."
+        ],
+        "expected_outcome_en": "Minor spots should fade. Vigilance needed to catch reoccurrence.",
+        "expected_outcome_ha": "Ƙananan tabo za su shuɗe. Ana buƙatar kulawa don gano sake faruwa.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Neem trees are common; you can prepare extract yourself. Also sold as Neem oil in shops.",
+        "input_sourcing_ha": "Itacen neem yana da yawa; za ka iya shirya ruwan da kanka. Ana sayar da mai neem a shaguna.",
+        "future_prevention_en": [
+          "Keep field weed-free",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Kula da tsaftar gona",
+          "Yi amfani da iri masu tsafta"
+        ]
+      }
+    }
+  },
+  {
+    "id": "bean_rust",
+    "name_en": "Bean Rust",
+    "name_ha": "Tsatsar wake",
+    "crop": "Beans",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Spray fungicide (Chlorothalonil or Mancozeb)",
+          "Remove and burn infected leaves"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da maganin fungi kamar Mancozeb ko Chlorothalonil",
+          "Cire ganyaye masu cuta ka ƙone su"
+        ],
+        "application_steps_en": [
+          "Mix 25ml Chlorothalonil in 15L water",
+          "Wear full protective gear",
+          "Spray all leaves thoroughly, especially underside",
+          "Repeat after 7 days if rust persists"
+        ],
+        "application_steps_ha": [
+          "Haɗa Chlorothalonil mililita 25 a cikin ruwa lita 15",
+          "Sanya dukkan kayan kariya",
+          "Yi feshi sosai a kan ganye, musamman a ƙarƙashinsu",
+          "Maimaita bayan kwana 7 idan tsatsar ba ta ƙare ba"
+        ],
+        "dosage_en": "25ml per 15L water. Apply to all foliage.",
+        "dosage_ha": "Mililita 25 a cikin ruwa lita 15. Yi amfani a dukkan ganye.",
+        "timing_en": "Spray in cool weather, early morning or evening. Avoid spraying before rain.",
+        "timing_ha": "Yi feshi a lokacin sanyi, da safe ko da yamma. Kada ka yi feshi kafin ruwan sama.",
+        "safety_warnings_en": [
+          "Wear mask, gloves, and long sleeves",
+          "Keep children and pets away for 24 hours",
+          "Do not spray near water sources"
+        ],
+        "safety_warnings_ha": [
+          "Sanya rufe hanci, safar hannu, da tufafi masu rufe jiki",
+          "Guji yara da dabbobi na tsawon sa'o'i 24",
+          "Kada ka yi feshi kusa da ruwa"
+        ],
+        "expected_outcome_en": "Rust pustules should dry up within 5 days. New leaves will be healthy.",
+        "expected_outcome_ha": "Kurajen tsatsa za su bushe cikin kwana 5. Sabbin ganye zasu zama lafiya.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Chlorothalonil (e.g., Bravo) and Mancozeb are common at agro-dealers.",
+        "input_sourcing_ha": "Chlorothalonil (misali Bravo) da Mancozeb ana samun su a kantunan taki.",
+        "future_prevention_en": [
+          "Plant rust-resistant varieties",
+          "Avoid planting in same spot every season"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da irin wake da ke da ƙarfi kan tsatsa",
+          "Guji shuka a wuri ɗaya duk shekara"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Improve nutrition with compost",
+          "Spray copper-based fungicide if spreading"
+        ],
+        "recommended_treatment_ha": [
+          "Haɗa taki na gargajiya don ƙara ƙarfi",
+          "Yi feshi da maganin jan karfe idan yana yaduwa"
+        ],
+        "application_steps_en": [
+          "Apply 5kg compost per 10 square meters around plants",
+          "If rust spreads, mix 20g Copper Oxychloride in 15L water",
+          "Spray only affected plants",
+          "Repeat once if needed after 7 days"
+        ],
+        "application_steps_ha": [
+          "Zuba taki kilogiram 5 a kowace murabba'i mita 10 kusa da shuke-shuke",
+          "Idan tsatsa ta yaɗu, haɗa Copper Oxychloride gram 20 a cikin ruwa lita 15",
+          "Yi feshi kawai a kan shuke-shuke masu cuta",
+          "Maimaita sau ɗaya idan ya cancanta bayan kwana 7"
+        ],
+        "dosage_en": "20g per 15L water for spraying. Compost: 5kg per 10m².",
+        "dosage_ha": "Gram 20 a cikin ruwa lita 15 don feshi. Taki: kilogiram 5 a kowace mita 10.",
+        "timing_en": "Apply compost when soil is moist. Spray early morning or evening.",
+        "timing_ha": "Zuba taki lokacin ƙasa tana da ɗanshi. Yi feshi da safe ko da yamma.",
+        "safety_warnings_en": [
+          "Wear gloves when handling compost",
+          "Avoid inhaling spray mist"
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu lokacin zuba taki",
+          "Guji shaka hayakin feshi"
+        ],
+        "expected_outcome_en": "Plants should gain vigor and resist rust. Spots should not increase.",
+        "expected_outcome_ha": "Shuke-shuke zasu sami ƙarfi su jure tsatsa. Tabo baza su ƙaru ba.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Compost from manure or crop residues. Copper fungicides at agro-dealers.",
+        "input_sourcing_ha": "Taki daga taki ko ragowar amfanin gona. Magungunan jan karfe a kantunan taki.",
+        "future_prevention_en": [
+          "Maintain spacing for airflow",
+          "Regular field checks"
+        ],
+        "future_prevention_ha": [
+          "Tabbatar tazara don iska",
+          "Duba gona akai-akai"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Spray neem oil weekly",
+          "Remove small rust spots"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da mai neem sau ɗaya a mako",
+          "Cire ƙananan tabo na tsatsa"
+        ],
+        "application_steps_en": [
+          "Mix 10ml neem oil in 1L water with a few drops of soap",
+          "Spray on both sides of leaves",
+          "Repeat weekly for a month"
+        ],
+        "application_steps_ha": [
+          "Haɗa mai neem mililita 10 a cikin ruwa lita 1 tare da digo kaɗan na sabulu",
+          "Yi feshi a saman da ƙarƙashin ganye",
+          "Maimaita kowane mako tsawon wata guda"
+        ],
+        "dosage_en": "10ml neem oil per 1L water. Apply to all leaves.",
+        "dosage_ha": "Mililita 10 na mai neem a cikin ruwa lita 1. Yi amfani a kan dukkan ganye.",
+        "timing_en": "Spray in late afternoon to avoid burning leaves.",
+        "timing_ha": "Yi feshi da yamma don guji ƙone ganye.",
+        "safety_warnings_en": [
+          "Neem oil is safe, but avoid contact with eyes.",
+          "Wash hands after use."
+        ],
+        "safety_warnings_ha": [
+          "Mai neem ba shi da laifi, amma ka guji shiga ido.",
+          "Wanke hannaye bayan amfani."
+        ],
+        "expected_outcome_en": "Minor spots will fade. Regular monitoring keeps it under control.",
+        "expected_outcome_ha": "Ƙananan tabo za su shuɗe. Kula akai-akai yana hana cutar taɓuwa.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Neem oil is sold in agro-shops. Also available as pure oil from local markets.",
+        "input_sourcing_ha": "Ana sayar da mai neem a shagunan taki. Ana samun mai tsafta a kasuwanni.",
+        "future_prevention_en": [
+          "Monitor early",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Duba daga farko",
+          "Yi amfani da iri masu tsafta"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rice_bacterial_leaf_spot",
+    "name_en": "Rice Bacterial Leaf Spot",
+    "name_ha": "Tabon ganye na kwayar cuta a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Uproot and destroy severely infected plants",
+          "Apply copper-based bactericide (e.g., Copper hydroxide)"
+        ],
+        "recommended_treatment_ha": [
+          "Cire shuke-shuke masu cuta sosai ka ƙone su",
+          "Yi amfani da maganin jan karfe mai kashe kwaya"
+        ],
+        "application_steps_en": [
+          "Remove and burn all severely infected plants",
+          "Mix 25g Copper hydroxide in 15L water",
+          "Spray the remaining healthy plants thoroughly",
+          "Apply again after 7 days if needed"
+        ],
+        "application_steps_ha": [
+          "Cire duk shuke-shuke da cuta ta mamaye sosai ka ƙone su",
+          "Haɗa Copper hydroxide gram 25 a cikin ruwa lita 15",
+          "Yi feshi sosai a kan shuke-shuke da suka rage lafiya",
+          "Sake shafa bayan kwana 7 idan ya cancanta"
+        ],
+        "dosage_en": "25g per 15L water. Spray all remaining plants.",
+        "dosage_ha": "Gram 25 a cikin ruwa lita 15. Yi feshi a kan duk shuke-shuke da suka rage.",
+        "timing_en": "Spray early morning or late evening. Avoid spraying in hot sun.",
+        "timing_ha": "Yi feshi da safe ko da yamma. Kada ka yi feshi lokacin zafin rana.",
+        "safety_warnings_en": [
+          "Wear gloves, mask, and protective clothing",
+          "Keep away from water sources",
+          "Wash hands after use"
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu, rufe hanci, da tufafi masu kariya",
+          "Guji kusa da ruwa",
+          "Wanke hannaye bayan amfani"
+        ],
+        "expected_outcome_en": "Infection should stop within 5-7 days. New leaves will grow clean.",
+        "expected_outcome_ha": "Cuta ya kamata ta tsaya cikin kwana 5-7. Sabbin ganye zasu girma lafiya.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Copper hydroxide (e.g., Kocide) is available at agro-dealers.",
+        "input_sourcing_ha": "Copper hydroxide (misali Kocide) ana samunsa a kantunan taki.",
+        "future_prevention_en": [
+          "Use certified clean seed",
+          "Rotate with non-rice crops"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da iri mai kyau",
+          "Yi juyin amfanin gona"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply foliar fertilizer to strengthen plants",
+          "Improve water management (avoid continuous flooding)"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da taki mai ƙarfafa ganye",
+          "Gyara yadda ake shayarwa (kar a bar ruwa kullum)"
+        ],
+        "application_steps_en": [
+          "Apply 5kg foliar fertilizer per hectare (e.g., 20-20-20)",
+          "Ensure field is drained for 2-3 days between irrigations",
+          "Remove any severely affected leaves"
+        ],
+        "application_steps_ha": [
+          "Yi amfani da taki mai ƙarfafa ganye kilogiram 5 a kowace hekta (misali 20-20-20)",
+          "Tabbatar ƙasa ta bushe na kwana 2-3 tsakanin shayarwa",
+          "Cire duk wani ganye da cuta ta kama sosai"
+        ],
+        "dosage_en": "5kg foliar fertilizer per hectare. Apply as spray or granules.",
+        "dosage_ha": "Kilogiram 5 na taki mai ƙarfafa ganye a kowace hekta. Yi amfani da feshi ko ƙwaya.",
+        "timing_en": "Apply fertilizer early morning or late afternoon.",
+        "timing_ha": "Yi taki da safe ko da yamma.",
+        "safety_warnings_en": [
+          "Wear gloves when handling fertilizer.",
+          "Avoid contact with eyes."
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu lokacin zuba taki.",
+          "Guji shiga ido."
+        ],
+        "expected_outcome_en": "Plants will become stronger and resist bacteria. Disease spread will slow.",
+        "expected_outcome_ha": "Shuke-shuke zasu sami ƙarfi su jure kwayar cuta. Yaɗuwar cuta za ta ragu.",
+        "follow_up_days_en": [
+          "Check plants after 5 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 5"
+        ],
+        "input_sourcing_en": "Foliar fertilizers (e.g., NPK 20-20-20) at agro-dealers.",
+        "input_sourcing_ha": "Taki mai ƙarfafa ganye (misali NPK 20-20-20) a kantunan taki.",
+        "future_prevention_en": [
+          "Maintain good drainage",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Tsaida ruwan tsabta",
+          "Yi amfani da iri masu tsafta"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add compost to soil",
+          "Monitor weekly"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki ga ƙasa",
+          "Kula da gida kowane mako"
+        ],
+        "application_steps_en": [
+          "Apply 2-3kg compost per square meter",
+          "Incorporate into soil before planting or around plants",
+          "Check for new spots every week"
+        ],
+        "application_steps_ha": [
+          "Zuba taki kilogiram 2-3 a kowace murabba'i mita",
+          "Haɗa da ƙasa kafin shuka ko a kusa da shuke-shuke",
+          "Duba sababbin tabo kowane mako"
+        ],
+        "dosage_en": "2-3kg compost per m². Apply around the base of plants.",
+        "dosage_ha": "Kilogiram 2-3 na taki a kowace mita murabba'i. Zuba a gindin shuke-shuke.",
+        "timing_en": "Apply compost when soil is moist, preferably in the morning.",
+        "timing_ha": "Zuba taki lokacin ƙasa tana da ɗanshi, da safe mafi kyau.",
+        "safety_warnings_en": [
+          "Compost is safe. Wash hands after handling."
+        ],
+        "safety_warnings_ha": [
+          "Taki ba shi da laifi. Wanke hannaye bayan amfani."
+        ],
+        "expected_outcome_en": "Soil health improves, plants become resilient and disease stays minor.",
+        "expected_outcome_ha": "Lafiyar ƙasa ta inganta, shuke-shuke su sami ƙarfi, cuta ba za ta yi girma ba.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Compost can be made from manure or crop residues. Ready-made compost at agro-shops.",
+        "input_sourcing_ha": "Ana iya shirya taki daga taki ko ragowar amfanin gona. Ana sayar da taki mai shiri a shagunan noma.",
+        "future_prevention_en": [
+          "Keep field weed-free",
+          "Use healthy seedlings"
+        ],
+        "future_prevention_ha": [
+          "A cire ciyawa",
+          "Yi amfani da tsiro mai lafiya"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rice_brown_spot",
+    "name_en": "Rice Brown Spot",
+    "name_ha": "Tabon ruwan kasa a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply Emamectin benzoate or Chlorpyrifos insecticide",
+          "Remove and destroy heavily infested plants"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da maganin ƙwaro Emamectin benzoate ko Chlorpyrifos",
+          "Cire kuma ƙone shuke-shuke da cuta ta mamaye sosai"
+        ],
+        "application_steps_en": [
+          "Mix 10ml Emamectin benzoate in 15L of water",
+          "Wear gloves and nose mask before mixing",
+          "Spray directly into the funnel/whorl of each plant early morning",
+          "Repeat every 7 days until infestation stops"
+        ],
+        "application_steps_ha": [
+          "Haɗa Emamectin benzoate mililita 10 a cikin ruwa lita 15",
+          "Sa safar hannu da rufe hanci kafin haɗawa",
+          "Yi feshi a cikin tsakiyar ganyen masara da safe",
+          "Maimaita kowane kwana 7 har sai ƙwaron ya ƙare"
+        ],
+        "dosage_en": "10ml per 15L water. Apply 15L per half-acre plot. Repeat weekly.",
+        "dosage_ha": "Mililita 10 a cikin ruwa lita 15. Yi amfani da lita 15 a kowace rabin eka. Maimaita kowane mako.",
+        "timing_en": "Spray early morning (before 9AM) or late evening. Avoid during flowering, do not spray if rain expected within 4 hours.",
+        "timing_ha": "Yi feshi da safe kafin karfe 9 ko da maraice. Kada ka yi feshi lokacin furanni. Kada ka yi feshi idan ruwan sama zai fado cikin awa 4.",
+        "safety_warnings_en": [
+          "Wear gloves and nose mask always",
+          "Keep children and livestock away for 24 hours after spraying",
+          "Do not spray near ponds or streams",
+          "Wash hands thoroughly after handling"
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu da rufe hanci kullum",
+          "Guji yara da dabbobi su shiga gona tsawon sa'a 24 bayan feshi",
+          "Kada ka yi feshi kusa da tafki ko kogi",
+          "Wanke hannaye sosai bayan amfani da magani"
+        ],
+        "expected_outcome_en": "Larvae should reduce within 3-5 days. New leaves should grow undamaged within 2 weeks. If no improvement after 10 days, switch insecticide.",
+        "expected_outcome_ha": "Ƙwaro ya kamata ya ragu cikin kwana 3-5. Ganye sabon zai girma ba tare da cuta ba cikin makon 2. Idan babu sauƙi bayan kwana 10, sauya magani.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Available at agro-dealer shops in Kano, Kaduna, Katsina markets. Brand names: Coragen, King Force, Armor. Organic alternative: Neem extract spray.",
+        "input_sourcing_ha": "Ana samunsa a kantunan taki da magani a kasuwannin Kano, Kaduna, Katsina. Sunaye a kasuwa: Coragen, King Force, Armor. Madadin gargajiya: ruwan neem.",
+        "future_prevention_en": [
+          "Plant early to avoid peak armyworm season",
+          "Intercrop with legumes"
+        ],
+        "future_prevention_ha": [
+          "Shuka da wuri don guje wa lokacin ƙwaro",
+          "Haɗa shuka da wake ko wake-wake"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply neem extract spray",
+          "Hand-pick visible larvae and destroy"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da ruwan neem",
+          "Tattara ƙwaro da hannu ka kashe su"
+        ],
+        "application_steps_en": [
+          "Crush 200g neem seeds and soak in 5L water overnight",
+          "Filter and dilute in 15L water",
+          "Spray into plant whorl every 5 days"
+        ],
+        "application_steps_ha": [
+          "Niƙa kwayan neem gram 200 ka jika su a cikin ruwa lita 5 dare ɗaya",
+          "Tace ruwan ka haɗa da ruwa lita 15",
+          "Yi feshi a tsakiyar ganye kowane kwana 5"
+        ],
+        "dosage_en": "200g neem seeds per 15L water. Apply to all plants showing damage.",
+        "dosage_ha": "Kwayan neem gram 200 a cikin ruwa lita 15. Yi amfani da shi ga duk shuka masu alamar cuta.",
+        "timing_en": "Spray in early morning. Repeat every 5 days for 3 weeks.",
+        "timing_ha": "Yi feshi da safe. Maimaita kowane kwana 5 na makon 3.",
+        "safety_warnings_en": [
+          "Neem is organic but avoid eye contact",
+          "Wash hands after spraying"
+        ],
+        "safety_warnings_ha": [
+          "Neem magani ne na gida amma guji shiga ido",
+          "Wanke hannaye bayan feshi"
+        ],
+        "expected_outcome_en": "Damage should slow within 5-7 days. Check whorls daily for new larvae.",
+        "expected_outcome_ha": "Lalacewa ya kamata ta ragu cikin kwana 5-7. Duba tsakiyar ganye kowace rana don sabon ƙwaro.",
+        "follow_up_days_en": [
+          "Check plants after 5 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 5"
+        ],
+        "input_sourcing_en": "Neem trees available locally. Neem oil also sold at agro shops. Brand: Neem Guard.",
+        "input_sourcing_ha": "Itacen neem yana cikin gari. Ana sayar da mai neem a kantunan taki. Suna: Neem Guard.",
+        "future_prevention_en": [
+          "Scout farm twice weekly during growing season",
+          "Use pheromone traps"
+        ],
+        "future_prevention_ha": [
+          "Duba gona sau biyu a mako lokacin girma",
+          "Yi amfani da tarkon ƙwaro"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Scout and monitor weekly",
+          "Apply wood ash into whorl of affected plants"
+        ],
+        "recommended_treatment_ha": [
+          "Duba gona akai-akai kowane mako",
+          "Zuba toka a tsakiyar ganyen shuka masu cuta"
+        ],
+        "application_steps_en": [
+          "Collect dry wood ash",
+          "Pour 1 teaspoon directly into the funnel of affected plants",
+          "Monitor daily"
+        ],
+        "application_steps_ha": [
+          "Tattara toka ta bushewa",
+          "Zuba cokali ɗaya a tsakiyar ganyen shuka masu cuta",
+          "Duba kowace rana"
+        ],
+        "dosage_en": "1 teaspoon wood ash per plant funnel. No dilution needed.",
+        "dosage_ha": "Cokali ɗaya na toka a kowace shuka. Ba a haɗa da ruwa.",
+        "timing_en": "Apply in morning after dew dries.",
+        "timing_ha": "Yi amfani da shi da safe bayan raɓa ta bushe.",
+        "safety_warnings_en": [
+          "Avoid inhaling ash dust",
+          "Keep away from eyes"
+        ],
+        "safety_warnings_ha": [
+          "Guji shaka turbin toka",
+          "Guji ido"
+        ],
+        "expected_outcome_en": "Minor infestations should stop spreading within 1 week. Escalate treatment if larvae multiply.",
+        "expected_outcome_ha": "Kaɗan na ƙwaro ya kamata ya tsaya cikin mako 1. Ƙara ƙarfin magani idan sun yawaita.",
+        "follow_up_days_en": [
+          "Check plants after 8 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 8"
+        ],
+        "input_sourcing_en": "Wood ash available at home or from local blacksmiths.",
+        "input_sourcing_ha": "Toka ana samunta a gida ko wurin makera.",
+        "future_prevention_en": [
+          "Plant resistant varieties like SAMMAZ",
+          "Keep field weeded"
+        ],
+        "future_prevention_ha": [
+          "Shuka irin masara mai juriya kamar SAMMAZ",
+          "Kula da tsaftar gona"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rice_leaf_smut",
+    "name_en": "Rice Leaf Smut",
+    "name_ha": "Cuta ta Leaf Smut a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Spray Propiconazole or Tricyclazole fungicide",
+          "Burn infected leaves"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da Propiconazole ko Tricyclazole",
+          "Ƙone ganyen da ke da cuta"
+        ],
+        "application_steps_en": [
+          "Mix 20ml Propiconazole in 15L water",
+          "Spray all infected leaves thoroughly",
+          "Repeat after 10 days if symptoms persist"
+        ],
+        "application_steps_ha": [
+          "Haɗa Propiconazole mililita 20 a cikin ruwa lita 15",
+          "Yi feshi sosai a kan duk ganyen da cuta ta kama",
+          "Maimaita bayan kwana 10 idan alamun sun ci gaba"
+        ],
+        "dosage_en": "20ml per 15L water. Apply to all foliage.",
+        "dosage_ha": "Mililita 20 a cikin ruwa lita 15. Yi amfani a dukkan ganye.",
+        "timing_en": "Spray early morning or late evening. Avoid direct sunlight.",
+        "timing_ha": "Yi feshi da safe ko da yamma. Kada ka yi feshi lokacin rana tsaka.",
+        "safety_warnings_en": [
+          "Wear gloves, mask, and long sleeves",
+          "Keep away from water bodies",
+          "Wash hands after use"
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu, rufe hanci, da tufafi masu rufe jiki",
+          "Guji kusa da ruwa",
+          "Wanke hannaye bayan amfani"
+        ],
+        "expected_outcome_en": "Smut spots should stop spreading. Healthy leaves will emerge within 2 weeks.",
+        "expected_outcome_ha": "Cuta ta Leaf Smut za ta daina yaɗuwa. Ganye lafiya zasu fito cikin makon 2.",
+        "follow_up_days_en": [
+          "Check plants after 10 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 10"
+        ],
+        "input_sourcing_en": "Propiconazole (e.g., Tilt) and Tricyclazole (e.g., Beam) at agro-dealers.",
+        "input_sourcing_ha": "Propiconazole (misali Tilt) da Tricyclazole (misali Beam) ana samunsu a kantunan taki.",
+        "future_prevention_en": [
+          "Use resistant varieties",
+          "Avoid excessive nitrogen"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da iri masu juriya",
+          "Guji amfani da nitrogen da yawa"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Add compost and ensure proper spacing",
+          "Alternate wet and dry irrigation"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki na gida, ba da tazara",
+          "Sauya tsakanin shayarwa da bushewa"
+        ],
+        "application_steps_en": [
+          "Apply 5kg compost per 10m²",
+          "Space plants at least 20cm apart",
+          "Irrigate every 3 days, then allow soil to dry for 2 days"
+        ],
+        "application_steps_ha": [
+          "Zuba taki kilogiram 5 a kowace mita 10",
+          "Raba shuke-shuke da tazara aƙalla santimita 20",
+          "Shayar da ruwa kowane kwana 3, sannan bar ƙasa ta bushe na kwana 2"
+        ],
+        "dosage_en": "5kg compost per 10m². Apply around plant base.",
+        "dosage_ha": "Kilogiram 5 na taki a kowace mita 10. Zuba a gindin shuke-shuke.",
+        "timing_en": "Apply compost in morning. Water management throughout the day.",
+        "timing_ha": "Zuba taki da safe. Kula da shayarwa a duk rana.",
+        "safety_warnings_en": [
+          "Compost is safe. Wash hands after handling."
+        ],
+        "safety_warnings_ha": [
+          "Taki ba shi da laifi. Wanke hannaye bayan amfani."
+        ],
+        "expected_outcome_en": "Plants gain strength and smut is controlled. New leaves remain healthy.",
+        "expected_outcome_ha": "Shuke-shuke su sami ƙarfi kuma cutar ta ragu. Sabbin ganye su kasance lafiya.",
+        "follow_up_days": [
+          "Check plants after 7 days",
+          "Sake duba bayan kwana 7"
+        ],
+        "input_sourcing_en": "Compost from manure or crop residues. Available at farms or agro-shops.",
+        "input_sourcing_ha": "Taki daga taki ko ragowar amfanin gona. Ana samunsa a gonaki ko shagunan noma.",
+        "future_prevention_en": [
+          "Maintain balanced fertilization",
+          "Use clean seed"
+        ],
+        "future_prevention_ha": [
+          "Kula da takin ƙasa yadda ya kamata",
+          "Yi amfani da iri masu tsafta"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Spray neem extract solution",
+          "Weed regularly"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da ruwan neem",
+          "Cire ciyawa akai-akai"
+        ],
+        "application_steps_en": [
+          "Soak 500g neem leaves in 10L water for 24 hours",
+          "Strain and spray on all leaves",
+          "Repeat weekly if needed"
+        ],
+        "application_steps_ha": [
+          "Jika ganyen neem gram 500 a cikin ruwa lita 10 na sa'o'i 24",
+          "Tace ka yi feshi a kan dukkan ganye",
+          "Maimaita kowane mako idan ya cancanta"
+        ],
+        "dosage_en": "500g neem leaves per 10L water. Spray liberally.",
+        "dosage_ha": "Ganyen neem gram 500 a cikin ruwa lita 10. Yi feshi da yawa.",
+        "timing_en": "Spray early morning or late afternoon.",
+        "timing_ha": "Yi feshi da safe ko da yamma.",
+        "safety_warnings_en": [
+          "Neem extract is safe. Avoid eyes."
+        ],
+        "safety_warnings_ha": [
+          "Ruwan neem ba shi da laifi. Guji shiga ido."
+        ],
+        "expected_outcome_en": "Minor smut spots will fade. Regular weeding reduces disease pressure.",
+        "expected_outcome_ha": "Ƙananan tabo za su shuɗe. Cire ciyawa akai-akai yana rage cutar.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Neem trees are common. You can make extract or buy neem oil.",
+        "input_sourcing_ha": "Itacen neem ya zama ruwan dare. Za ka iya shirya ruwan ko sayan mai neem.",
+        "future_prevention_en": [
+          "Monitor early",
+          "Avoid over-fertilization"
+        ],
+        "future_prevention_ha": [
+          "Duba tun da wuri",
+          "Guji yi wa ƙasa takin da yawa"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rice_nitrogen_deficiency",
+    "name_en": "Rice Nitrogen Deficiency",
+    "name_ha": "Rashin Nitrogen a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply Urea or ammonium sulfate immediately",
+          "Irrigate after application"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da Urea ko ammonium sulfate nan take",
+          "Shayar da ruwa bayan yin taki"
+        ],
+        "application_steps_en": [
+          "Broadcast 50kg Urea per hectare evenly",
+          "Water the field immediately to dissolve fertilizer",
+          "Repeat after 3 weeks if yellowing continues"
+        ],
+        "application_steps_ha": [
+          "Watsa Urea kilogiram 50 a kowace hekta daidai",
+          "Shayar da gona nan da nan don narka takin",
+          "Maimaita bayan makon 3 idan rawaya ta ci gaba"
+        ],
+        "dosage_en": "50kg Urea per hectare. Apply to soil, not leaves.",
+        "dosage_ha": "Kilogiram 50 na Urea a kowace hekta. Zuba a ƙasa, ba a ganye ba.",
+        "timing_en": "Apply in the morning or evening. Water immediately after.",
+        "timing_ha": "Zuba taki da safe ko da yamma. Shayar da ruwa nan da nan.",
+        "safety_warnings_en": [
+          "Wear gloves when handling fertilizer.",
+          "Avoid breathing dust.",
+          "Keep away from children."
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu lokacin zuba taki.",
+          "Guji shaka ƙura.",
+          "Nisa da yara."
+        ],
+        "expected_outcome_en": "Leaves should green up within 5-7 days. Growth will resume.",
+        "expected_outcome_ha": "Ganye zasu koma kore cikin kwana 5-7. Girma zai dawo.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Urea and ammonium sulfate are widely sold at agro-dealers and markets.",
+        "input_sourcing_ha": "Ana sayar da Urea da ammonium sulfate sosai a kantunan taki da kasuwanni.",
+        "future_prevention_en": [
+          "Use split nitrogen application",
+          "Rotate with legumes"
+        ],
+        "future_prevention_ha": [
+          "Raba amfani da nitrogen a lokuta",
+          "Yi juyin amfanin gona da wake"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Add compost or green manure",
+          "Apply moderate NPK"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki daga shanu ko wake",
+          "Yi amfani da NPK kadan"
+        ],
+        "application_steps_en": [
+          "Apply 5kg compost per 10m²",
+          "Mix in 2kg NPK 15-15-15 per hectare",
+          "Water after application"
+        ],
+        "application_steps_ha": [
+          "Zuba taki kilogiram 5 a kowace mita 10",
+          "Haɗa da NPK 15-15-15 kilogiram 2 a kowace hekta",
+          "Shayar da ruwa bayan zuba taki"
+        ],
+        "dosage_en": "5kg compost + 2kg NPK per hectare. Apply around plants.",
+        "dosage_ha": "Taki kilogiram 5 + NPK kilogiram 2 a kowace hekta. Zuba a kusa da shuke-shuke.",
+        "timing_en": "Apply in the morning. Water immediately.",
+        "timing_ha": "Zuba taki da safe. Shayar da ruwa nan da nan.",
+        "safety_warnings_en": [
+          "Wear gloves.",
+          "Keep away from eyes."
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu.",
+          "Guji shiga ido."
+        ],
+        "expected_outcome_en": "Plants will show improvement within 1 week. Color returns.",
+        "expected_outcome_ha": "Shuke-shuke zasu nuna sauƙi cikin mako 1. Launi zai dawo.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Compost from manure or residues. NPK available at agro-dealers.",
+        "input_sourcing_ha": "Taki daga taki ko ragowar amfanin gona. NPK ana samunsa a kantunan taki.",
+        "future_prevention_en": [
+          "Regular soil testing",
+          "Use organic matter"
+        ],
+        "future_prevention_ha": [
+          "A rika gwajin ƙasa",
+          "Yi amfani da taki na gida"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add compost",
+          "Monitor growth"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki",
+          "Kula da girman shuka"
+        ],
+        "application_steps_en": [
+          "Apply 3kg compost per 10m²",
+          "Mix well into soil",
+          "Check plant color weekly"
+        ],
+        "application_steps_ha": [
+          "Zuba taki kilogiram 3 a kowace mita 10",
+          "Haɗa da ƙasa da kyau",
+          "Duba kalar ganye kowane mako"
+        ],
+        "dosage_en": "3kg compost per 10m². Apply once.",
+        "dosage_ha": "Kilogiram 3 na taki a kowace mita 10. Zuba sau ɗaya.",
+        "timing_en": "Apply in cool weather.",
+        "timing_ha": "Zuba taki a lokacin sanyi.",
+        "safety_warnings_en": [
+          "Compost is safe. Wash hands."
+        ],
+        "safety_warnings_ha": [
+          "Taki ba shi da laifi. Wanke hannaye."
+        ],
+        "expected_outcome_en": "Plants will gradually recover. Monitor for further deficiency.",
+        "expected_outcome_ha": "Shuke-shuke zasu warke a hankali. Kula don ganin wasu rashin abinci.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Compost from household waste or manure.",
+        "input_sourcing_ha": "Taki daga sharar gida ko taki.",
+        "future_prevention_en": [
+          "Keep soil mulched",
+          "Avoid continuous rice cropping"
+        ],
+        "future_prevention_ha": [
+          "Rufe ƙasa da ganye",
+          "Guji noman shinkafa koyaushe a wuri ɗaya"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rice_phosphorus_deficiency",
+    "name_en": "Rice Phosphorus Deficiency",
+    "name_ha": "Rashin Phosphorus a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply DAP or SSP at planting",
+          "Mix fertilizer near roots"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da DAP ko SSP lokacin shuka",
+          "Haɗa takin kusa da tushen shuka"
+        ],
+        "application_steps_en": [
+          "Apply 50kg DAP per hectare before planting",
+          "Incorporate into soil near seed placement",
+          "Water after application"
+        ],
+        "application_steps_ha": [
+          "Zuba DAP kilogiram 50 a kowace hekta kafin shuka",
+          "Haɗa da ƙasa kusa da wurin shuka",
+          "Shayar da ruwa bayan zuba taki"
+        ],
+        "dosage_en": "50kg DAP per hectare. Apply as basal fertilizer.",
+        "dosage_ha": "Kilogiram 50 na DAP a kowace hekta. Zuba a matsayin taki na asali.",
+        "timing_en": "Apply before planting or at early growth stage.",
+        "timing_ha": "Zuba kafin shuka ko a farkon girma.",
+        "safety_warnings_en": [
+          "Wear gloves and mask.",
+          "Do not inhale dust.",
+          "Keep away from water sources."
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu da rufe hanci.",
+          "Kada ka shaka ƙura.",
+          "Nisa da ruwa."
+        ],
+        "expected_outcome_en": "Plants will show new growth and green color within 2 weeks.",
+        "expected_outcome_ha": "Shuke-shuke zasu fara girma da kore cikin makon 2.",
+        "follow_up_days_en": [
+          "Check plants after 14 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 14"
+        ],
+        "input_sourcing_en": "DAP (Diammonium phosphate) and SSP (Single superphosphate) at agro-dealers.",
+        "input_sourcing_ha": "DAP da SSP ana samunsu a kantunan taki.",
+        "future_prevention_en": [
+          "Use compost rich in phosphorus",
+          "Starter fertilizer at planting"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da taki mai phosphorus",
+          "Yi taki a lokacin shuka"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply NPK 15:15:15 once",
+          "Avoid deep planting"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da NPK 15:15:15 sau ɗaya",
+          "Kada a binne tsaba sosai"
+        ],
+        "application_steps_en": [
+          "Apply 30kg NPK 15-15-15 per hectare",
+          "Incorporate in top 5cm soil",
+          "Water moderately"
+        ],
+        "application_steps_ha": [
+          "Zuba NPK 15-15-15 kilogiram 30 a kowace hekta",
+          "Haɗa da ƙasa a zurfin santimita 5",
+          "Shayar da ruwa kadan"
+        ],
+        "dosage_en": "30kg NPK per hectare. Apply once.",
+        "dosage_ha": "Kilogiram 30 na NPK a kowace hekta. Zuba sau ɗaya.",
+        "timing_en": "Apply early morning or evening.",
+        "timing_ha": "Zuba da safe ko da yamma.",
+        "safety_warnings_en": [
+          "Wear gloves.",
+          "Do not over-apply."
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu.",
+          "Kada ka yi yawa."
+        ],
+        "expected_outcome_en": "Growth will improve within 1-2 weeks. Leaves become greener.",
+        "expected_outcome_ha": "Girma zai inganta cikin mako 1-2. Ganye zasu koma kore.",
+        "follow_up_days_en": [
+          "Check plants after 10 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 10"
+        ],
+        "input_sourcing_en": "NPK 15-15-15 is widely available.",
+        "input_sourcing_ha": "Ana samun NPK 15-15-15 sosai.",
+        "future_prevention_en": [
+          "Use poultry manure",
+          "Regular soil tests"
+        ],
+        "future_prevention_ha": [
+          "Yi amfani da najasar kaji",
+          "A rika gwajin ƙasa"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add poultry manure or compost",
+          "Monitor plant vigor"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara najasar kaji ko taki",
+          "Kula da ƙarfin shuka"
+        ],
+        "application_steps_en": [
+          "Apply 2kg poultry manure per 10m²",
+          "Mix into soil",
+          "Check plants weekly"
+        ],
+        "application_steps_ha": [
+          "Zuba najasar kaji kilogiram 2 a kowace mita 10",
+          "Haɗa da ƙasa",
+          "Duba shuke-shuke kowane mako"
+        ],
+        "dosage_en": "2kg poultry manure per 10m². Apply once.",
+        "dosage_ha": "Kilogiram 2 na najasar kaji a kowace mita 10. Zuba sau ɗaya.",
+        "timing_en": "Apply in morning.",
+        "timing_ha": "Zuba da safe.",
+        "safety_warnings_en": [
+          "Wash hands after handling manure."
+        ],
+        "safety_warnings_ha": [
+          "Wanke hannaye bayan amfani da najasa."
+        ],
+        "expected_outcome_en": "Plants will become more vigorous within 2 weeks.",
+        "expected_outcome_ha": "Shuke-shuke zasu sami ƙarfi cikin makon 2.",
+        "follow_up_days_en": [
+          "Check plants after 14 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 14"
+        ],
+        "input_sourcing_en": "Poultry manure from local farms or buy at markets.",
+        "input_sourcing_ha": "Najasar kaji daga gonaki ko sayo a kasuwanni.",
+        "future_prevention_en": [
+          "Maintain balanced fertilization",
+          "Use organic matter"
+        ],
+        "future_prevention_ha": [
+          "Kula da takin ƙasa yadda ya kamata",
+          "Yi amfani da taki na gida"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rice_potassium_deficiency",
+    "name_en": "Rice Potassium Deficiency",
+    "name_ha": "Rashin Potassium a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply Muriate of Potash (KCl) or appropriate NPK",
+          "Water well after application"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da Potash (KCl) ko NPK mai dacewa",
+          "Shayar da ruwa bayan yin taki"
+        ],
+        "application_steps_en": [
+          "Apply 40kg KCl per hectare",
+          "Broadcast evenly across the field",
+          "Irrigate immediately to dissolve"
+        ],
+        "application_steps_ha": [
+          "Zuba KCl kilogiram 40 a kowace hekta",
+          "Watsa daidai a duk gona",
+          "Shayar da ruwa nan da nan don narkewa"
+        ],
+        "dosage_en": "40kg KCl per hectare. Apply as top dressing.",
+        "dosage_ha": "Kilogiram 40 na KCl a kowace hekta. Zuba a matsayin taki na sama.",
+        "timing_en": "Apply in the morning or evening. Water immediately.",
+        "timing_ha": "Zuba da safe ko da yamma. Shayar da ruwa nan da nan.",
+        "safety_warnings_en": [
+          "Wear gloves.",
+          "Avoid inhaling dust.",
+          "Keep away from children."
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu.",
+          "Guji shaka ƙura.",
+          "Nisa da yara."
+        ],
+        "expected_outcome_en": "Leaves should show improvement within 7-10 days. Margins will recover.",
+        "expected_outcome_ha": "Ganye zasu nuna sauƙi cikin kwana 7-10. Gefen ganye zasu warke.",
+        "follow_up_days_en": [
+          "Check plants after 10 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 10"
+        ],
+        "input_sourcing_en": "Muriate of Potash (KCl) available at agro-dealers. Also in compound fertilizers.",
+        "input_sourcing_ha": "Ana sayar da Potash (KCl) a kantunan taki. Hakanan a cikin takin da aka haɗa.",
+        "future_prevention_en": [
+          "Add organic matter regularly",
+          "Avoid over-irrigation"
+        ],
+        "future_prevention_ha": [
+          "Ƙara taki na gida akai-akai",
+          "Guji shayar da yawa"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Apply small quantity of potash",
+          "Remove competing weeds"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da potash kadan",
+          "Cire ciyawa masu takura"
+        ],
+        "application_steps_en": [
+          "Apply 20kg KCl per hectare",
+          "Water after application",
+          "Remove weeds around plants"
+        ],
+        "application_steps_ha": [
+          "Zuba KCl kilogiram 20 a kowace hekta",
+          "Shayar da ruwa bayan zuba",
+          "Cire ciyawa a kusa da shuke-shuke"
+        ],
+        "dosage_en": "20kg KCl per hectare. Use as side dressing.",
+        "dosage_ha": "Kilogiram 20 na KCl a kowace hekta. Zuba a gefen shuke-shuke.",
+        "timing_en": "Apply in cool weather.",
+        "timing_ha": "Zuba a lokacin sanyi.",
+        "safety_warnings_en": [
+          "Wear gloves.",
+          "Don't over-apply."
+        ],
+        "safety_warnings_ha": [
+          "Sa safar hannu.",
+          "Kada ka yi yawa."
+        ],
+        "expected_outcome_en": "Plants will green up within 1 week.",
+        "expected_outcome_ha": "Shuke-shuke zasu koma kore cikin mako 1.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Potash fertilizers are common. Also in NPK blends.",
+        "input_sourcing_ha": "Ana samun takin potash sosai. Hakanan a cikin NPK.",
+        "future_prevention_en": [
+          "Monitor soil moisture",
+          "Balanced fertilization"
+        ],
+        "future_prevention_ha": [
+          "Kula da danshi na ƙasa",
+          "Yi amfani da takin daidai"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add wood ash or compost",
+          "Monitor plant edges"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara toka daga itace ko taki",
+          "Kula da gefen ganye"
+        ],
+        "application_steps_en": [
+          "Apply 1 cup wood ash per plant",
+          "Mix into topsoil around the base",
+          "Water lightly"
+        ],
+        "application_steps_ha": [
+          "Zuba kofi ɗaya na toka a kowace shuka",
+          "Haɗa da ƙasa a gindin shuka",
+          "Shayar da ruwa kadan"
+        ],
+        "dosage_en": "1 cup wood ash per plant. No dilution needed.",
+        "dosage_ha": "Kofi ɗaya na toka a kowace shuka. Ba a haɗa da ruwa.",
+        "timing_en": "Apply in morning.",
+        "timing_ha": "Zuba da safe.",
+        "safety_warnings_en": [
+          "Avoid inhaling ash dust.",
+          "Wash hands after."
+        ],
+        "safety_warnings_ha": [
+          "Guji shaka turbin toka.",
+          "Wanke hannaye bayan."
+        ],
+        "expected_outcome_en": "Minor deficiency will be corrected. New leaves will be normal.",
+        "expected_outcome_ha": "Rashin kadan zai gyara. Sabbin ganye zasu zama lafiya.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Wood ash from home or local blacksmiths.",
+        "input_sourcing_ha": "Toka daga gida ko wurin makera.",
+        "future_prevention_en": [
+          "Maintain soil fertility",
+          "Use crop rotation"
+        ],
+        "future_prevention_ha": [
+          "Kula da lafiya ƙasa",
+          "Yi juyin amfanin gona"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rice_magnesium_deficiency",
+    "name_en": "Rice Magnesium Deficiency",
+    "name_ha": "Rashin Magnesium a shinkafa",
+    "crop": "Rice",
+    "severities": {
+      "high": {
+        "recommended_treatment_en": [
+          "Apply Epsom salt (magnesium sulfate) to soil",
+          "Mix and water thoroughly"
+        ],
+        "recommended_treatment_ha": [
+          "Yi amfani da gishirin Epsom a ƙasa",
+          "Haɗa da ruwa sosai"
+        ],
+        "application_steps_en": [
+          "Dissolve 2kg Epsom salt in 100L water",
+          "Apply to soil around plants",
+          "Repeat after 2 weeks if symptoms persist"
+        ],
+        "application_steps_ha": [
+          "Narka gishirin Epsom kilogiram 2 a cikin ruwa lita 100",
+          "Zuba a ƙasa a kusa da shuke-shuke",
+          "Maimaita bayan makon 2 idan alamun sun ci gaba"
+        ],
+        "dosage_en": "2kg Epsom salt per 100L water. Apply to soil.",
+        "dosage_ha": "Kilogiram 2 na gishirin Epsom a cikin ruwa lita 100. Zuba a ƙasa.",
+        "timing_en": "Apply in the morning.",
+        "timing_ha": "Zuba da safe.",
+        "safety_warnings_en": [
+          "Epsom salt is safe. Avoid contact with eyes."
+        ],
+        "safety_warnings_ha": [
+          "Gishirin Epsom ba shi da laifi. Guji shiga ido."
+        ],
+        "expected_outcome_en": "Leaves should recover within 1-2 weeks. Interveinal chlorosis will fade.",
+        "expected_outcome_ha": "Ganye za su warke cikin mako 1-2. Rashin launi tsakanin jijiyoyi zai shuɗe.",
+        "follow_up_days_en": [
+          "Check plants after 14 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 14"
+        ],
+        "input_sourcing_en": "Epsom salt available at pharmacies and some agro-dealers.",
+        "input_sourcing_ha": "Ana sayar da gishirin Epsom a kantin magani da wasu kantunan taki.",
+        "future_prevention_en": [
+          "Avoid overuse of potassium fertilizers",
+          "Maintain soil pH 6.0-6.5"
+        ],
+        "future_prevention_ha": [
+          "Guji amfani da potash da yawa",
+          "Kula da pH na ƙasa 6.0-6.5"
+        ]
+      },
+      "moderate": {
+        "recommended_treatment_en": [
+          "Spray foliar Epsom salt solution (2 tbsp in 10 L)",
+          "Add compost"
+        ],
+        "recommended_treatment_ha": [
+          "Yi feshi da ruwan Epsom (cokali 2 a lita 10)",
+          "Ƙara taki"
+        ],
+        "application_steps_en": [
+          "Mix 2 tablespoons Epsom salt in 10L water",
+          "Spray on foliage, especially underside of leaves",
+          "Apply compost around plants at same time"
+        ],
+        "application_steps_ha": [
+          "Haɗa cokali 2 na gishirin Epsom a cikin ruwa lita 10",
+          "Yi feshi a kan ganye, musamman a ƙarƙashinsu",
+          "Zuba taki a kusa da shuke-shuke a lokaci guda"
+        ],
+        "dosage_en": "2 tbsp Epsom salt per 10L water for foliar spray.",
+        "dosage_ha": "Cokali 2 na gishirin Epsom a cikin ruwa lita 10 don feshi.",
+        "timing_en": "Spray in early morning or late afternoon.",
+        "timing_ha": "Yi feshi da safe ko da yamma.",
+        "safety_warnings_en": [
+          "Epsom salt is safe. Wash hands after use."
+        ],
+        "safety_warnings_ha": [
+          "Gishirin Epsom ba shi da laifi. Wanke hannaye bayan amfani."
+        ],
+        "expected_outcome_en": "Leaf discoloration will reduce within 5-7 days.",
+        "expected_outcome_ha": "Canjin launin ganye zai ragu cikin kwana 5-7.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Epsom salt at pharmacies. Compost from manure.",
+        "input_sourcing_ha": "Gishirin Epsom a kantin magani. Taki daga taki.",
+        "future_prevention_en": [
+          "Add organic matter yearly",
+          "Monitor potassium use"
+        ],
+        "future_prevention_ha": [
+          "Ƙara taki na gida duk shekara",
+          "Kula da amfani da potassium"
+        ]
+      },
+      "low": {
+        "recommended_treatment_en": [
+          "Add compost or manure",
+          "Monitor leaves"
+        ],
+        "recommended_treatment_ha": [
+          "Ƙara taki na gargajiya",
+          "Kula da ganye"
+        ],
+        "application_steps_en": [
+          "Apply 3kg compost per 10m²",
+          "Work into soil",
+          "Check leaves weekly for changes"
+        ],
+        "application_steps_ha": [
+          "Zuba taki kilogiram 3 a kowace mita 10",
+          "Haɗa da ƙasa",
+          "Duba ganye kowane mako don canji"
+        ],
+        "dosage_en": "3kg compost per 10m². Apply once.",
+        "dosage_ha": "Kilogiram 3 na taki a kowace mita 10. Zuba sau ɗaya.",
+        "timing_en": "Apply in morning.",
+        "timing_ha": "Zuba da safe.",
+        "safety_warnings_en": [
+          "Compost is safe. Wash hands."
+        ],
+        "safety_warnings_ha": [
+          "Taki ba shi da laifi. Wanke hannaye."
+        ],
+        "expected_outcome_en": "Plants will improve gradually. Monitor for other deficiencies.",
+        "expected_outcome_ha": "Shuke-shuke zasu warke a hankali. Kula don wasu rashin abinci.",
+        "follow_up_days_en": [
+          "Check plants after 7 days"
+        ],
+        "follow_up_days_ha": [
+          "A Sake dubawa bayan kwana 7"
+        ],
+        "input_sourcing_en": "Compost from manure or organic waste.",
+        "input_sourcing_ha": "Taki daga taki ko sharar gida.",
+        "future_prevention_en": [
+          "Keep soil healthy",
+          "Balanced fertilization"
+        ],
+        "future_prevention_ha": [
+          "Kula da lafiyar ƙasa",
+          "Yi amfani da taki daidai"
+        ]
+      }
+    }
+  }
+]
