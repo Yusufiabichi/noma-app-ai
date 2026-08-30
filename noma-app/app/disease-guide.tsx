@@ -134,7 +134,7 @@ export default function DiseaseGuideScreen() {
           <Ionicons name="arrow-back-outline" size={20} color={COLORS.textDark} />
         </TouchableOpacity>
         <Text style={styles.navTitle}>
-          {isHausa ? 'Jagoran Cututtukan Amfanin Gona' : 'Pest & Disease Guide'}
+          {isHausa ? 'Cututtukan Amfanin Gona' : 'Pest & Disease Guide'}
         </Text>
         <View style={{ width: 36 }} />
       </View>
@@ -242,17 +242,41 @@ const styles = StyleSheet.create({
   },
   searchInput: { flex: 1, fontSize: 14, color: COLORS.textDark },
 
-  cropScroll:        { flexGrow: 0, marginTop: 12 },
-  cropScrollContent: { paddingHorizontal: 16, gap: 8, alignItems: 'center' },
-  cropChip: {
-    borderWidth: 1, borderColor: COLORS.border, borderRadius: 20,
-    paddingVertical: 6, paddingHorizontal: 14,
-    backgroundColor: COLORS.white, alignSelf: 'flex-start', flexShrink: 0,
-  },
-  cropChipActive:     { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  cropChipText:       { fontSize: 12, color: COLORS.textDark, fontWeight: '600', flexShrink: 0 },
-  cropChipTextActive: { color: COLORS.white },
-
+cropScroll: {
+  flexGrow: 0,
+  marginTop: 12,
+  minHeight: 40, // ensures it's visible even if content is small
+},
+cropScrollContent: {
+  paddingHorizontal: 16,
+  alignItems: 'center',
+  // remove 'gap' – we'll use margin on each chip
+},
+cropChip: {
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  borderRadius: 20,
+  paddingVertical: 6,
+  paddingHorizontal: 14,
+  backgroundColor: COLORS.white,
+  alignSelf: 'flex-start',
+  // remove flexShrink:0 – let it size naturally
+  marginRight: 8, // instead of gap
+},
+cropChipActive: {
+  backgroundColor: COLORS.primary,
+  borderColor: COLORS.primary,
+},
+cropChipText: {
+  fontSize: 12,
+  color: COLORS.textDark,
+  fontWeight: '600',
+  // remove flexShrink:0
+  // do NOT set numberOfLines – let the text be fully visible
+},
+cropChipTextActive: {
+  color: COLORS.white,
+},
   resultBar: { paddingHorizontal: 20, paddingVertical: 10 },
   resultText: { fontSize: 12, color: COLORS.textLight, fontWeight: '500' },
 

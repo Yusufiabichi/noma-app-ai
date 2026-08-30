@@ -34,6 +34,8 @@ export default function RootLayout(){
                 <Stack.Screen name="fertilizer-advice" options={{headerShown: false,  title: "Fertilizer Advice"}} />
                 <Stack.Screen name="disease-guide" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
                 <Stack.Screen name="diseaseGuideDetail" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
+                <Stack.Screen name="fertilizerAdviceDetail" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
+                <Stack.Screen name="farmingTipsDetail" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
                 <Stack.Screen name="fileCaseScreen" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
                 <Stack.Screen name="farmerCases" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
                 <Stack.Screen name="farmerCaseDetail" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
