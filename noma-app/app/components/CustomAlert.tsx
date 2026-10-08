@@ -10,8 +10,12 @@ import {
   TouchableWithoutFeedback,
   Platform,
 } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
 import { useLanguage } from '@/src/context/LanguageContext';
+import { BlurView } from 'expo-blur'
+
+// const BlurView = Platform.OS === 'web'
+//   ? require('./BlurView.web').default
+//   : require('@react-native-community/blur').BlurView;
 
 const { width, height } = Dimensions.get('window');
 

@@ -15,6 +15,7 @@ import { createScan } from '@/src/api/scans.api'
 import { pollUntilDiagnosed } from '@/src/utils/pollScan'
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
 import CaptureGuideOverlay from '@/app/components/CaptureGuideOverlay'
+import VoiceAssistantSheet from '@/app/components/VoiceAssistantSheet'
 
 const CROPS = [
   { id: 'maize', name: 'Maize', scientificName: 'Zea mays (Masara)', category: 'Cereals' },
@@ -55,6 +56,7 @@ export default function CropScan() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState<'uploading' | 'analyzing' | null>(null);
+  const [voiceVisible, setVoiceVisible] = useState(false);
   const languageCode = useMemo(() => {
         return language === 'hausa' ? 'ha' : 'en';
   }, [language]);
@@ -333,6 +335,15 @@ export default function CropScan() {
           <TouchableOpacity style={styles.iconButton} onPress={() => router.push('./')}>
             <Ionicons name="arrow-back" size={22} color="white" />
           </TouchableOpacity>
+          <View style={styles.topBarRight}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => setVoiceVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={isHausa ? 'Yi tambaya da murya' : 'Ask by voice'}
+          >
+            <Ionicons name="mic-outline" size={24} color="white" />
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() =>
@@ -347,6 +358,7 @@ export default function CropScan() {
           >
             <Ionicons name="help-circle-outline" size={26} color="white" />
           </TouchableOpacity>
+          </View>
         </View>
 
         {/* Bottom controls */}
@@ -377,6 +389,14 @@ export default function CropScan() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Hausa voice assistant */}
+      <VoiceAssistantSheet
+        visible={voiceVisible}
+        onClose={() => setVoiceVisible(false)}
+        language={language}
+        cropType={selectedCrop}
+      />
 
       {/* Preview modal */}
       <Modal visible={previewVisible} animationType="slide" onRequestClose={() => setPreviewVisible(false)}>
@@ -556,6 +576,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 6,
   },
+  topBarRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconButton: {
     padding: 8,
     backgroundColor: 'rgba(0,0,0,0.35)',
