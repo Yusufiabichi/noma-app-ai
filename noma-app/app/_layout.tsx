@@ -7,10 +7,16 @@ import { useEffect } from 'react';
 import { useUpdateChecker } from '@/src/hooks/useUpdateChecker';
 import UpdateModal from '@/app/components/UpdateModal';
 import { AlertProvider } from '@/src/context/AlertContext';
+import { useScanResultNotifications } from '@/src/hooks/useScanResultNotifications';
 
 function UpdateCheckerWrapper() {
   const { updateInfo, showModal, closeModal } = useUpdateChecker();
   return <UpdateModal visible={showModal} updateInfo={updateInfo} onClose={closeModal} />;
+}
+
+function ScanResultNotificationsHandler() {
+  useScanResultNotifications();
+  return null;
 }
 
 export default function RootLayout(){
@@ -42,6 +48,7 @@ export default function RootLayout(){
                 <Stack.Screen name="recentDiagnosis" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
             </Stack>
             <UpdateCheckerWrapper />
+            <ScanResultNotificationsHandler />
         </AlertProvider>
         </LanguageProvider>
         </>

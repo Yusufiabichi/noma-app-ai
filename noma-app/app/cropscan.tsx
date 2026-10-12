@@ -8,12 +8,13 @@ import { useRouter } from 'expo-router';
 import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
 import { useAlert } from '@/src/context/AlertContext';
-import * as localScanService from '@/src/services/localScanService';
+import { enqueueScan, trackUploadedScan } from '@/src/services/offlineScanQueue';
 import { isOnline } from '@/src/utils/network';
 import logger from '@/src/utils/logger';
 import { createScan } from '@/src/api/scans.api'
 import { pollUntilDiagnosed } from '@/src/utils/pollScan'
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
+import { buildScanResult } from '@/src/utils/scanResult'
 import CaptureGuideOverlay from '@/app/components/CaptureGuideOverlay'
 import VoiceAssistantSheet from '@/app/components/VoiceAssistantSheet'
 
@@ -157,9 +158,11 @@ export default function CropScan() {
   }
 
   async function processScanOnline(imageUri: string, cropType: string) {
+    const freshLanguageCode = await getLanguageCode();
+    let scanId: string | null = null;
+
     try {
       logger.info('Starting online scan upload...');
-      const freshLanguageCode = await getLanguageCode();
 
       const response = await createScan({
         imageUri,
@@ -175,14 +178,14 @@ export default function CropScan() {
         throw new Error('Received empty response from server after upload');
       }
 
-      const scanId = pendingScan._id;
+      scanId = pendingScan._id;
       logger.info('Scan Created successfully', { scanId });
 
       // SWITCH TO ANALYZING STATE
       setProcessingStep('analyzing');
       logger.info('State changed to: analyzing');
 
-      const diagnosedScan = await pollUntilDiagnosed(scanId);
+      const diagnosedScan = await pollUntilDiagnosed(scanId as string);
 
       logger.info('Diagnosis complete!', {
           scanId,
@@ -190,26 +193,7 @@ export default function CropScan() {
       });
 
       // Prepare result for navigation
-      const resultData = {
-        disease:          diagnosedScan.diagnosis?.disease || diagnosedScan.disease,
-        name:             diagnosedScan.diagnosis?.name || diagnosedScan.name,
-        cropType:         diagnosedScan.cropType,
-        confidence:       diagnosedScan.diagnosis?.confidence || diagnosedScan.confidence,
-        severity:         diagnosedScan.diagnosis?.severity || diagnosedScan.severity,
-        recommendations:  diagnosedScan.diagnosis?.recommendations || diagnosedScan.recommendations || [],
-        futurePrevention: diagnosedScan.diagnosis?.futurePrevention || diagnosedScan.futurePrevention || [],
-        applicationSteps: diagnosedScan.diagnosis?.applicationSteps || diagnosedScan.applicationSteps || [],
-        dosage:           diagnosedScan.diagnosis?.dosage || diagnosedScan.dosage || [],
-        timing:           diagnosedScan.diagnosis?.timing || diagnosedScan.timing || [],
-        safetyWarnings:   diagnosedScan.diagnosis?.safetyWarnings || diagnosedScan.safetyWarnings || [],
-        expectedOutcome:  diagnosedScan.diagnosis?.expectedOutcome || diagnosedScan.expectedOutcome || [],
-        followUpDays:     diagnosedScan.diagnosis?.followUpDays || diagnosedScan.followUpDays || [],
-        inputSourcing:    diagnosedScan.diagnosis?.inputSourcing || diagnosedScan.inputSourcing || [],
-        isFallback:       diagnosedScan.diagnosis?.isFallback ?? false,
-        language:         diagnosedScan.diagnosis?.language || diagnosedScan.language || languageCode,
-        isOnline:         true,
-        scanId:           diagnosedScan._id,
-      };
+      const resultData = buildScanResult(diagnosedScan, languageCode);
 
       router.replace({
         pathname: './treatment-rec',
@@ -219,23 +203,54 @@ export default function CropScan() {
       });
     } catch (error: any) {
       logger.error('processScanOnline failed', error);
+
+      // Upload never reached the server (weak signal, timeout, server down): keep the scan and retry later
+      if (!scanId && ['NETWORK_ERROR', 'TIMEOUT_ERROR', 'SERVER_ERROR'].includes(error?.code)) {
+        logger.info('Upload failed on a weak connection, queueing scan for later');
+        await processScanOffline(imageUri, cropType);
+        return;
+      }
+
+      // Uploaded but the diagnosis wasn't ready in time (failed scans carry a scanId on the error)
+      if (scanId && !error?.scanId) {
+        const tracked = await trackUploadedScan({
+          serverScanId: scanId,
+          cropType,
+          language: freshLanguageCode,
+          userId: user?.id,
+        });
+        router.replace({
+          pathname: './treatment-rec',
+          params: {
+            scanResult: JSON.stringify({
+              status: 'pending',
+              cropType,
+              language: freshLanguageCode,
+              isOnline: false,
+              queueId: tracked.id,
+              isFallback: false,
+            }),
+          },
+        });
+        return;
+      }
+
       throw error;
     }
   }
 
   async function processScanOffline(imageUri: string, cropType: string) {
     try {
-      // Save image locally
-      const localImageUri = await localScanService.saveImageLocally(imageUri);
-      
-      // Create scan record with pending status
-      const scan = await localScanService.createLocalScan({
-        userId: user?.id || 'offline-user',
-        imageUri: localImageUri,
+      // Save photo and queue it; it's uploaded automatically when internet returns
+      const freshLanguageCode = await getLanguageCode();
+      const queued = await enqueueScan({
+        imageUri,
         cropType,
+        language: freshLanguageCode,
+        userId: user?.id,
       });
 
-      logger.info('Local scan created', { scanId: scan.id });
+      logger.info('Offline scan queued', { queueId: queued.id });
 
       // Navigate to treatment recommendations showing pending status
       router.replace({
@@ -244,9 +259,9 @@ export default function CropScan() {
           scanResult: JSON.stringify({
             status: 'pending',
             cropType,
-            language,
+            language: freshLanguageCode,
             isOnline: false,
-            localScanId: scan.id,
+            queueId: queued.id,
             isFallback: false,
           }),
         },

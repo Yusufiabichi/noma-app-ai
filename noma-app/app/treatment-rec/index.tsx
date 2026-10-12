@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { isOnline } from '@/src/utils/network';
 import { syncPendingScans } from '@/src/services/syncService';
 import * as localScanService from '@/src/services/localScanService';
+import { getQueuedScan, onQueueChange, processOfflineScans, QueuedScan } from '@/src/services/offlineScanQueue';
 import logger from '@/src/utils/logger';
 import { useAuth } from '@/src/hooks/useAuth';
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
@@ -34,6 +35,7 @@ interface ScanResult {
   isOnline?: boolean;
   isFallback?: boolean;
   localScanId?: string;
+  queueId?: string;
   scanId?: string;
 }
 
@@ -48,6 +50,7 @@ const TreatmentRecommendationScreen = () => {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [queueStatus, setQueueStatus] = useState<QueuedScan['status'] | null>(null);
   const CONFIDENCE_THRESHOLD = 0.6;
   const isLowConfidence = scanResult
     ? (scanResult.confidence ?? 0) < CONFIDENCE_THRESHOLD
@@ -99,7 +102,48 @@ const TreatmentRecommendationScreen = () => {
     loadScanResult();
   }, [params.scanResult]);
 
+  // Queued scans update here automatically once the diagnosis arrives
+  const queueId = scanResult?.queueId;
+  useEffect(() => {
+    if (!queueId) return;
+
+    const applyItem = (item: QueuedScan | null | undefined) => {
+      if (!item) return;
+      setQueueStatus(item.status);
+      if (item.status === 'diagnosed' && item.result) {
+        setScanResult(item.result);
+        setIsPending(false);
+        setSyncError(null);
+      } else if (item.status === 'failed') {
+        setSyncError(isHausa
+          ? 'An kasa binciken wannan hoton. Da fatan a sake daukar hoto.'
+          : 'This photo could not be analyzed. Please take a new photo.');
+      }
+    };
+
+    getQueuedScan(queueId).then(applyItem);
+    return onQueueChange(queue => applyItem(queue.find(item => item.id === queueId)));
+  }, [queueId]);
+
   const handleSyncNow = async () => {
+    if (queueId) {
+      setLoading(true);
+      setSyncError(null);
+      try {
+        if (!(await isOnline())) {
+          setSyncError(isHausa ? 'Har yanzu babu intanet.' : 'Device is still offline');
+          return;
+        }
+        await processOfflineScans({ waitForResultsMs: 30000 });
+      } catch (error: any) {
+        logger.error('Offline scan sync failed', error);
+        setSyncError(error?.message || 'Sync failed');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (!user?.id) {
       showAlert({
         title: isHausa ? 'Kuskure' : 'Error',
@@ -172,14 +216,18 @@ const TreatmentRecommendationScreen = () => {
 
           <View style={styles.pendingCard}>
             <Ionicons name="cloud-offline-outline" size={64} color="#ffb347" />
-            <Text style={styles.pendingTitle}>Device Offline</Text>
+            <Text style={styles.pendingTitle}>
+              {queueStatus === 'analyzing' || queueStatus === 'uploading'
+                ? (isHausa ? 'Ana binciken hotonka' : 'Analyzing your photo')
+                : 'Device Offline'}
+            </Text>
             <Text style={styles.pendingInfo}>
               Your scan has been saved locally and is waiting for analysis.
             </Text>
             <Text style={styles.pendingSubInfo}>
               {languageCode === 'ha'
-                ? 'Hada wayarka da intanet don ci gaba da bincike.'
-                : 'Connect to the internet for immediate analysis, or analysis will proceed automatically when you are back online.'}
+                ? 'Za a tura hoton kai tsaye idan intanet ya dawo, ko da manhajar a rufe take. Za mu sanar da kai idan sakamakon ya shirya.'
+                : "Your photo will be sent automatically when internet returns, even if the app is closed. We'll notify you when the result is ready."}
             </Text>
 
             <View style={styles.cropInfo}>

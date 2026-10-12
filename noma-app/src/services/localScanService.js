@@ -4,7 +4,7 @@
 
 
 import database from '../data/database';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import logger from '../utils/logger';
 
 const SCANS_DIRECTORY = FileSystem.documentDirectory + 'scans/';

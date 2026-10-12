@@ -1,6 +1,6 @@
 {
   "name": "mobile-app",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
@@ -32,6 +32,7 @@
     "expo": "~54.0.31",
     "expo-asset": "^12.0.12",
     "expo-audio": "~1.1.1",
+    "expo-background-task": "~1.0.10",
     "expo-blur": "~15.0.8",
     "expo-brightness": "~14.0.8",
     "expo-camera": "~17.0.8",
@@ -52,6 +53,7 @@
     "expo-status-bar": "~3.0.8",
     "expo-symbols": "~1.0.7",
     "expo-system-ui": "~6.0.7",
+    "expo-task-manager": "~14.0.9",
     "expo-updates": "~29.0.12",
     "expo-web-browser": "~15.0.7",
     "express": "^5.1.0",

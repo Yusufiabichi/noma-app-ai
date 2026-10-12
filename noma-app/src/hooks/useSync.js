@@ -3,10 +3,12 @@
 // Manages network monitoring and automatic sync when coming back online
 
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { useAuth } from './useAuth';
 import { onNetworkStatusChange, initNetworkMonitoring, stopNetworkMonitoring } from '../utils/network';
 import { syncPendingScans } from '../services/syncService';
+import { processOfflineScans, resumeBackgroundSyncIfNeeded } from '../services/offlineScanQueue';
 import logger from '../utils/logger';
 
 export const useSync = () => {
@@ -19,6 +21,28 @@ export const useSync = () => {
     return () => {
       // Clean up on unmount
       stopNetworkMonitoring();
+    };
+  }, []);
+
+  // Offline scan queue: process on launch, when back online, and when the app returns to the foreground
+  useEffect(() => {
+    const runQueue = () => {
+      processOfflineScans({ waitForResultsMs: 60000 }).catch((error) => logger.error('Offline scan queue failed', error));
+    };
+
+    resumeBackgroundSyncIfNeeded();
+    runQueue();
+
+    const unsubscribeNetwork = onNetworkStatusChange((isOnline) => {
+      if (isOnline) runQueue();
+    });
+    const appStateSubscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') runQueue();
+    });
+
+    return () => {
+      unsubscribeNetwork();
+      appStateSubscription.remove();
     };
   }, []);
 

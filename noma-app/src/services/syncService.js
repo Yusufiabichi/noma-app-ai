@@ -6,7 +6,7 @@
 import client from '../api/client';
 import * as localScanService from './localScanService';
 import database from '../data/database';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { isOnlineSync } from '../utils/network';
 import logger from '../utils/logger';
 

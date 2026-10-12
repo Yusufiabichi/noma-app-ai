@@ -20,11 +20,12 @@ import apiClient from './client';
  * @param {string} [scanData.farmId] - Associated farm ID
  * @param {string} [scanData.cropType] - Type of crop
  * @param {string} [scanData.language] - Language for recommendations
+ * @param {string} [scanData.clientScanId] - Device-generated ID so the server can ignore duplicate uploads
  * @param {Function} [onProgress] - Upload progress callback
  * @returns {Promise<{scan: Object}>}
  */
 export const createScan = async (scanData, onProgress = null) => {
-  const { imageUri, cropType, language } = scanData;
+  const { imageUri, cropType, language, clientScanId } = scanData;
   
   // Create form data for multipart upload
   const fileName = imageUri.split('/').pop();
@@ -43,6 +44,7 @@ export const createScan = async (scanData, onProgress = null) => {
   
   if (cropType) formData.append('cropType', cropType);
   if (language) formData.append('language', language);
+  if (clientScanId) formData.append('clientScanId', clientScanId);
 
   const response = await apiClient.uploadFile('/scans', formData, onProgress);
   return response;

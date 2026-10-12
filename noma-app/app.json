@@ -56,7 +56,8 @@
         {
           "microphonePermission": "NomaApp uses the microphone so you can ask questions about your crops by voice. / NomaApp na amfani da makirufo don ka yi tambaya game da amfanin gonarka da murya."
         }
-      ]
+      ],
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true,
