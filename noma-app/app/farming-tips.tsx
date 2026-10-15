@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '@/src/context/LanguageContext';
 import TIPS_DATA from '@/constants/farmingTips.json';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: '#16A34A', primaryLight: '#f0fdf4', primaryBorder: '#bbf7d0',
@@ -125,7 +126,7 @@ const TipCard = ({
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
-export default function FarmingTipsScreen() {
+function FarmingTipsScreen() {
   const router   = useRouter();
   const { language } = useLanguage();
   const isHausa  = language === 'hausa';
@@ -385,3 +386,11 @@ const styles = StyleSheet.create({
   emptyTitle:     { fontSize: 16, fontWeight: '700', color: COLORS.textDark, marginTop: 16 },
   emptyDesc:      { fontSize: 13, color: COLORS.textLight, textAlign: 'center', marginTop: 6 },
 });
+
+export default function FarmingTipsScreenWithAccess() {
+  return (
+    <RequireAccess feature="cropGuides">
+      <FarmingTipsScreen />
+    </RequireAccess>
+  );
+}

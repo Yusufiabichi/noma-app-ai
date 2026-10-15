@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
+import RequireAccess from '@/app/components/RequireAccess';
 
-export default function ExpertLayout() {
+function ExpertLayout() {
   return (
     <Stack>
       <Stack.Screen
@@ -53,5 +54,13 @@ export default function ExpertLayout() {
           }}
         />
     </Stack>
+  );
+}
+
+export default function ExpertLayoutWithAccess() {
+  return (
+    <RequireAccess feature="expertWorkspace">
+      <ExpertLayout />
+    </RequireAccess>
   );
 }

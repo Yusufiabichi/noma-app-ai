@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getMyCases } from "@/src/api/expertChat.api";
 import { useApiCall } from "@/src/hooks/useApiCall";
 import ErrorState from "@/app/components/ErrorState";
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -412,4 +413,10 @@ const styles = StyleSheet.create({
   emptyScanBtnText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
 });
 
-export default FarmerCasesScreen;
+export default function FarmerCasesScreenWithAccess() {
+  return (
+    <RequireAccess feature="myCases">
+      <FarmerCasesScreen />
+    </RequireAccess>
+  );
+}

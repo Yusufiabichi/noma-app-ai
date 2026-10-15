@@ -17,6 +17,10 @@ import { getLanguageCode } from '@/src/utils/useLanguageCode'
 import { buildScanResult } from '@/src/utils/scanResult'
 import CaptureGuideOverlay from '@/app/components/CaptureGuideOverlay'
 import VoiceAssistantSheet from '@/app/components/VoiceAssistantSheet'
+import { lockedMessage } from '@/app/components/RequireAccess'
+import { checkAccess, isPlanLimitError } from '@/src/auth/access'
+import { getServerErrorCode } from '@/src/utils/errors'
+import RequireAccess from '@/app/components/RequireAccess';
 
 const CROPS = [
   { id: 'maize', name: 'Maize', scientificName: 'Zea mays (Masara)', category: 'Cereals' },
@@ -40,7 +44,7 @@ const CATEGORIES = [
   { id: 'Tubers', label: 'Tubers', icon: 'color-filter-outline' },
 ];
 
-export default function CropScan() {
+function CropScan() {
   const router = useRouter();
   const { language } = useLanguage();
   const { showAlert } = useAlert();
@@ -77,6 +81,27 @@ export default function CropScan() {
       return matchesCategory && matchesSearch;
     });
   }, [searchQuery, selectedCategory]);
+
+  function showUpgrade(title: string, message: string) {
+    showAlert({
+      title,
+      message,
+      buttons: [
+        { text: isHausa ? 'Soke' : 'Cancel', style: 'cancel' },
+        { text: isHausa ? 'Duba tsare-tsare' : 'View plans', onPress: () => router.push('/(onboarding)/plans') },
+      ]
+    });
+  }
+
+  function openVoiceAssistant() {
+    const access = checkAccess(user, 'voiceAssistant');
+    if (access.allowed) {
+      setVoiceVisible(true);
+      return;
+    }
+    const { title, body } = lockedMessage(access, 'voiceAssistant', isHausa);
+    showUpgrade(title, body);
+  }
 
   async function takePicture() {
     if (!cameraRef.current || taking) return;
@@ -145,11 +170,21 @@ export default function CropScan() {
       }
       console.log("------------------------");
 
-      showAlert({
-        title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'An kasa aiwatar da binciken' : (error?.message || 'Failed to process scan'),
-        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-      });
+      if (isPlanLimitError(getServerErrorCode(error))) {
+        // e.g. daily diagnosis limit for the farmer's plan
+        showUpgrade(
+          isHausa ? 'Iyakar tsarinka ta cika' : 'Plan limit reached',
+          isHausa
+            ? 'Ka kai iyakar binciken da tsarinka ya bayar. Ka zabi tsari mafi girma don ci gaba.'
+            : (error?.message || 'You have reached the limit of your plan. Choose a bigger plan to continue.')
+        );
+      } else {
+        showAlert({
+          title: isHausa ? 'Kuskure' : 'Error',
+          message: isHausa ? 'An kasa aiwatar da binciken' : (error?.message || 'Failed to process scan'),
+          buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+        });
+      }
       // Reset processing state on error so user can try again
       setIsProcessing(false);
       setProcessingStep(null);
@@ -353,7 +388,7 @@ export default function CropScan() {
           <View style={styles.topBarRight}>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => setVoiceVisible(true)}
+            onPress={openVoiceAssistant}
             accessibilityRole="button"
             accessibilityLabel={isHausa ? 'Yi tambaya da murya' : 'Ask by voice'}
           >
@@ -726,3 +761,11 @@ checkCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#16A34
 closePreview: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, padding: 4 },
 
 });
+
+export default function CropScanWithAccess() {
+  return (
+    <RequireAccess feature="cropScan">
+      <CropScan />
+    </RequireAccess>
+  );
+}

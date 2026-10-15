@@ -9,6 +9,7 @@ import { getCaseDetail } from "@/src/api/expertChat.api";
 import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
 import client from "@/src/api/client";
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -44,6 +45,9 @@ const RatingModal = ({
   onSubmit: (stars: number, helpful: boolean) => void;
   loading: boolean;
 }) => {
+  const { showAlert }         = useAlert();
+  const { language }          = useLanguage();
+  const isHausa               = language === 'hausa';
   const [stars, setStars]     = useState(0);
   const [helpful, setHelpful] = useState<boolean | null>(null);
   const scaleAnim             = React.useRef(new Animated.Value(0.88)).current;
@@ -605,4 +609,10 @@ const ratingModal = StyleSheet.create({
   submitBtnText: { fontSize: 13, fontWeight: "700", color: COLORS.white },
 });
 
-export default FarmerCaseDetailScreen;
+export default function FarmerCaseDetailScreenWithAccess() {
+  return (
+    <RequireAccess feature="myCases">
+      <FarmerCaseDetailScreen />
+    </RequireAccess>
+  );
+}

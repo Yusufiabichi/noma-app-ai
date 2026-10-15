@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
+import RequireAccess from '@/app/components/RequireAccess';
 
-export default function AdminLayout() {
+function AdminLayout() {
   return (
     <Stack>
       <Stack.Screen
@@ -34,5 +35,13 @@ export default function AdminLayout() {
           }}
         />
     </Stack>
+  );
+}
+
+export default function AdminLayoutWithAccess() {
+  return (
+    <RequireAccess feature="adminConsole">
+      <AdminLayout />
+    </RequireAccess>
   );
 }

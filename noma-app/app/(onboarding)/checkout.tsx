@@ -1,20 +1,20 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
-import { verifySubscription } from "@/src/api/subscription.api";
-import { getUserData, setUserData } from "@/src/hooks/useAuth";
+import { startCheckout } from "@/src/services/paymentFlow";
+import { BillingInterval, PlanId } from "@/src/api/payments.api";
 import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
+import logger from '@/src/utils/logger';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: "#16A34A",
@@ -27,141 +27,44 @@ const COLORS = {
   error: "#dc2626",
 };
 
-// ⚠️ Use your Paystack PUBLIC key here (pk_live_... or pk_test_...)
-const PAYSTACK_PUBLIC_KEY = "pk_test_5610b18c5f7d77ae91ac1d74968773165fa29925";
-
 const CheckoutScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { showAlert } = useAlert();
   const { language } = useLanguage();
   const isHausa = language === 'hausa';
-  const webViewRef = useRef(null);
 
-  const planId = params.planId as string;
+  const planId = params.planId as PlanId;
   const planName = params.planName as string;
+  // Display only: the backend sets the price charged
   const amount = Number(params.amount);
-  const billing = params.billing as string;
+  const billing = params.billing as BillingInterval;
 
-  const [loading, setLoading] = useState(false);
-  const [webViewReady, setWebViewReady] = useState(false);
+  const [starting, setStarting] = useState(false);
 
-  // VAT 7.5%
-  const vat = Math.round(amount * 0.075);
-  const total = amount + vat;
-
-  const getUserEmail = async (): Promise<string> => {
-    const user = await getUserData();
-    return user?.email || user?.phone + "@nomaapp.com"; // fallback if email not stored
-  };
-
-  const buildPaystackHTML = (email: string) => `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://js.paystack.co/v1/inline.js"></script>
-      </head>
-      <body style="margin:0;padding:0;background:#f8f8f8;">
-        <script>
-          window.onload = function() {
-            var handler = PaystackPop.setup({
-              key: '${PAYSTACK_PUBLIC_KEY}',
-              email: '${email}',
-              amount: ${total * 100},
-              currency: 'NGN',
-              metadata: {
-                plan: '${planId}',
-                billing: '${billing}'
-              },
-              callback: function(response) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                  status: 'success',
-                  reference: response.reference
-                }));
-              },
-              onClose: function() {
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                  status: 'closed'
-                }));
-              }
-            });
-            handler.openIframe();
-          };
-        </script>
-      </body>
-    </html>
-  `;
-
-  const handleMessage = async (event: WebViewMessageEvent) => {
+  const handlePay = async () => {
+    setStarting(true);
     try {
-      const data = JSON.parse(event.nativeEvent.data);
-
-      if (data.status === "success") {
-        setLoading(true);
-        try {
-          // Verify payment on your backend
-          const result = await verifySubscription({
-            reference: data.reference,
-            plan: planId,
-            billing,
-          });
-
-          if (result.success) {
-            // Update stored user data with new subscription
-            const currentUser = await getUserData();
-            await setUserData({
-              ...currentUser,
-              subscription: result.user.subscription,
-            });
-            showAlert({
-              title: isHausa ? 'An Yi Nasara' : 'Payment successful!',
-              message: isHausa
-                ? `Tsarin ku na ${planName} yanzu yana aiki. Barka da zuwa NomaApp!`
-                : `Your ${planName} plan is now active. Welcome to NomaApp!`,
-              buttons: [{ text: isHausa ? 'Fara yanzu' : 'Get started', onPress: () => router.replace("/(tabs)") }]
-            });
-          } else {
-            showAlert({
-              title: isHausa ? 'Tantancewa Ta Gaza' : 'Verification failed',
-              message: isHausa
-                ? 'An karbi biya amma an kasa tantancewa. Tuntubi sashen taimako.'
-                : 'Payment was received but could not be verified. Please contact support.',
-              buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-            });
-          }
-        } catch (err) {
-          showAlert({
-            title: isHausa ? 'Kuskure' : 'Error',
-            message: isHausa
-              ? 'An karbi biya amma an samu kuskure yayin tantancewa. Tuntubi sashen taimako.'
-              : 'Payment received but verification failed. Please contact support.',
-            buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-          });
-        } finally {
-          setLoading(false);
-        }
-      } else if (data.status === "closed") {
-        // User closed Paystack modal — stay on checkout
-      }
-    } catch (e) {
-      console.error("WebView message parse error:", e);
+      const txnRef = await startCheckout({ plan: planId, interval: billing });
+      // Whatever happened in the browser, the result screen asks the backend
+      router.replace({ pathname: "/payment", params: { txnRef } });
+    } catch (error: any) {
+      logger.error('Starting checkout failed', error);
+      const unavailable = error?.code === 'PAYMENT_INIT_FAILED' || error?.code === 'PAYMENTS_UNAVAILABLE';
+      const offline = error?.code === 'NETWORK_ERROR' || error?.code === 'TIMEOUT_ERROR';
+      showAlert({
+        title: isHausa ? 'Kuskure' : 'Error',
+        message: offline
+          ? (isHausa ? 'Babu intanet. Ka duba hanyar sadarwarka ka sake gwadawa.' : 'No internet connection. Check your network and try again.')
+          : unavailable
+          ? (isHausa ? 'Ba a iya fara biya yanzu ba. Ka sake gwadawa anjima.' : "Payments can't be started right now. Try again later.")
+          : (isHausa ? 'An kasa bude shafin biya. Ka sake gwadawa.' : "Couldn't open the payment page. Try again."),
+        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+      });
+    } finally {
+      setStarting(false);
     }
   };
-
-  const [email, setEmail] = React.useState("");
-  React.useEffect(() => {
-    getUserEmail().then(setEmail);
-  }, []);
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Verifying your payment...</Text>
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -170,6 +73,7 @@ const CheckoutScreen = () => {
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
+          disabled={starting}
         >
           <Ionicons name="arrow-back-outline" size={20} color={COLORS.textDark} />
         </TouchableOpacity>
@@ -183,7 +87,9 @@ const CheckoutScreen = () => {
           <View>
             <Text style={styles.summaryPlanName}>{planName} Plan</Text>
             <Text style={styles.summaryBilling}>
-              Billed {billing} · cancel anytime
+              {billing === 'yearly'
+                ? (isHausa ? 'Biya na shekara' : 'Billed yearly')
+                : (isHausa ? 'Biya na wata' : 'Billed monthly')}
             </Text>
           </View>
           <View style={styles.summaryLockRow}>
@@ -192,51 +98,39 @@ const CheckoutScreen = () => {
           </View>
         </View>
 
-        <View style={styles.summaryDivider} />
-
-        <View style={styles.summaryLine}>
-          <Text style={styles.summaryLabel}>Subtotal</Text>
-          <Text style={styles.summaryValue}>₦{amount.toLocaleString()}</Text>
-        </View>
-        <View style={styles.summaryLine}>
-          <Text style={styles.summaryLabel}>VAT (7.5%)</Text>
-          <Text style={styles.summaryValue}>₦{vat.toLocaleString()}</Text>
-        </View>
         <View style={[styles.summaryLine, styles.summaryTotal]}>
-          <Text style={styles.summaryTotalLabel}>Total today</Text>
-          <Text style={styles.summaryTotalValue}>₦{total.toLocaleString()}</Text>
+          <Text style={styles.summaryTotalLabel}>{isHausa ? 'Jimilla' : 'Total today'}</Text>
+          <Text style={styles.summaryTotalValue}>₦{amount.toLocaleString()}</Text>
         </View>
       </View>
 
-      {/* Paystack WebView */}
-      {email ? (
-        <View style={styles.webViewContainer}>
-          {!webViewReady && (
-            <View style={styles.webViewLoader}>
-              <ActivityIndicator size="small" color={COLORS.primary} />
-              <Text style={styles.webViewLoaderText}>
-                Loading secure payment...
-              </Text>
-            </View>
-          )}
-          <WebView
-            ref={webViewRef}
-            source={{ html: buildPaystackHTML(email) }}
-            onMessage={handleMessage}
-            onLoadEnd={() => setWebViewReady(true)}
-            javaScriptEnabled
-            style={[styles.webView, !webViewReady && { opacity: 0 }]}
-          />
-        </View>
-      ) : (
-        <View style={styles.webViewLoader}>
-          <ActivityIndicator size="small" color={COLORS.primary} />
-          <Text style={styles.webViewLoaderText}>Preparing payment...</Text>
-        </View>
-      )}
+      <View style={styles.payInfo}>
+        <Ionicons name="open-outline" size={18} color={COLORS.textLight} />
+        <Text style={styles.payInfoText}>
+          {isHausa
+            ? 'Za a bude shafin biya mai tsaro. Bayan ka biya, za a dawo da kai nan.'
+            : "You'll pay on a secure payment page, then come back here."}
+        </Text>
+      </View>
+
+      <View style={{ flex: 1 }} />
+
+      <TouchableOpacity
+        style={[styles.payBtn, starting && { opacity: 0.7 }]}
+        onPress={handlePay}
+        disabled={starting}
+      >
+        {starting ? (
+          <ActivityIndicator color={COLORS.white} />
+        ) : (
+          <Text style={styles.payBtnText}>
+            {isHausa ? `Biya ₦${amount.toLocaleString()}` : `Pay ₦${amount.toLocaleString()}`}
+          </Text>
+        )}
+      </TouchableOpacity>
 
       <Text style={styles.footNote}>
-        Powered by Paystack · 256-bit SSL · PCI DSS compliant
+        Powered by Zainpay & Paystack · 256-bit SSL
       </Text>
     </SafeAreaView>
   );
@@ -246,17 +140,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    backgroundColor: COLORS.background,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: COLORS.textLight,
   },
   header: {
     flexDirection: "row",
@@ -358,27 +241,37 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: COLORS.primary,
   },
-  webViewContainer: {
-    flex: 1,
+  payInfo: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
     marginHorizontal: 20,
-    borderRadius: 14,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    paddingHorizontal: 4,
   },
-  webView: {
+  payInfoText: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  webViewLoader: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-  },
-  webViewLoaderText: {
     fontSize: 13,
     color: COLORS.textLight,
+    lineHeight: 19,
+  },
+  payBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 15,
+    marginHorizontal: 20,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  payBtnText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: "600",
   },
   footNote: {
     fontSize: 11,
@@ -388,4 +281,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CheckoutScreen;
+export default function CheckoutScreenWithAccess() {
+  return (
+    <RequireAccess feature="subscription">
+      <CheckoutScreen />
+    </RequireAccess>
+  );
+}

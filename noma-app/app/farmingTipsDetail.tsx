@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '@/src/context/LanguageContext';
 import TIPS_DATA from '@/constants/farmingTips.json';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: '#16A34A', primaryLight: '#f0fdf4', primaryBorder: '#bbf7d0',
@@ -24,7 +25,7 @@ const CATEGORY_CONFIG: Record<string, {
   climate: { color: COLORS.blue,    bg: COLORS.blueLight,    border: '#bfdbfe',          icon: 'cloud-outline'   },
 };
 
-export default function FarmingTipDetailScreen() {
+function FarmingTipDetailScreen() {
   const router  = useRouter();
   const { language } = useLanguage();
   const { tipId } = useLocalSearchParams<{ tipId: string }>();
@@ -271,3 +272,11 @@ const styles = StyleSheet.create({
   },
   scanCtaBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 13 },
 });
+
+export default function FarmingTipDetailScreenWithAccess() {
+  return (
+    <RequireAccess feature="cropGuides">
+      <FarmingTipDetailScreen />
+    </RequireAccess>
+  );
+}

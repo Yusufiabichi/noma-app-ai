@@ -16,6 +16,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 import { getScans } from '@/src/api/scans.api';
 import { format } from 'date-fns';
 import apiClient from '@/src/api/client';
+import RequireAccess from '@/app/components/RequireAccess';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface Diagnosis {
@@ -60,7 +61,7 @@ const STATUS_FILTERS = [
 const PAGE_SIZE = 3; // Load 3 items per request
 
 // ─── Main Component ──────────────────────────────────────────────────────
-export default function DiagnosisHistoryScreen() {
+function DiagnosisHistoryScreen() {
   const { language } = useLanguage();
   const { user } = useAuth();
   const router = useRouter();
@@ -520,3 +521,11 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 });
+
+export default function DiagnosisHistoryScreenWithAccess() {
+  return (
+    <RequireAccess feature="scanHistory">
+      <DiagnosisHistoryScreen />
+    </RequireAccess>
+  );
+}

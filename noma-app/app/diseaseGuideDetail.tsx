@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '@/src/context/LanguageContext';
 import DISEASES_DATA from '@/constants/treatments.json';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: '#16A34A', primaryLight: '#f0fdf4', primaryBorder: '#bbf7d0',
@@ -77,7 +78,7 @@ const InfoRow = ({ label, value }: { label: string; value: string }) => (
 
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 
-export default function DiseaseDetailScreen() {
+function DiseaseDetailScreen() {
   const router = useRouter();
   const { language } = useLanguage();
   const { diseaseId } = useLocalSearchParams<{ diseaseId: string }>();
@@ -403,3 +404,11 @@ const styles = StyleSheet.create({
   },
   scanCtaBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 13 },
 });
+
+export default function DiseaseDetailScreenWithAccess() {
+  return (
+    <RequireAccess feature="cropGuides">
+      <DiseaseDetailScreen />
+    </RequireAccess>
+  );
+}

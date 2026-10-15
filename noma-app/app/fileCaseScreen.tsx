@@ -9,6 +9,8 @@ import { createCase } from "@/src/api/expertChat.api";
 import { getScanById } from "@/src/api/scans.api";
 import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
+import { getServerErrorCode } from '@/src/utils/errors';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: "#16A34A", primaryLight: "#f0fdf4", primaryBorder: "#bbf7d0",
@@ -89,7 +91,8 @@ const FileCaseScreen = () => {
       setSessionsRemaining(res.data.sessionsRemaining);
       setSubmitted(true);
     } catch (err: any) {
-      const errCode = err.response?.data?.error?.code;
+      // The API client wraps errors; read the backend's own code and message
+      const errCode = getServerErrorCode(err);
       if (errCode === "FEATURE_LOCKED") {
         showAlert({
           title: isHausa ? 'Ana Bukatar Haɓakawa' : 'Upgrade required',
@@ -104,7 +107,7 @@ const FileCaseScreen = () => {
           title: isHausa ? 'Kimanin Zama Ya Cika' : 'Session limit reached',
           message: isHausa
             ? 'Ka gama adadin zaman ka na wannan watan. Haɓaka zuwa Premium don zama marar iyaka.'
-            : (err.response?.data?.error?.message || "Upgrade to Premium for unlimited sessions."),
+            : (err?.message || "Upgrade to Premium for unlimited sessions."),
           buttons: [
             { text: isHausa ? 'Soke' : 'Cancel', style: 'cancel' },
             { text: isHausa ? 'Haɓaka' : 'Upgrade', onPress: () => router.push("/(onboarding)/plans") },
@@ -113,7 +116,7 @@ const FileCaseScreen = () => {
       } else {
         showAlert({
           title: isHausa ? 'Kuskure' : 'Error',
-          message: isHausa ? 'An kasa aika kara. Da fatan a sake gwadawa.' : (err.response?.data?.error?.message || "Failed to submit case."),
+          message: isHausa ? 'An kasa aika kara. Da fatan a sake gwadawa.' : (err?.message || "Failed to submit case."),
           buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
         });
       }
@@ -403,4 +406,10 @@ const styles = StyleSheet.create({
   secondaryBtnText: { color: COLORS.textLight, fontSize: 14, fontWeight: "600" },
 });
 
-export default FileCaseScreen;
+export default function FileCaseScreenWithAccess() {
+  return (
+    <RequireAccess feature="expertChat">
+      <FileCaseScreen />
+    </RequireAccess>
+  );
+}

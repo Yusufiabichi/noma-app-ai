@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '@/src/context/LanguageContext';
 import FERTILIZERS from '@/constants/fertilizers.json';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: '#16A34A', primaryLight: '#f0fdf4', primaryBorder: '#bbf7d0',
@@ -46,7 +47,7 @@ const CROP_COLORS = [
   { bg: '#ecfeff', icon: '#0891b2' },
 ];
 
-export default function FertilizerAdviceScreen() {
+function FertilizerAdviceScreen() {
   const router    = useRouter();
   const { language } = useLanguage();
   const isHausa   = language === 'hausa';
@@ -211,3 +212,11 @@ const styles = StyleSheet.create({
   emptyContainer: { alignItems: 'center', paddingTop: 60 },
   emptyTitle:     { fontSize: 15, fontWeight: '700', color: COLORS.textDark, marginTop: 12 },
 });
+
+export default function FertilizerAdviceScreenWithAccess() {
+  return (
+    <RequireAccess feature="cropGuides">
+      <FertilizerAdviceScreen />
+    </RequireAccess>
+  );
+}

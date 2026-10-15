@@ -7,6 +7,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '@/src/context/LanguageContext';
 import FERTILIZERS from '@/constants/fertilizers.json';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: '#16A34A', primaryLight: '#f0fdf4', primaryBorder: '#bbf7d0',
@@ -56,7 +57,7 @@ const Section = ({
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
-export default function FertilizerDetailScreen() {
+function FertilizerDetailScreen() {
   const router = useRouter();
   const { language } = useLanguage();
   const { cropId } = useLocalSearchParams<{ cropId: string }>();
@@ -346,3 +347,11 @@ const styles = StyleSheet.create({
   },
   scanCtaBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 13 },
 });
+
+export default function FertilizerDetailScreenWithAccess() {
+  return (
+    <RequireAccess feature="cropGuides">
+      <FertilizerDetailScreen />
+    </RequireAccess>
+  );
+}

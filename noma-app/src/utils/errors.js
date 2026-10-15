@@ -173,8 +173,16 @@ const getErrorMessageFromStatus = (status) => {
   return statusMessages[status] || 'An error occurred';
 };
 
+/**
+ * The backend's own error code (e.g. FEATURE_LOCKED), which normalization
+ * replaces with a generic one for some statuses (403 -> FORBIDDEN)
+ */
+export const getServerErrorCode = (error) =>
+  error?.originalError?.response?.data?.error?.code || error?.code || null;
+
 export default {
   ERROR_CODES,
+  getServerErrorCode,
   AppError,
   AuthError,
   normalizeAxiosError,

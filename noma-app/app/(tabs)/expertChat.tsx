@@ -8,6 +8,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { listExperts } from "@/src/api/expertChat.api";
 import { useAuth } from "@/src/hooks/useAuth";
+import { checkAccess, expertSessionsLeft, getEffectiveTier } from "@/src/auth/access";
 import FarmerHomeScreen from "@/app/components/FarmerHomeScreen";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -180,7 +181,7 @@ const LockedScreen = ({ onUpgrade }: { onUpgrade: () => void }) => (
 
 const ExpertChatScreen = () => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const params = useLocalSearchParams<{
     scanId?: string;
@@ -201,9 +202,9 @@ const ExpertChatScreen = () => {
   const [sortBy, setSortBy] = useState("rating");
   const [showSortMenu, setShowSortMenu] = useState(false);
 
-  const plan = user?.subscription?.plan;
-  const role = user?.role;
-  const isLocked = plan === "free" || !plan;
+  // Expired or lapsed plans count as free; trial counts as full access
+  const plan = getEffectiveTier(user);
+  const isLocked = !checkAccess(user, "expertChat").allowed;
 
   const fetchExperts = useCallback(async () => {
     try {
@@ -223,10 +224,12 @@ const ExpertChatScreen = () => {
     }
   }, [scanId, activeCropFilter, sortBy]);
 
+  // Re-run once the stored user has loaded and access is known
   useEffect(() => {
+    if (authLoading) return;
     if (!isLocked) fetchExperts();
     else setLoading(false);
-  }, [activeCropFilter, sortBy]);
+  }, [activeCropFilter, sortBy, isLocked, authLoading]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -251,6 +254,14 @@ const ExpertChatScreen = () => {
             <FarmerHomeScreen />
           </SafeAreaView>
       )
+  }
+
+  if (authLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
   }
 
   if (isLocked) {
@@ -304,7 +315,7 @@ const ExpertChatScreen = () => {
         <View style={styles.sessionBanner}>
           <Ionicons name="chatbubbles-outline" size={14} color={COLORS.primary} />
           <Text style={styles.sessionBannerText}>
-            {Math.max(0, 5 - (user?.usage?.expertSessionsUsed || 0))} of 5 sessions remaining this month
+            {expertSessionsLeft(user)} of 5 sessions remaining this month
           </Text>
         </View>
       )}

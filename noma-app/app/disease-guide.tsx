@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '@/src/context/LanguageContext';
 import DISEASES_DATA from '../constants/treatments.json';
+import RequireAccess from '@/app/components/RequireAccess';
 
 const COLORS = {
   primary: '#16A34A', primaryLight: '#f0fdf4', primaryBorder: '#bbf7d0',
@@ -106,7 +107,7 @@ const DiseaseCard = ({
 
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 
-export default function DiseaseGuideScreen() {
+function DiseaseGuideScreen() {
   const router   = useRouter();
   const { language } = useLanguage();
   const isHausa  = language === 'hausa';
@@ -309,3 +310,11 @@ cropChipTextActive: {
   emptyTitle: { fontSize: 16, fontWeight: '700', color: COLORS.textDark, marginTop: 16 },
   emptyDesc:  { fontSize: 13, color: COLORS.textLight, marginTop: 6, textAlign: 'center', paddingHorizontal: 40 },
 });
+
+export default function DiseaseGuideScreenWithAccess() {
+  return (
+    <RequireAccess feature="cropGuides">
+      <DiseaseGuideScreen />
+    </RequireAccess>
+  );
+}

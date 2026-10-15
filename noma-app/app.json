@@ -5,7 +5,7 @@
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/AppIcon.jpg",
-    "scheme": "mobileapp",
+    "scheme": ["nomaapp", "mobileapp"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "assetBundlePatterns": [

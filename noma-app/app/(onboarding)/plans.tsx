@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,12 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/src/hooks/useAuth";
+import { getPlans, PaidPlan, PlanId } from "@/src/api/payments.api";
 
 const COLORS = {
   primary: "#16A34A",
@@ -29,8 +31,6 @@ const PLANS = [
   {
     id: "free",
     name: "Free",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
     tag: null,
     color: COLORS.textLight,
     features: [
@@ -45,8 +45,6 @@ const PLANS = [
   {
     id: "basic",
     name: "Basic",
-    monthlyPrice: 1500,
-    yearlyPrice: 14400,
     tag: "Most popular",
     color: COLORS.primary,
     features: [
@@ -61,8 +59,6 @@ const PLANS = [
   {
     id: "premium",
     name: "Premium",
-    monthlyPrice: 3500,
-    yearlyPrice: 33600,
     tag: "Best value",
     color: COLORS.amber,
     features: [
@@ -83,6 +79,42 @@ const PlansScreen = () => {
   const currentPlanId = user?.subscription?.plan || "free";
   const reason = params.reason as string;
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const isExpired = user?.subscription?.status === "expired";
+
+  // Prices always come from the backend
+  const [pricing, setPricing] = useState<Partial<Record<PlanId, PaidPlan["pricing"]>>>({});
+  const [pricesLoading, setPricesLoading] = useState(true);
+  const [pricesError, setPricesError] = useState(false);
+
+  const loadPrices = useCallback(async () => {
+    setPricesLoading(true);
+    setPricesError(false);
+    try {
+      const plans = await getPlans();
+      setPricing(Object.fromEntries(plans.map((p) => [p.plan, p.pricing])));
+    } catch (error) {
+      console.error("Failed to load plan prices:", error);
+      setPricesError(true);
+    } finally {
+      setPricesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPrices();
+  }, [loadPrices]);
+
+  const getAmount = (planId: string) => pricing[planId as PlanId]?.[billing]?.amount;
+
+  // Largest yearly saving across plans, e.g. 15000 vs 12 × 1500 → 17%
+  const yearlySavingPercent = Math.max(
+    0,
+    ...Object.values(pricing).map((p) =>
+      p?.monthly?.amount && p?.yearly?.amount
+        ? Math.round((1 - p.yearly.amount / (p.monthly.amount * 12)) * 100)
+        : 0
+    )
+  );
 
   const handleSelectPlan = (plan: (typeof PLANS)[0]) => {
     if (plan.id === currentPlanId) return;
@@ -90,21 +122,23 @@ const PlansScreen = () => {
       router.replace("/(tabs)");
       return;
     }
+    const amount = getAmount(plan.id);
+    if (amount === undefined) return;
     router.push({
       pathname: "/(onboarding)/checkout",
       params: {
         planId: plan.id,
         planName: plan.name,
-        amount: billing === "monthly" ? plan.monthlyPrice : plan.yearlyPrice,
+        amount,
         billing,
       },
     });
   };
 
   const formatPrice = (plan: (typeof PLANS)[0]) => {
-    const price = billing === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-    if (price === 0) return "Free";
-    return `₦${price.toLocaleString()}`;
+    if (plan.id === "free") return "Free";
+    const price = getAmount(plan.id);
+    return price === undefined ? "—" : `₦${price.toLocaleString()}`;
   };
 
   return (
@@ -115,6 +149,12 @@ const PlansScreen = () => {
       >
         {/* Header */}
         <View style={styles.header}>
+          {isExpired && reason !== "trial_expired" && (
+            <View style={styles.expiredBadge}>
+              <Ionicons name="time-outline" size={14} color={COLORS.amber} />
+              <Text style={styles.expiredBadgeText}>Your plan has expired. Renew to keep your features</Text>
+            </View>
+          )}
           {reason === "trial_expired" && (
             <View style={styles.expiredBadge}>
               <Ionicons name="time-outline" size={14} color={COLORS.amber} />
@@ -160,17 +200,33 @@ const PlansScreen = () => {
             >
               Yearly
             </Text>
-            <View style={styles.saveBadge}>
-              <Text style={styles.saveBadgeText}>Save 20%</Text>
-            </View>
+            {yearlySavingPercent > 0 && (
+              <View style={styles.saveBadge}>
+                <Text style={styles.saveBadgeText}>Save {yearlySavingPercent}%</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
+
+        {pricesLoading && (
+          <View style={styles.pricesNotice}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <Text style={styles.pricesNoticeText}>Loading prices...</Text>
+          </View>
+        )}
+        {pricesError && !pricesLoading && (
+          <TouchableOpacity style={styles.pricesNotice} onPress={loadPrices}>
+            <Ionicons name="refresh" size={16} color={COLORS.amber} />
+            <Text style={styles.pricesNoticeText}>{"Couldn't load prices. Tap to try again."}</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Plan Cards */}
         {PLANS.map((plan) => {
           const isFeatured = plan.id === "basic";
           const isPremium = plan.id === "premium";
           const isActive = plan.id === currentPlanId;
+          const priceMissing = plan.id !== "free" && getAmount(plan.id) === undefined;
           return (
             <View
               key={plan.id}
@@ -223,7 +279,7 @@ const PlansScreen = () => {
                   >
                     {formatPrice(plan)}
                   </Text>
-                  {plan.monthlyPrice > 0 && (
+                  {plan.id !== "free" && getAmount(plan.id) !== undefined && (
                     <Text style={styles.planPricePeriod}>
                       /{billing === "monthly" ? "mo" : "yr"}
                     </Text>
@@ -263,10 +319,10 @@ const PlansScreen = () => {
                   styles.planButton,
                   isFeatured && styles.planButtonFeatured,
                   isPremium && styles.planButtonPremium,
-                  isActive && styles.planButtonDisabled,
+                  (isActive || priceMissing) && styles.planButtonDisabled,
                 ]}
                 onPress={() => handleSelectPlan(plan)}
-                disabled={isActive}
+                disabled={isActive || priceMissing}
               >
                 <Text
                   style={[
@@ -283,7 +339,7 @@ const PlansScreen = () => {
         })}
 
         <Text style={styles.footNote}>
-          Cancel anytime · Secure payment via Paystack · VAT may apply
+          Secure payment via Zainpay or Paystack
         </Text>
       </ScrollView>
     </View>
@@ -291,6 +347,18 @@ const PlansScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  pricesNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  pricesNoticeText: {
+    fontSize: 13,
+    color: COLORS.textLight,
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

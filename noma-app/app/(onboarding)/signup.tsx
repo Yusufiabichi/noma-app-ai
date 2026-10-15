@@ -124,7 +124,11 @@ const SignupScreen = () => {
       if (response.token) {
         await setAuthToken(response.token);
         if (response.user) {
-          await setUserData(response.user);
+          await setUserData({
+            ...response.user,
+            trialDaysRemaining: response.meta?.trialDaysRemaining,
+            trialEndDate: response.meta?.trialEndDate,
+          });
           registerPushToken()
         }
         await completeOnboarding();

@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import logger from '../utils/logger';
-import { clearAuthTokens } from '../api/client';
+import { clearAuthTokens, getAuthToken } from '../api/client';
 import * as Notifications from 'expo-notifications';
 import client from '@/src/api/client';
 
@@ -68,6 +68,35 @@ export const registerPushToken = async () => {
   } catch (err) {
     // Non-fatal — don't block login if this fails
     console.log('Push token registration failed:', err);
+  }
+};
+
+/**
+ * Refresh the stored user (plan, role, usage) from the server.
+ * Access checks read the stored user, so this keeps them current.
+ * Fails quietly offline and keeps the cached user.
+ */
+export const syncUserFromServer = async () => {
+  try {
+    const token = await getAuthToken();
+    if (!token) return false;
+
+    const body = await client.get('/auth/me');
+    const user = body?.data?.user;
+    if (!user) return false;
+
+    const meta = body?.meta || body?.data?.meta || {};
+    const currentUser = await getUserData();
+    await setUserData({
+      ...currentUser,
+      ...user,
+      ...(meta.trialDaysRemaining !== undefined && { trialDaysRemaining: meta.trialDaysRemaining }),
+      ...(meta.trialEndDate && { trialEndDate: meta.trialEndDate }),
+    });
+    return true;
+  } catch (error) {
+    logger.warn('Could not refresh user from server', error);
+    return false;
   }
 };
 
