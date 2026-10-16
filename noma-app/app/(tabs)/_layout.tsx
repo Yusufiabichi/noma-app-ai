@@ -105,10 +105,10 @@ export default function TabsLayout() {
           ),
            headerRight: () => (isFarmer ? (
               <TouchableOpacity
-                onPress={() => router.push('../farmerCases')}
+                onPress={() => router.push('/(onboarding)/plans')}
                 style={{ marginRight: 16 }}
               >
-                <Ionicons name="file-tray-full-outline" size={22} color="#16A34A" />
+                <FontAwesome5 name="crown" size={22} color="#16A34A" />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
