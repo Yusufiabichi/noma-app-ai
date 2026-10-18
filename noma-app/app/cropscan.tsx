@@ -1,26 +1,25 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Image, Platform, Alert, ActivityIndicator, FlatList, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import CaptureGuideOverlay from '@/app/components/CaptureGuideOverlay';
+import RequireAccess, { lockedMessage } from '@/app/components/RequireAccess';
+import VoiceAssistantSheet from '@/app/components/VoiceAssistantSheet';
+import { createScan } from '@/src/api/scans.api';
+import { checkAccess, isPlanLimitError } from '@/src/auth/access';
+import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
-import { useAlert } from '@/src/context/AlertContext';
 import { enqueueScan, trackUploadedScan } from '@/src/services/offlineScanQueue';
-import { isOnline } from '@/src/utils/network';
+import { getServerErrorCode } from '@/src/utils/errors';
 import logger from '@/src/utils/logger';
-import { createScan } from '@/src/api/scans.api'
-import { pollUntilDiagnosed } from '@/src/utils/pollScan'
-import { getLanguageCode } from '@/src/utils/useLanguageCode'
-import { buildScanResult } from '@/src/utils/scanResult'
-import CaptureGuideOverlay from '@/app/components/CaptureGuideOverlay'
-import VoiceAssistantSheet from '@/app/components/VoiceAssistantSheet'
-import { lockedMessage } from '@/app/components/RequireAccess'
-import { checkAccess, isPlanLimitError } from '@/src/auth/access'
-import { getServerErrorCode } from '@/src/utils/errors'
-import RequireAccess from '@/app/components/RequireAccess';
+import { isOnline } from '@/src/utils/network';
+import { pollUntilDiagnosed } from '@/src/utils/pollScan';
+import { buildScanResult } from '@/src/utils/scanResult';
+import { getLanguageCode } from '@/src/utils/useLanguageCode';
+import { Ionicons } from '@expo/vector-icons';
+import { CameraCapturedPicture, CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CROPS = [
   { id: 'maize', name: 'Maize', scientificName: 'Zea mays (Masara)', category: 'Cereals' },

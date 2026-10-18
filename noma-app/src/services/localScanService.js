@@ -6,6 +6,7 @@
 import database from '../data/database';
 import * as FileSystem from 'expo-file-system/legacy';
 import logger from '../utils/logger';
+import { isLowConfidenceDiagnosis } from '../utils/scanResult';
 
 const SCANS_DIRECTORY = FileSystem.documentDirectory + 'scans/';
 
@@ -96,6 +97,8 @@ export const updateScanWithDiagnosis = async (scanId, diagnosis) => {
         record.diseaseName = diagnosis.name;
         record.cropDetected = diagnosis.cropType;
         record.confidence = diagnosis.confidence;
+        // Server flag; missing/invalid confidence also counts as not confirmed
+        record.lowConfidence = isLowConfidenceDiagnosis(diagnosis);
         record.severity = diagnosis.severity;
         record.recommendations = JSON.stringify(diagnosis.recommendations || []);
         record.futurePrevention = JSON.stringify(diagnosis.futurePrevention || []);

@@ -48,6 +48,8 @@ const FileCaseScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted]   = useState(false);
   const [sessionsRemaining, setSessionsRemaining] = useState<string | number>("");
+  // Server: a low-confidence scan's review is free and doesn't use a session
+  const [freeReview, setFreeReview] = useState(false);
 
   useEffect(() => {
     const fetchScan = async () => {
@@ -86,9 +88,11 @@ const FileCaseScreen = () => {
         expertUserId,
         scanId,
         farmerNote: note.trim() || undefined,
-        isLowConfidence,
+        // Send a real boolean (the param is a string). The server decides from the stored scan.
+        isLowConfidence: showLowConfidenceWarning,
       });
       setSessionsRemaining(res.data.sessionsRemaining);
+      setFreeReview(!!res.data.lowConfidenceReview);
       setSubmitted(true);
     } catch (err: any) {
       // The API client wraps errors; read the backend's own code and message
@@ -139,7 +143,16 @@ const FileCaseScreen = () => {
             You'll be notified when they respond — usually within 24 hours.
           </Text>
 
-          {typeof sessionsRemaining === "number" && (
+          {freeReview ? (
+            <View style={styles.sessionInfo}>
+              <Ionicons name="shield-checkmark-outline" size={14} color={COLORS.primary} />
+              <Text style={styles.sessionInfoText}>
+                {isHausa
+                  ? "Wannan duba kyauta ne, kuma bai rage zamanka ba"
+                  : "This review was free and didn't use a session"}
+              </Text>
+            </View>
+          ) : typeof sessionsRemaining === "number" && (
             <View style={styles.sessionInfo}>
               <Ionicons name="chatbubbles-outline" size={14} color={COLORS.primary} />
               <Text style={styles.sessionInfoText}>
@@ -407,8 +420,10 @@ const styles = StyleSheet.create({
 });
 
 export default function FileCaseScreenWithAccess() {
+  // Expert review of an unconfirmed scan is allowed on every plan (the server re-checks)
+  const { isLowConfidence } = useLocalSearchParams<{ isLowConfidence?: string }>();
   return (
-    <RequireAccess feature="expertChat">
+    <RequireAccess feature="expertChat" skipPlan={isLowConfidence === 'true'}>
       <FileCaseScreen />
     </RequireAccess>
   );

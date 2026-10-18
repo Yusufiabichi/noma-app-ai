@@ -123,14 +123,14 @@ export default function WeatherCard(): JSX.Element {
         <View style={styles.badgeWarn}>
           <Ionicons name="warning-outline" size={13} color="#fca5a5" />
           <Text style={styles.badgeWarnText}>
-            {language === "english" ? Data.en.home.status_text.bad : Data.ha.home.status_text.bad}
+            {language !== 'hausa' ? Data.en.home.status_text.bad : Data.ha.home.status_text.bad}
           </Text>
         </View>
       ) : (
         <View style={styles.badgeGood}>
           <Feather name="check-circle" size={13} color="#16A34A" />
           <Text style={styles.badgeGoodText}>
-            {language === "english" ? Data.en.home.status_text.good : Data.ha.home.status_text.good}
+            {language !== 'hausa' ? Data.en.home.status_text.good : Data.ha.home.status_text.good}
           </Text>
         </View>
       )}

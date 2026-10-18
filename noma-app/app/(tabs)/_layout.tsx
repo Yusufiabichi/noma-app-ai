@@ -3,7 +3,7 @@ import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons'
 import { Pressable, Text, View, Modal, FlatList, StatusBar, TouchableOpacity, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import React, { useState, useEffect } from 'react'
-import { LanguageProvider, useLanguage, Lang } from '../../src/context/LanguageContext';
+import { useLanguage, Lang } from '../../src/context/LanguageContext';
 import {Picker} from '@react-native-picker/picker';
 import { useAuth } from '@/src/hooks/useAuth';
 
@@ -62,7 +62,8 @@ export default function TabsLayout() {
   return (
     <>
     <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
-    <LanguageProvider initial="english">
+    {/* Uses the app-wide LanguageProvider from app/_layout.tsx. A nested provider here
+        kept its own copy of the language, so switching it didn't reach other screens. */}
     <Tabs
       screenOptions={{
         headerShown: true,
@@ -164,7 +165,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
-    </LanguageProvider>
     </SafeAreaView>
     </>
 

@@ -37,6 +37,13 @@ export const FEATURES: Record<Feature, FeatureRule> = {
 
 const TIER_RANK: Record<Tier, number> = { free: 0, basic: 1, premium: 2 };
 
+// Diagnoses per day on each plan (matches the plans screen). The server enforces it.
+export const DIAGNOSES_PER_DAY: Record<Tier, number> = {
+  free: 3,
+  basic: 10,
+  premium: Infinity,
+};
+
 // Expert sessions per month on each plan (matches the plans screen)
 export const EXPERT_SESSIONS_PER_MONTH: Record<Tier, number> = {
   free: 0,
@@ -100,14 +107,18 @@ export type AccessResult =
   | { allowed: false; reason: 'wrongRole' }
   | { allowed: false; reason: 'upgrade'; requiredTier: Tier };
 
-export function checkAccess(user: any, feature: Feature): AccessResult {
+/**
+ * @param options.skipPlan - check sign-in and role only. Used for expert review of
+ *   a low-confidence scan, which the server allows on every plan.
+ */
+export function checkAccess(user: any, feature: Feature, options: { skipPlan?: boolean } = {}): AccessResult {
   if (!user) return { allowed: false, reason: 'signedOut' };
 
   const rule = FEATURES[feature];
   const role = getRole(user);
   if (!role || !rule.roles.includes(role)) return { allowed: false, reason: 'wrongRole' };
 
-  if (role !== 'farmer') return { allowed: true };
+  if (role !== 'farmer' || options.skipPlan) return { allowed: true };
 
   const tier = getEffectiveTier(user);
   if (TIER_RANK[tier] < TIER_RANK[rule.tier]) {

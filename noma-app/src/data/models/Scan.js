@@ -40,6 +40,7 @@ export class Scan extends Model {
   @field('follow_up_days') followUpDays; // JSON string
   @field('input_sourcing') inputSourcing; // JSON string
   @field('is_fallback') isFallback;
+  @field('low_confidence') lowConfidence;
 
   // AI service metadata
   @field('model_version') modelVersion;

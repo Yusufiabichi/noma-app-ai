@@ -17,6 +17,8 @@ import { getScans } from '@/src/api/scans.api';
 import { format } from 'date-fns';
 import apiClient from '@/src/api/client';
 import RequireAccess from '@/app/components/RequireAccess';
+import { getQueue, onQueueChange, QueuedScan } from '@/src/services/offlineScanQueue';
+import { buildScanResult, isLowConfidenceDiagnosis } from '@/src/utils/scanResult';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface Diagnosis {
@@ -31,31 +33,45 @@ interface Diagnosis {
     recommendations?: string[];
     futurePrevention?: string[];
     language?: string;
+    lowConfidence?: boolean;
+    confidenceThreshold?: number;
   };
   createdAt: string;
+  /** Set for scans still on this phone (offline queue), not yet on the server */
+  localQueueId?: string;
 }
+
+// Scans still on the phone. Once uploaded they have a serverScanId and the
+// server's copy is listed instead, so nothing shows twice.
+const toLocalDiagnosis = (item: QueuedScan): Diagnosis => ({
+  _id: item.id,
+  localQueueId: item.id,
+  cropType: item.cropType,
+  status: item.status === 'failed' ? 'failed' : 'pending',
+  createdAt: new Date(item.createdAt).toISOString(),
+});
 
 // ─── Constants ────────────────────────────────────────────────────────────
 const CROP_FILTERS = [
-  { label: 'All', value: '' },
-  { label: 'Maize', value: 'maize' },
-  { label: 'Rice', value: 'rice' },
-  { label: 'Tomato', value: 'tomato' },
-  { label: 'Cassava', value: 'cassava' },
-  { label: 'Yam', value: 'yam' },
-  { label: 'Sorghum', value: 'sorghum' },
-  { label: 'Cowpea', value: 'cowpea' },
-  { label: 'Soybean', value: 'soybean' },
-  { label: 'Vegetables', value: 'vegetables' },
-  { label: 'Fruits', value: 'fruits' },
+  { label: 'All', labelHa: 'Duka', value: '' },
+  { label: 'Maize', labelHa: 'Masara', value: 'maize' },
+  { label: 'Rice', labelHa: 'Shinkafa', value: 'rice' },
+  { label: 'Tomato', labelHa: 'Tumatur', value: 'tomato' },
+  { label: 'Cassava', labelHa: 'Rogo', value: 'cassava' },
+  { label: 'Yam', labelHa: 'Doya', value: 'yam' },
+  { label: 'Sorghum', labelHa: 'Dawa', value: 'sorghum' },
+  { label: 'Cowpea', labelHa: 'Wake', value: 'cowpea' },
+  { label: 'Soybean', labelHa: 'Waken suya', value: 'soybean' },
+  { label: 'Vegetables', labelHa: 'Kayan lambu', value: 'vegetables' },
+  { label: 'Fruits', labelHa: "'Ya'yan itace", value: 'fruits' },
 ];
 
 const STATUS_FILTERS = [
-  { label: 'All', value: '' },
-  { label: 'Diagnosed', value: 'diagnosed' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Failed', value: 'failed' },
+  { label: 'All', labelHa: 'Duka', value: '' },
+  { label: 'Diagnosed', labelHa: 'An kammala', value: 'diagnosed' },
+  { label: 'Pending', labelHa: 'Ana jira', value: 'pending' },
+  { label: 'Processing', labelHa: 'Ana dubawa', value: 'processing' },
+  { label: 'Failed', labelHa: 'Ya gaza', value: 'failed' },
 ];
 
 const PAGE_SIZE = 3; // Load 3 items per request
@@ -66,7 +82,8 @@ function DiagnosisHistoryScreen() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const isHausa = language === 'ha';
+  // The language context stores 'hausa' (not 'ha')
+  const isHausa = language === 'hausa';
 
   // State
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
@@ -80,6 +97,9 @@ function DiagnosisHistoryScreen() {
   // Filters
   const [selectedCrop, setSelectedCrop] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+
+  // Offline scans waiting to be sent (or that couldn't be sent)
+  const [localScans, setLocalScans] = useState<Diagnosis[]>([]);
 
   // ─── Fetch function ───────────────────────────────────────────────────
   const fetchDiagnoses = useCallback(
@@ -126,6 +146,27 @@ function DiagnosisHistoryScreen() {
     fetchDiagnoses(1, true);
   }, [selectedCrop, selectedStatus]);
 
+  // ─── Offline scans: shown on top, updated live as the queue changes ──────
+  useEffect(() => {
+    let unsentCount = -1;
+    const apply = (queue: QueuedScan[]) => {
+      const unsent = queue.filter((item) => !item.serverScanId);
+      // A scan just reached the server: reload so its server entry appears
+      if (unsentCount !== -1 && unsent.length < unsentCount) fetchDiagnoses(1, true);
+      unsentCount = unsent.length;
+      setLocalScans(unsent.sort((a, b) => b.createdAt - a.createdAt).map(toLocalDiagnosis));
+    };
+    getQueue().then(apply);
+    return onQueueChange(apply);
+  }, [fetchDiagnoses]);
+
+  const visibleLocalScans = localScans.filter(
+    (item) =>
+      (!selectedCrop || item.cropType === selectedCrop) &&
+      (!selectedStatus || item.status === selectedStatus)
+  );
+  const listData = [...visibleLocalScans, ...diagnoses];
+
   // ─── Refresh ──────────────────────────────────────────────────────────
   const onRefresh = () => {
     setRefreshing(true);
@@ -153,10 +194,16 @@ function DiagnosisHistoryScreen() {
         : item.status
       : item.status === 'diagnosed'
       ? 'Completed'
-      : item.status;
+      : item.status.charAt(0).toUpperCase() + item.status.slice(1);
+
+    const isLocal = !!item.localQueueId;
+    // Diagnosed but below the confidence threshold: no treatment, expert review only
+    const notConfirmed = item.status === 'diagnosed' && isLowConfidenceDiagnosis(item.diagnosis);
 
     const statusColor =
-      item.status === 'diagnosed'
+      notConfirmed
+        ? '#B45309'
+        : item.status === 'diagnosed'
         ? '#16A34A'
         : item.status === 'pending' || item.status === 'processing'
         ? '#D97706'
@@ -166,22 +213,30 @@ function DiagnosisHistoryScreen() {
       <TouchableOpacity
         style={styles.card}
         onPress={() => {
-          if (item.status === 'diagnosed') {
+          if (isLocal && item.status === 'pending') {
+            // Same pending screen as right after an offline scan
             router.push({
               pathname: '/treatment-rec',
               params: {
                 scanResult: JSON.stringify({
-                  disease: item.diagnosis?.disease,
-                  name: item.diagnosis?.name,
+                  status: 'pending',
                   cropType: item.cropType,
-                  confidence: item.diagnosis?.confidence,
-                  severity: item.diagnosis?.severity,
-                  recommendations: item.diagnosis?.recommendations,
-                  futurePrevention: item.diagnosis?.futurePrevention,
-                  language: item.diagnosis?.language,
-                  isOnline: true,
-                  scanId: item._id,
+                  isOnline: false,
+                  queueId: item.localQueueId,
+                  isFallback: false,
                 }),
+              },
+            });
+          } else if (isLocal) {
+            router.push('/cropscan');
+          } else if (item.status === 'diagnosed') {
+            // Full result, including dosage, steps and timing
+            router.push({
+              pathname: '/treatment-rec',
+              params: {
+                scanResult: JSON.stringify(
+                  buildScanResult(item, item.diagnosis?.language || (isHausa ? 'ha' : 'en'))
+                ),
               },
             });
           }
@@ -191,21 +246,44 @@ function DiagnosisHistoryScreen() {
         <View style={styles.cardHeader}>
           <Text style={styles.cropType}>{item.cropType.toUpperCase()}</Text>
           <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
-            <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
+            <Text style={[styles.statusText, { color: statusColor }]}>
+              {notConfirmed ? (isHausa ? 'Ba a tabbatar ba' : 'Not confirmed') : statusText}
+            </Text>
           </View>
         </View>
 
-        <Text style={styles.diseaseName}>
-          {item.diagnosis?.name || item.diagnosis?.disease || 'Unknown'}
-        </Text>
+        {isLocal ? (
+          <View style={styles.localRow}>
+            <Ionicons
+              name={item.status === 'failed' ? 'alert-circle-outline' : 'cloud-offline-outline'}
+              size={16}
+              color={statusColor}
+            />
+            <Text style={styles.localText}>
+              {item.status === 'failed'
+                ? (isHausa
+                    ? 'Ba a iya aika wannan hoton ba. Danna don sake daukar hoto.'
+                    : "This photo couldn't be sent. Tap to take a new one.")
+                : (isHausa
+                    ? 'An adana a wayarka. Za a aika idan intanet ya dawo.'
+                    : "Saved on this phone. It will be sent when you're online.")}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.diseaseName}>
+            {notConfirmed
+              ? `${isHausa ? 'Wataƙila' : 'Possible'}: ${item.diagnosis?.name || item.diagnosis?.disease || (isHausa ? 'ba a sani ba' : 'unknown')}`
+              : item.diagnosis?.name || item.diagnosis?.disease || (isHausa ? 'Ba a sani ba' : 'Unknown')}
+          </Text>
+        )}
 
         <View style={styles.cardFooter}>
           <Text style={styles.date}>
             {format(new Date(item.createdAt), 'MMM d, yyyy')}
           </Text>
-          {item.diagnosis?.confidence && (
+          {!notConfirmed && item.diagnosis?.confidence && (
             <Text style={styles.confidence}>
-              {Math.round(item.diagnosis.confidence * 100)}% confidence
+              {Math.round(item.diagnosis.confidence * 100)}% {isHausa ? 'tabbaci' : 'confidence'}
             </Text>
           )}
         </View>
@@ -282,7 +360,7 @@ function DiagnosisHistoryScreen() {
                   selectedCrop === f.value && styles.filterChipTextActive,
                 ]}
               >
-                {f.label}
+                {isHausa ? f.labelHa : f.label}
               </Text>
             </TouchableOpacity>
           ))}
@@ -305,7 +383,7 @@ function DiagnosisHistoryScreen() {
                   selectedStatus === f.value && styles.filterChipTextActive,
                 ]}
               >
-                {f.label}
+                {isHausa ? f.labelHa : f.label}
               </Text>
             </TouchableOpacity>
           ))}
@@ -315,13 +393,13 @@ function DiagnosisHistoryScreen() {
       {/* Count */}
       {!loading && (
         <Text style={styles.countText}>
-          {total} {isHausa ? 'sakamako' : 'results'}
+          {total + visibleLocalScans.length} {isHausa ? 'sakamako' : 'results'}
         </Text>
       )}
 
       {/* List */}
       <FlatList
-        data={diagnoses}
+        data={listData}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
@@ -346,6 +424,8 @@ function DiagnosisHistoryScreen() {
 
 // ─── Styles ─────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  localRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginVertical: 6 },
+  localText: { flex: 1, fontSize: 14, color: '#4B5563', lineHeight: 20 },
   container: {
     flex: 1,
     backgroundColor: '#F8FFFB',

@@ -31,7 +31,7 @@ const ExpertCaseDetailScreen = () => {
   const { caseId } = useLocalSearchParams<{ caseId: string }>();
   const { showAlert } = useAlert();
   const { language } = useLanguage();
-  const isHausa = language === 'ha';
+  const isHausa = language === 'hausa';
 
   const [caseData, setCaseData]     = useState<any>(null);
   const [loading, setLoading]       = useState(true);

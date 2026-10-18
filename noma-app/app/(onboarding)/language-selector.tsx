@@ -5,17 +5,23 @@ import {
   StyleSheet,
   ScrollView,
   Text,
+  Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useLanguage } from "@/src/context/LanguageContext";
+import AnimatedGreeting from "@/app/components/AnimatedGreeting";
 
+// Taken from the NomaApp logo: forest wordmark, leaf greens, brand green
 const COLORS = {
   primary: "#16A34A",
-  background: "#f8f8f8",
+  ink: "#0E3B2C",
+  background: "#F6F9F4",
   white: "#ffffff",
   textDark: "#1f2937",
-  textLight: "#6b7280",
-  border: "#e5e7eb",
+  textLight: "#5F6B63",
+  border: "#E3E8E0",
+  selectedBg: "#F0FDF4",
 };
 
 const languages = [
@@ -39,10 +45,19 @@ const languages = [
   },
 ];
 
+// Which greeting to show when a language is picked (see AnimatedGreeting)
+const GREETING_INDEX: Record<string, number> = { english: 0, hausa: 1, yoruba: 2 };
+
 const LanguageSelectorScreen = () => {
   const router = useRouter();
   const { setLanguage } = useLanguage();
   const [selectedLanguage, setSelectedLanguage] = useState<string>("english");
+  const [greetingFocus, setGreetingFocus] = useState<number | null>(null);
+
+  const selectLanguage = (code: string) => {
+    setSelectedLanguage(code);
+    setGreetingFocus(GREETING_INDEX[code] ?? null);
+  };
 
   const handleSelectLanguage = async () => {
     setLanguage(selectedLanguage as "english" | "hausa" | "yoruba");
@@ -50,14 +65,21 @@ const LanguageSelectorScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <Image
+          source={require("@/assets/images/NomaApp_logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+          accessibilityLabel="NomaApp"
+        />
+
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Hello!</Text>
-          <Text style={styles.headerSubtitle}>Select your NomaApp language</Text>
+          <AnimatedGreeting focusIndex={greetingFocus} />
+          <Text style={styles.headerSubtitle}>Choose the language you want to use NomaApp in.</Text>
         </View>
 
         <View style={styles.languagesContainer}>
@@ -68,7 +90,9 @@ const LanguageSelectorScreen = () => {
                 styles.languageOption,
                 selectedLanguage === lang.code && styles.languageOptionSelected,
               ]}
-              onPress={() => setSelectedLanguage(lang.code)}
+              onPress={() => selectLanguage(lang.code)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: selectedLanguage === lang.code }}
             >
               <View style={styles.languageContent}>
                 <Text
@@ -111,16 +135,16 @@ const LanguageSelectorScreen = () => {
           style={styles.acceptButton}
           onPress={handleSelectLanguage}
         >
-          <Text style={styles.acceptButtonText}>Accept</Text>
+          <Text style={styles.acceptButtonText}>Continue</Text>
         </TouchableOpacity>
 
         <Text style={styles.termsText}>
-          I read and accept the{" "}
+          By continuing, you accept the{" "}
           <Text style={styles.termsLink}>terms of use</Text> and the{" "}
           <Text style={styles.termsLink}>privacy policy</Text>.
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -131,51 +155,53 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingHorizontal: 24,
+    paddingTop: 20,
     paddingBottom: 20,
   },
-  header: {
-    marginBottom: 40,
-    alignItems: "center",
+  logo: {
+    width: 120,
+    height: 40,
+    marginLeft: -4,
+    marginBottom: 48,
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: COLORS.textDark,
-    marginBottom: 8,
+  header: {
+    marginBottom: 36,
   },
   headerSubtitle: {
     fontSize: 16,
+    lineHeight: 23,
     color: COLORS.textLight,
+    marginTop: 20,
+    maxWidth: 300,
   },
   languagesContainer: {
     marginBottom: 30,
-    gap: 12,
+    gap: 10,
   },
   languageOption: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    paddingHorizontal: 18,
+    borderRadius: 14,
     backgroundColor: COLORS.white,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: COLORS.border,
   },
   languageOptionSelected: {
     borderColor: COLORS.primary,
-    backgroundColor: "#f0fdf4",
+    backgroundColor: COLORS.selectedBg,
   },
   languageContent: {
     flex: 1,
   },
   languageName: {
     fontSize: 18,
-    fontWeight: "600",
-    color: COLORS.textDark,
-    marginBottom: 4,
+    fontWeight: "700",
+    color: COLORS.ink,
+    marginBottom: 3,
   },
   languageNameSelected: {
     color: COLORS.primary,
@@ -192,7 +218,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: COLORS.textLight,
+    borderColor: "#B8C4BB",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -207,28 +233,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   footer: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+    paddingTop: 12,
   },
   acceptButton: {
     backgroundColor: COLORS.primary,
     borderRadius: 50,
     paddingVertical: 16,
     alignItems: "center",
-    marginBottom: 16,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    marginBottom: 14,
   },
   acceptButtonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   termsText: {
     fontSize: 12,

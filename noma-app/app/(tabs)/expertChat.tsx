@@ -8,6 +8,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { listExperts } from "@/src/api/expertChat.api";
 import { useAuth } from "@/src/hooks/useAuth";
+import { useLanguage } from "@/src/context/LanguageContext";
 import { checkAccess, expertSessionsLeft, getEffectiveTier } from "@/src/auth/access";
 import FarmerHomeScreen from "@/app/components/FarmerHomeScreen";
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -182,6 +183,7 @@ const LockedScreen = ({ onUpgrade }: { onUpgrade: () => void }) => (
 const ExpertChatScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const isHausa = useLanguage().language === "hausa";
 
   const params = useLocalSearchParams<{
     scanId?: string;
@@ -204,7 +206,9 @@ const ExpertChatScreen = () => {
 
   // Expired or lapsed plans count as free; trial counts as full access
   const plan = getEffectiveTier(user);
-  const isLocked = !checkAccess(user, "expertChat").allowed;
+  // Reviewing an unconfirmed (low-confidence) scan is free on every plan and
+  // doesn't use a session; the server decides from the stored scan
+  const isLocked = !checkAccess(user, "expertChat", { skipPlan: isLowConfidence }).allowed;
 
   const fetchExperts = useCallback(async () => {
     try {
@@ -311,7 +315,18 @@ const ExpertChatScreen = () => {
       )}
 
       {/* Session counter for Basic plan */}
-      {plan === "basic" && (
+      {isLowConfidence && (
+        <View style={styles.sessionBanner}>
+          <Ionicons name="shield-checkmark-outline" size={14} color={COLORS.primary} />
+          <Text style={styles.sessionBannerText}>
+            {isHausa
+              ? "Duba kyauta don sakamakon da ba a tabbatar ba. Ba ya rage zamanka na wata."
+              : "Free review for an unconfirmed result. It doesn't use a monthly session."}
+          </Text>
+        </View>
+      )}
+
+      {plan === "basic" && !isLowConfidence && (
         <View style={styles.sessionBanner}>
           <Ionicons name="chatbubbles-outline" size={14} color={COLORS.primary} />
           <Text style={styles.sessionBannerText}>

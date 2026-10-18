@@ -391,6 +391,14 @@ async function notifyFarmer(item: QueuedScan) {
             ? `Ba a binciki hoton ${crop} ba saboda iyakar tsarinka. Danna don duba tsare-tsare.`
             : `Your ${crop} photo wasn't analyzed because of your plan's limit. Tap to see plans.`,
         }
+      : item.status === 'diagnosed' && item.result?.lowConfidence
+      ? {
+          // No treatment for unconfirmed results: point to the free expert review
+          title: isHausa ? 'Ba a tabbatar da sakamakon ba' : 'Result not confirmed',
+          body: isHausa
+            ? `${crop}: wataƙila ${diagnosis}. Danna don tambayar kwararre kyauta.`
+            : `${crop}: possibly ${diagnosis}. Tap to ask an expert for free.`,
+        }
       : item.status === 'diagnosed'
       ? {
           title: isHausa ? 'Sakamakon binciken ya shirya' : 'Your scan result is ready',

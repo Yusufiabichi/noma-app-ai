@@ -7,6 +7,7 @@
 import { Platform } from 'react-native';
 import { Database } from '@nozbe/watermelondb';
 import { schema } from './schema';
+import { migrations } from './migrations';
 import { Scan } from './models/Scan';
 
 // Use the web-friendly LokiJS adapter when running in a browser.
@@ -37,6 +38,7 @@ const getDatabase = () => {
   if (!databaseInstance) {
     const adapterOptions = {
       schema,
+      migrations,
       dbName: 'noma_app.db',
       onSetUpError: (error) => {
         console.error('WatermelonDB setup error:', error);

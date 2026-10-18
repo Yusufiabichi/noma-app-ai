@@ -13,6 +13,8 @@ import logger from '@/src/utils/logger';
 import { useAuth } from '@/src/hooks/useAuth';
 import { getLanguageCode } from '@/src/utils/useLanguageCode'
 import IssueCard from '@/app/components/IssueCard';
+import UnconfirmedDiagnosis from '@/app/components/UnconfirmedDiagnosis';
+import { DEFAULT_CONFIDENCE_THRESHOLD, isLowConfidenceDiagnosis } from '@/src/utils/scanResult';
 
 interface ScanResult {
   status?: string;
@@ -37,6 +39,12 @@ interface ScanResult {
   localScanId?: string;
   queueId?: string;
   scanId?: string;
+  _id?: string;
+  // Low-confidence fields (server decides; see isLowConfidenceDiagnosis)
+  lowConfidence?: boolean;
+  requiresExpertReview?: boolean;
+  confidenceThreshold?: number;
+  safetyNotice?: { title?: string; message?: string } | null;
 }
 
 const TreatmentRecommendationScreen = () => {
@@ -51,10 +59,9 @@ const TreatmentRecommendationScreen = () => {
   const [isPending, setIsPending] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [queueStatus, setQueueStatus] = useState<QueuedScan['status'] | null>(null);
-  const CONFIDENCE_THRESHOLD = 0.6;
-  const isLowConfidence = scanResult
-    ? (scanResult.confidence ?? 0) < CONFIDENCE_THRESHOLD
-    : false;
+  // Below the threshold (or no confidence) the server sends no treatment: show the
+  // "not confirmed" screen instead of the treatment screen
+  const isLowConfidence = scanResult ? isLowConfidenceDiagnosis(scanResult) : false;
   const languageCode = useMemo(() => {
           return language === 'hausa' ? 'ha' : 'en';
     }, [language]);
@@ -187,6 +194,7 @@ const TreatmentRecommendationScreen = () => {
             followUpDays: updatedScan.parseFollowUpDays(),
             inputSourcing: updatedScan.parseInputSourcing(),
             isFallback: updatedScan.isFallback,
+            lowConfidence: updatedScan.lowConfidence,
           });
 
           setIsPending(false);
@@ -212,17 +220,19 @@ const TreatmentRecommendationScreen = () => {
     return (
       <SafeAreaView edges={['top', 'bottom']}>
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.header}>Analysis Pending</Text>
+          <Text style={styles.header}>{isHausa ? 'Ana jiran bincike' : 'Analysis Pending'}</Text>
 
           <View style={styles.pendingCard}>
             <Ionicons name="cloud-offline-outline" size={64} color="#ffb347" />
             <Text style={styles.pendingTitle}>
               {queueStatus === 'analyzing' || queueStatus === 'uploading'
                 ? (isHausa ? 'Ana binciken hotonka' : 'Analyzing your photo')
-                : 'Device Offline'}
+                : (isHausa ? 'Babu intanet' : 'Device Offline')}
             </Text>
             <Text style={styles.pendingInfo}>
-              Your scan has been saved locally and is waiting for analysis.
+              {isHausa
+                ? 'An adana hotonka a wayarka kuma yana jiran bincike.'
+                : 'Your scan has been saved locally and is waiting for analysis.'}
             </Text>
             <Text style={styles.pendingSubInfo}>
               {languageCode === 'ha'
@@ -231,8 +241,8 @@ const TreatmentRecommendationScreen = () => {
             </Text>
 
             <View style={styles.cropInfo}>
-              <Text style={styles.cropLabel}>Crop Type:</Text>
-              <Text style={styles.cropValue}>{scanResult?.cropType || 'Not specified'}</Text>
+              <Text style={styles.cropLabel}>{isHausa ? "Nau'in amfanin gona:" : 'Crop Type:'}</Text>
+              <Text style={styles.cropValue}>{scanResult?.cropType || (isHausa ? 'Ba a fada ba' : 'Not specified')}</Text>
             </View>
 
             {syncError && (
@@ -250,7 +260,7 @@ const TreatmentRecommendationScreen = () => {
             >
               <Ionicons name="cloud-upload-outline" size={20} color="white" />
               <Text style={styles.buttonText}>
-                {loading ? 'Syncing...' : 'Sync Now'}
+                {loading ? (isHausa ? 'Ana aikawa...' : 'Syncing...') : (isHausa ? 'Aika yanzu' : 'Sync Now')}
               </Text>
             </TouchableOpacity>
 
@@ -258,7 +268,7 @@ const TreatmentRecommendationScreen = () => {
               style={styles.backButton}
               onPress={() => router.push('./')}
             >
-              <Text style={styles.backButtonText}>Back</Text>
+              <Text style={styles.backButtonText}>{isHausa ? 'Koma baya' : 'Back'}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -271,15 +281,15 @@ const TreatmentRecommendationScreen = () => {
     return (
       <SafeAreaView>
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.header}>No Results</Text>
+          <Text style={styles.header}>{isHausa ? 'Babu sakamako' : 'No Results'}</Text>
           <View style={styles.issueCard}>
-            <Text style={styles.issueTitle}>No analysis results available</Text>
+            <Text style={styles.issueTitle}>{isHausa ? 'Babu sakamakon bincike' : 'No analysis results available'}</Text>
           </View>
           <TouchableOpacity
             style={styles.confirmButton}
             onPress={() => router.push('./')}
           >
-            <Text style={styles.buttonText}>Go Back</Text>
+            <Text style={styles.buttonText}>{isHausa ? 'Koma baya' : 'Go Back'}</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -327,34 +337,36 @@ const TreatmentRecommendationScreen = () => {
   return (
     <SafeAreaView edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>Analysis Results</Text>
+        <Text style={styles.header}>{isHausa ? 'Sakamakon bincike' : 'Analysis Results'}</Text>
 
+        {isLowConfidence ? (
+          <UnconfirmedDiagnosis
+            name={scanResult?.name || scanResult?.disease}
+            cropType={scanResult?.cropDetected || scanResult?.cropType}
+            confidence={scanResult?.confidence}
+            threshold={scanResult?.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD}
+            safetyNotice={scanResult?.safetyNotice}
+            isHausa={isHausa}
+            onConsultExpert={() => router.push({
+              pathname: '../(tabs)/expertChat',
+              params: {
+                scanId: scanResult?._id || scanResult?.scanId,
+                isLowConfidence: 'true',
+              },
+            })}
+            onRetake={() => router.replace('/cropscan')}
+          />
+        ) : (
+        <>
         {/* Detected Issue */}
         <IssueCard
-          diseaseName={scanResult?.name || scanResult?.disease || 'Unknown issue'}
-          cropType={scanResult?.cropDetected || scanResult?.cropType || 'Unknown crop'}
+          diseaseName={scanResult?.name || scanResult?.disease || (isHausa ? 'Matsala da ba a sani ba' : 'Unknown issue')}
+          cropType={scanResult?.cropDetected || scanResult?.cropType || (isHausa ? 'Amfanin gona da ba a sani ba' : 'Unknown crop')}
           confidence={scanResult?.confidence || 0}
           severity={scanResult?.severity}
         />
 
-        {/* Low Confidence Warning Banner */}
-        {isLowConfidence && (
-          <View style={styles.lowConfidenceBanner}>
-            <Ionicons name="alert-circle-outline" size={22} color="#7c4a00" />
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.lowConfidenceTitle}>
-                {languageCode === 'ha' ? 'Rashin Tabbas' : 'Low Confidence Result'}
-              </Text>
-              <Text style={styles.lowConfidenceText}>
-                {languageCode === 'ha'
-                  ? 'Ingancin binciken ya yi ƙasa da kashi 60%. Don Allah tuntubi ƙwararren masanin aikin gona don tabbataccen bayani.'
-                  : 'Our model is less than 60% confident in this diagnosis. Please consult an agronomist for an accurate assessment before taking action.'}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {scanResult?.isFallback && !isLowConfidence && (
+        {scanResult?.isFallback && (
           <View style={styles.fallbackBanner}>
             <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
             <Text style={styles.fallbackText}>
@@ -365,8 +377,8 @@ const TreatmentRecommendationScreen = () => {
           </View>
         )}
 
-        {/* Only show detailed recommendations if confidence is not low */}
-        {!isLowConfidence && (
+        {/* Confident result: full treatment */}
+        {(
           <>
             {/* Recommended Treatment */}
             {renderSection(
@@ -438,45 +450,27 @@ const TreatmentRecommendationScreen = () => {
           </>
         )}
 
-        {/* Show this instead of recommendations when confidence is low */}
-        {isLowConfidence && (
-          <View style={styles.expertPromptCard}>
-            <Ionicons name="chatbubble-ellipses-outline" size={32} color="#0052cc" />
-            <Text style={styles.expertPromptTitle}>
-              {languageCode === 'ha' ? 'Tuntubi Ƙwararru' : 'Expert Consultation Needed'}
-            </Text>
-            <Text style={styles.expertPromptText}>
-              {languageCode === 'ha'
-                ? 'Bamu da tabbacin sakamakon binciken da mukayi akan shukarku. Yi magana da ƙwararren masanin don samun ingantacciyar shawara.'
-                : 'The scan result is uncertain. Chat with a certified agronomist to get accurate treatment advice for your crop.'}
-            </Text>
-          </View>
-        )}
-
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[
               styles.confirmButton,
-              (isLowConfidence || scanResult?.isFallback) && styles.confirmButtonDisabled,
+              scanResult?.isFallback && styles.confirmButtonDisabled,
             ]}
             onPress={() => router.push('./')}
-            disabled={isLowConfidence || !!scanResult?.isFallback}
+            disabled={!!scanResult?.isFallback}
           >
             <Text style={styles.buttonText}>
               {languageCode === 'ha' ? "Zanyi wannan" : "I will do this"}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.expertButton,
-              isLowConfidence && styles.expertButtonHighlighted,
-            ]}
+            style={styles.expertButton}
             onPress={() => router.push({
                 pathname: '../(tabs)/expertChat',
                 params: {
                   scanId: scanResult?._id || scanResult?.scanId,
-                  isLowConfidence: isLowConfidence ? 'true' : 'false',
+                  isLowConfidence: 'false',
                 },
             })}
           >
@@ -485,6 +479,8 @@ const TreatmentRecommendationScreen = () => {
             </Text>
           </TouchableOpacity>
         </View>
+        </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

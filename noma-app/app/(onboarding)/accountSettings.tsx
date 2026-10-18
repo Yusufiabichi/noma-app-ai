@@ -22,7 +22,7 @@ export default function AccountSettings() {
   const router = useRouter();
   const { user, updateUser, logout } = useAuth();
   const { language } = useLanguage();
-  const isHausa = language === 'ha';
+  const isHausa = language === 'hausa';
 
   // ─── State ──────────────────────────────────────────────────────
   const [name, setName] = useState(user?.name || '');

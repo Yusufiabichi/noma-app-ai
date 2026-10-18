@@ -41,7 +41,7 @@ interface CustomAlertProps {
 
 const CustomAlert: React.FC<CustomAlertProps> = ({ visible, options, onClose }) => {
   const { language } = useLanguage();
-  const isHausa = language === 'ha';
+  const isHausa = language === 'hausa';
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;

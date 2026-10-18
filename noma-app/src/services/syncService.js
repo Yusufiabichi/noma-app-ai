@@ -86,6 +86,8 @@ export const syncPendingScans = async (userId) => {
           followUpDays: response.followUpDays || [],
           inputSourcing: response.inputSourcing || [],
           isFallback: response.isFallback || false,
+          lowConfidence: response.lowConfidence,
+          confidenceThreshold: response.confidenceThreshold,
           modelVersion: response.modelVersion,
           processingTime: response.processingTime,
           requestId: response.requestId || response.scan_id,

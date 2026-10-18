@@ -22,7 +22,7 @@ export default function NotFoundScreen({
   const { language } = useLanguage();
   const router = useRouter();
 
-  const isHausa = language === 'ha';
+  const isHausa = language === 'hausa';
 
   const defaultTitle = isHausa ? 'Ba a Samu ba' : 'Not Found';
   const defaultMessage = isHausa

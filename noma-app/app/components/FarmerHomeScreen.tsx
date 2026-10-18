@@ -25,7 +25,7 @@ const FarmerHomeScreen = () => {
     setRefreshing(false);
   };
 
-  const lang = language === 'english' ? Data.en : Data.ha;
+  const lang = language !== 'hausa' ? Data.en : Data.ha;
 
   return (
     <ScrollView
@@ -46,12 +46,12 @@ const FarmerHomeScreen = () => {
 
        {/* Welcome Message */}
         <Text style={styles.welcomeTitle}>
-          {language === "english"
+          {language !== 'hausa'
             ? `Welcome, ${user?.name || "Farmer"}!`
             : `Barka da Zuwa, ${user?.name || "Manomi"}!`}
         </Text>
         <Text style={styles.subtitle}>
-          {language==="english" ? Data.en.home.welcome_subtitle: Data.ha.home.welcome_subtitle}
+          {language !== 'hausa' ? Data.en.home.welcome_subtitle: Data.ha.home.welcome_subtitle}
         </Text>
 
       {/* Scan Button */}
@@ -108,7 +108,7 @@ const FarmerHomeScreen = () => {
             </View>
             <View style={styles.cardBody}>
               <Text style={styles.cardText}>
-                {language === "english" ? Data.en.home.cards_text[0] : Data.ha.home.cards_text[0]}
+                {language !== 'hausa' ? Data.en.home.cards_text[0] : Data.ha.home.cards_text[0]}
               </Text>
               <Text style={styles.cardSub}>Soil nutrients</Text>
             </View>
@@ -125,7 +125,7 @@ const FarmerHomeScreen = () => {
             </View>
             <View style={styles.cardBody}>
               <Text style={styles.cardText}>
-                {language === "english" ? Data.en.home.cards_text[1] : Data.ha.home.cards_text[1]}
+                {language !== 'hausa' ? Data.en.home.cards_text[1] : Data.ha.home.cards_text[1]}
               </Text>
               <Text style={styles.cardSub}>Pest control</Text>
             </View>
@@ -142,7 +142,7 @@ const FarmerHomeScreen = () => {
             </View>
             <View style={styles.cardBody}>
               <Text style={styles.cardText}>
-                {language === "english" ? Data.en.home.cards_text[2] : Data.ha.home.cards_text[2]}
+                {language !== 'hausa' ? Data.en.home.cards_text[2] : Data.ha.home.cards_text[2]}
               </Text>
               <Text style={styles.cardSub}>Farming Tips</Text>
             </View>

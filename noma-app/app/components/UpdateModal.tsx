@@ -18,7 +18,7 @@ interface UpdateModalProps {
 }
 
 const UpdateModal: React.FC<UpdateModalProps> = ({ visible, updateInfo, onClose }) => {
-  const { language } = useLanguage(); // 'en' or 'ha'
+  const { language } = useLanguage(); // 'english' | 'hausa' | ...
 
   if (!updateInfo) return null;
 
@@ -52,21 +52,21 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ visible, updateInfo, onClose 
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.title}>
-            {language === 'ha' ? 'Sabunta App' : 'Update Available'}
+            {language === 'hausa' ? 'Sabunta App' : 'Update Available'}
           </Text>
           <Text style={styles.message}>{message}</Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
               <Text style={styles.buttonText}>
-                {language === 'ha' ? 'Sabunta Yanzu' : 'Update Now'}
+                {language === 'hausa' ? 'Sabunta Yanzu' : 'Update Now'}
               </Text>
             </TouchableOpacity>
 
             {!updateInfo.isRequired && (
               <TouchableOpacity style={styles.laterButton} onPress={handleLater}>
                 <Text style={styles.laterButtonText}>
-                  {language === 'ha' ? 'Daga baya' : 'Later'}
+                  {language === 'hausa' ? 'Daga baya' : 'Later'}
                 </Text>
               </TouchableOpacity>
             )}

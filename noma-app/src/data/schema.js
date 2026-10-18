@@ -6,7 +6,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 3,
+  version: 4,
   tables: [
     tableSchema({
       name: 'scans',
@@ -42,6 +42,8 @@ export const schema = appSchema({
         { name: 'follow_up_days', type: 'string' }, // New: JSON string array
         { name: 'input_sourcing', type: 'string' }, // New: JSON string array
         { name: 'is_fallback', type: 'boolean' },
+        // Below the confidence threshold: server sends no treatment (added in v4, see migrations.js)
+        { name: 'low_confidence', type: 'boolean', isOptional: true },
 
         // AI service metadata
         { name: 'model_version', type: 'string' },

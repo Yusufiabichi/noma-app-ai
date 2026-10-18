@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Animated, Easing } from "react-native";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 interface ConfidenceBarProps {
   confidence: number; // 0 to 1 (e.g. 0.84)
@@ -12,6 +13,7 @@ const getConfidenceColor = (pct: number) => {
 };
 
 const ConfidenceBar: React.FC<ConfidenceBarProps> = ({ confidence }) => {
+  const isHausa = useLanguage().language === "hausa";
   const targetPct = Math.round(confidence * 100);
   const colors = getConfidenceColor(targetPct);
 
@@ -61,7 +63,7 @@ const ConfidenceBar: React.FC<ConfidenceBarProps> = ({ confidence }) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.label}>Confidence score</Text>
+        <Text style={styles.label}>{isHausa ? "Matakin tabbaci" : "Confidence score"}</Text>
         <Text style={[styles.percentText, { color: colors.text }]}>{displayedPct}%</Text>
       </View>
 
@@ -75,8 +77,8 @@ const ConfidenceBar: React.FC<ConfidenceBarProps> = ({ confidence }) => {
       </View>
 
       <View style={styles.scaleRow}>
-        <Text style={styles.scaleLabel}>Low</Text>
-        <Text style={styles.scaleLabel}>High</Text>
+        <Text style={styles.scaleLabel}>{isHausa ? "Kadan" : "Low"}</Text>
+        <Text style={styles.scaleLabel}>{isHausa ? "Mai yawa" : "High"}</Text>
       </View>
     </View>
   );

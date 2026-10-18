@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ConfidenceBar from "./ConfidenceBar";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 interface IssueCardProps {
   diseaseName: string;
@@ -18,9 +19,19 @@ const SEVERITY_CONFIG: Record<string, { color: string; bg: string; icon: string 
   unknown:  { color: "#6b7280", bg: "#f3f4f6", icon: "help-circle-outline"      },
 };
 
+const SEVERITY_LABELS: Record<string, { en: string; ha: string }> = {
+  low:      { en: "Low severity",      ha: "Tsanani kadan" },
+  moderate: { en: "Moderate severity", ha: "Tsanani matsakaici" },
+  high:     { en: "High severity",     ha: "Tsanani mai yawa" },
+  severe:   { en: "Severe",            ha: "Tsanani mai tsanani" },
+  unknown:  { en: "Unknown severity",  ha: "Ba a san tsanani ba" },
+};
+
 const IssueCard: React.FC<IssueCardProps> = ({
   diseaseName, cropType, confidence, severity = "unknown",
 }) => {
+  const { language } = useLanguage();
+  const isHausa   = language === "hausa";
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(12)).current;
 
@@ -46,7 +57,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
           <Ionicons name="bug-outline" size={20} color="#b91c1c" />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.eyebrow}>Detected issue</Text>
+          <Text style={styles.eyebrow}>{isHausa ? "Matsalar da aka gano" : "Detected issue"}</Text>
           <Text style={styles.diseaseName}>{diseaseName}</Text>
         </View>
       </View>
@@ -61,7 +72,9 @@ const IssueCard: React.FC<IssueCardProps> = ({
         <View style={[styles.severityPill, { backgroundColor: sevConfig.bg }]}>
           <Ionicons name={sevConfig.icon as any} size={13} color={sevConfig.color} />
           <Text style={[styles.severityText, { color: sevConfig.color }]}>
-            {severity.charAt(0).toUpperCase() + severity.slice(1)} severity
+            {SEVERITY_LABELS[severity?.toLowerCase()]
+              ? SEVERITY_LABELS[severity.toLowerCase()][isHausa ? "ha" : "en"]
+              : `${severity.charAt(0).toUpperCase() + severity.slice(1)} severity`}
           </Text>
         </View>
       </View>
