@@ -6,7 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useLanguage } from "@/src/context/LanguageContext";
 import { VerifyResult, PaymentProvider } from "@/src/api/payments.api";
-import { getPendingPayment, startCheckout, verifyUntilSettled } from "@/src/services/paymentFlow";
+import { clearPendingPayment, getPendingPayment, startCheckout, verifyUntilSettled } from "@/src/services/paymentFlow";
+import { getServerErrorCode } from "@/src/utils/errors";
 import logger from "@/src/utils/logger";
 import RequireAccess from '@/app/components/RequireAccess';
 
@@ -58,17 +59,21 @@ const PaymentResultScreen = () => {
     setErrorMessage(null);
     try {
       const verified = await verifyUntilSettled(ref, { isCancelled: () => unmounted.current });
+      // Shown now; a payment still pending is activated by the backend's webhook
+      await clearPendingPayment();
       if (unmounted.current) return;
       setResult(verified);
       setStage(verified.payment.status);
     } catch (error: any) {
       logger.error("Payment verification failed", error);
+      const notFound = getServerErrorCode(error) === "PAYMENT_NOT_FOUND" || error?.statusCode === 404;
+      if (notFound) await clearPendingPayment();
       if (unmounted.current) return;
       setStage("error");
       setErrorMessage(
         error?.code === "NETWORK_ERROR" || error?.code === "TIMEOUT_ERROR"
           ? t("Babu intanet. Ka duba hanyar sadarwarka ka sake dubawa.", "No internet connection. Check your network and check again.")
-          : error?.code === "PAYMENT_NOT_FOUND" || error?.statusCode === 404
+          : notFound
           ? t("Ba a sami wannan biyan ba.", "This payment couldn't be found.")
           : t("An kasa duba matsayin biyan. Ka sake dubawa.", "Couldn't check the payment. Check again.")
       );
@@ -93,9 +98,10 @@ const PaymentResultScreen = () => {
     } catch (error: any) {
       logger.error("Restarting checkout failed", error);
       setStage("failed");
+      const code = getServerErrorCode(error);
       setErrorMessage(
-        error?.code === "PAYMENT_INIT_FAILED" || error?.code === "PAYMENTS_UNAVAILABLE"
-          ? t("Ba a iya fara biya yanzu ba. Ka sake gwadawa anjima.", "Payments can't be started right now. Try again later.")
+        code === "PAYMENT_INIT_FAILED" || code === "PAYMENTS_UNAVAILABLE"
+          ? t("Ba a iya biya yanzu ba. Ka sake gwadawa nan ba da jimawa ba.", "Payments are unavailable right now, please try again shortly.")
           : t("An kasa bude shafin biya. Ka sake gwadawa.", "Couldn't open the payment page. Try again.")
       );
     }

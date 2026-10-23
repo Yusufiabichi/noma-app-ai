@@ -207,8 +207,15 @@ const FarmerProfile = ({
 
   const isPaid = tier === 'premium';
   const isTrial = user.plan === 'trial';
+  const isExpiredPlan =
+    authUser?.subscription?.status === 'expired' && (user.plan === 'basic' || user.plan === 'premium');
+  const expiredPlanName = user.plan === 'premium' ? 'Premium' : 'Basic';
 
-  const planLabel = isPaid ? 'Premium Plan' : isTrial ? 'Trial Plan' : 'Free Plan';
+  const planLabel = isExpiredPlan
+    ? isHausa
+      ? `Tsarin ${expiredPlanName} ya kare`
+      : `${expiredPlanName} plan expired`
+    : isPaid ? 'Premium Plan' : isTrial ? 'Trial Plan' : 'Free Plan';
   const planIcon: React.ComponentProps<typeof FontAwesome5>['name'] = isPaid
     ? 'crown'
     : isTrial
@@ -218,8 +225,11 @@ const FarmerProfile = ({
   const planBg = isPaid ? '#ecfdf5' : isTrial ? COLORS.warningSoft : COLORS.borderSoft;
   const planBorder = isPaid ? '#bbf7d0' : isTrial ? '#fde68a' : COLORS.border;
 
-  const planDescription =
-    isTrial && (user.trialDaysRemaining ?? 0) > 0
+  const planDescription = isExpiredPlan
+    ? isHausa
+      ? 'Ka sabunta tsarinka don ci gaba da amfani da fasalolinsa'
+      : 'Renew to keep your features'
+    : isTrial && (user.trialDaysRemaining ?? 0) > 0
       ? isHausa
         ? `Sauran kwanakin gwaji: ${user.trialDaysRemaining}`
         : `Trial ends in ${user.trialDaysRemaining} day${
@@ -308,13 +318,15 @@ const FarmerProfile = ({
               onPress={() => router.push('/(onboarding)/plans')}
               hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel="Upgrade plan"
+              accessibilityLabel={isExpiredPlan ? 'Renew plan' : 'Upgrade plan'}
               style={({ pressed }) => [
                 styles.upgradeBtn,
                 pressed && { opacity: 0.85 },
               ]}
             >
-              <Text style={styles.upgradeBtnText}>Upgrade</Text>
+              <Text style={styles.upgradeBtnText}>
+                {isExpiredPlan ? (isHausa ? 'Sabunta' : 'Renew') : 'Upgrade'}
+              </Text>
             </Pressable>
           )}
         </View>

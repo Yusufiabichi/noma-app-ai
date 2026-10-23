@@ -12,6 +12,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/src/hooks/useAuth";
 import { getPlans, PaidPlan, PlanId } from "@/src/api/payments.api";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 const COLORS = {
   primary: "#16A34A",
@@ -80,6 +81,8 @@ const PlansScreen = () => {
   const reason = params.reason as string;
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const isExpired = user?.subscription?.status === "expired";
+  const { language } = useLanguage();
+  const t = (ha: string, en: string) => (language === "hausa" ? ha : en);
 
   // Prices always come from the backend
   const [pricing, setPricing] = useState<Partial<Record<PlanId, PaidPlan["pricing"]>>>({});
@@ -117,8 +120,9 @@ const PlansScreen = () => {
   );
 
   const handleSelectPlan = (plan: (typeof PLANS)[0]) => {
-    if (plan.id === currentPlanId) return;
+    // Paying for the current plan renews it: the backend adds the new period after the current one
     if (plan.id === "free") {
+      if (plan.id === currentPlanId) return;
       router.replace("/(tabs)");
       return;
     }
@@ -225,8 +229,11 @@ const PlansScreen = () => {
         {PLANS.map((plan) => {
           const isFeatured = plan.id === "basic";
           const isPremium = plan.id === "premium";
-          const isActive = plan.id === currentPlanId;
+          const isCurrent = plan.id === currentPlanId;
+          const isActive = isCurrent && !isExpired;
+          const isRenewal = isCurrent && plan.id !== "free";
           const priceMissing = plan.id !== "free" && getAmount(plan.id) === undefined;
+          const isDisabled = (isActive && plan.id === "free") || priceMissing;
           return (
             <View
               key={plan.id}
@@ -319,21 +326,33 @@ const PlansScreen = () => {
                   styles.planButton,
                   isFeatured && styles.planButtonFeatured,
                   isPremium && styles.planButtonPremium,
-                  (isActive || priceMissing) && styles.planButtonDisabled,
+                  isDisabled && styles.planButtonDisabled,
                 ]}
                 onPress={() => handleSelectPlan(plan)}
-                disabled={isActive || priceMissing}
+                disabled={isDisabled}
               >
                 <Text
                   style={[
                     styles.planButtonText,
                     (isFeatured || isPremium) && styles.planButtonTextFilled,
-                    isActive && styles.planButtonTextDisabled,
+                    isDisabled && isActive && styles.planButtonTextDisabled,
                   ]}
                 >
-                  {isActive ? "Current Plan" : (plan.id === "free" ? "Continue free" : `Get ${plan.name}`)}
+                  {isRenewal
+                    ? t(`Sabunta ${plan.name}`, `Renew ${plan.name}`)
+                    : isActive
+                    ? "Current Plan"
+                    : (plan.id === "free" ? "Continue free" : `Get ${plan.name}`)}
                 </Text>
               </TouchableOpacity>
+              {isRenewal && isActive && (
+                <Text style={styles.renewNote}>
+                  {t(
+                    "Za a kara sabon lokaci bayan na yanzu ya kare.",
+                    "Adds a new period after your current one ends."
+                  )}
+                </Text>
+              )}
             </View>
           );
         })}
@@ -574,6 +593,12 @@ const styles = StyleSheet.create({
   },
   planButtonTextDisabled: {
     color: COLORS.textLight,
+  },
+  renewNote: {
+    fontSize: 11,
+    color: COLORS.textLight,
+    textAlign: "center",
+    marginTop: 8,
   },
   footNote: {
     fontSize: 11,

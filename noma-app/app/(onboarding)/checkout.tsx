@@ -11,6 +11,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { startCheckout } from "@/src/services/paymentFlow";
 import { BillingInterval, PlanId } from "@/src/api/payments.api";
+import { getServerErrorCode } from "@/src/utils/errors";
 import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
 import logger from '@/src/utils/logger';
@@ -50,14 +51,16 @@ const CheckoutScreen = () => {
       router.replace({ pathname: "/payment", params: { txnRef } });
     } catch (error: any) {
       logger.error('Starting checkout failed', error);
-      const unavailable = error?.code === 'PAYMENT_INIT_FAILED' || error?.code === 'PAYMENTS_UNAVAILABLE';
+      // The client replaces 5xx codes with a generic one, so read the backend's
+      const code = getServerErrorCode(error);
+      const unavailable = code === 'PAYMENT_INIT_FAILED' || code === 'PAYMENTS_UNAVAILABLE';
       const offline = error?.code === 'NETWORK_ERROR' || error?.code === 'TIMEOUT_ERROR';
       showAlert({
         title: isHausa ? 'Kuskure' : 'Error',
         message: offline
           ? (isHausa ? 'Babu intanet. Ka duba hanyar sadarwarka ka sake gwadawa.' : 'No internet connection. Check your network and try again.')
           : unavailable
-          ? (isHausa ? 'Ba a iya fara biya yanzu ba. Ka sake gwadawa anjima.' : "Payments can't be started right now. Try again later.")
+          ? (isHausa ? 'Ba a iya biya yanzu ba. Ka sake gwadawa nan ba da jimawa ba.' : 'Payments are unavailable right now, please try again shortly.')
           : (isHausa ? 'An kasa bude shafin biya. Ka sake gwadawa.' : "Couldn't open the payment page. Try again."),
         buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
       });

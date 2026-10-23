@@ -71,8 +71,9 @@ export const initializePayment = async (payload: {
   interval: BillingInterval;
   redirectUrl?: string;
   provider?: PaymentProvider;
+  platform?: 'mobile' | 'web';
 }): Promise<CheckoutSession> => {
-  const response: any = await client.post('/payments/initialize', { ...payload, platform: 'mobile' });
+  const response: any = await client.post('/payments/initialize', { platform: 'mobile', ...payload });
   return response.data;
 };
 

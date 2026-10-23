@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import { useLanguage } from "@/src/context/LanguageContext";
+import { getLaunchPendingPayment } from "@/src/services/paymentFlow";
 
 const AppSplashScreen = () => {
   const router = useRouter();
@@ -35,6 +36,9 @@ const AppSplashScreen = () => {
         timer = setTimeout(async () => {
           if (hasCompleted === "true") {
             router.replace("/(tabs)");
+            // A checkout left unfinished last time: show its result
+            const pendingTxnRef = await getLaunchPendingPayment();
+            if (pendingTxnRef) router.push({ pathname: "/payment", params: { txnRef: pendingTxnRef } });
           } else {
             router.replace("/(onboarding)/language-selector");
           }
