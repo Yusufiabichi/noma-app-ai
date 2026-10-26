@@ -49,23 +49,13 @@ export const useScanResultNotifications = () => {
         if (item?.planLimited) {
           router.push('/(onboarding)/plans');
         } else if (item?.status === 'diagnosed' && item.result) {
+          // Diagnosed or "couldn't diagnose"; the result screen shows both
           router.push({ pathname: '/treatment-rec', params: { scanResult: JSON.stringify(item.result) } });
         } else if (item?.status === 'failed' || !item) {
           router.push('/cropscan');
         } else {
-          router.push({
-            pathname: '/treatment-rec',
-            params: {
-              scanResult: JSON.stringify({
-                status: 'pending',
-                cropType: item.cropType,
-                language: item.language,
-                isOnline: false,
-                queueId: item.id,
-                isFallback: false,
-              }),
-            },
-          });
+          // Still waiting to be sent
+          router.push('/recentDiagnosis');
         }
       } catch (error) {
         logger.error('Failed to open scan result from notification', error);

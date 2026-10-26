@@ -1,7 +1,8 @@
 // Offline Scan Queue
-// Keeps crop scans taken without internet in AsyncStorage, uploads them when the
-// device is back online (foreground or background task), polls for the diagnosis
-// and notifies the farmer with a local notification when the result is ready.
+// Keeps crop photos taken without internet (with the severity the farmer chose)
+// in AsyncStorage and sends each one as a fresh scan when the device is back
+// online (foreground or background task). The server answers with the finished
+// diagnosis, and the farmer gets a local notification with the outcome.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -9,12 +10,10 @@ import * as Notifications from 'expo-notifications';
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import { Platform } from 'react-native';
-import { createScan, getScanById } from '@/src/api/scans.api';
 import { isOnline } from '@/src/utils/network';
 import { buildScanResult } from '@/src/utils/scanResult';
 import logger from '@/src/utils/logger';
-import { getServerErrorCode } from '@/src/utils/errors';
-import { isPlanLimitError } from '@/src/auth/access';
+import { describeRejection, ScanLanguage, Severity, submitScan } from '@/src/services/scanSubmission';
 
 export const OFFLINE_SCAN_TASK = 'noma-offline-scan-sync';
 export const SCAN_RESULTS_CHANNEL = 'scan-results';
@@ -24,34 +23,30 @@ const QUEUE_KEY = '@nomaapp_offline_scan_queue';
 const IMAGES_DIRECTORY = FileSystem.documentDirectory + 'offline-scans/';
 
 const STALE_UPLOAD_MS = 2 * 60 * 1000;          // an upload interrupted by the app being killed
-const MAX_ANALYSIS_WAIT_MS = 24 * 60 * 60 * 1000; // give up on a server scan after a day
 const MAX_BACKOFF_MS = 6 * 60 * 60 * 1000;
-const POLL_INTERVAL_MS = 5000;
 const KEEP_FINISHED_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Errors that mean "try again later" rather than "this scan can never succeed"
-const RETRYABLE_CODES = new Set([
-  'NETWORK_ERROR', 'TIMEOUT_ERROR', 'NO_INTERNET', 'SERVER_ERROR',
-  'UNAUTHORIZED', 'TOKEN_EXPIRED', 'UNKNOWN_ERROR',
-]);
-
-export type QueuedScanStatus = 'queued' | 'uploading' | 'analyzing' | 'diagnosed' | 'failed';
+export type QueuedScanStatus = 'queued' | 'uploading' | 'diagnosed' | 'failed';
 
 export interface QueuedScan {
   id: string;
   userId: string;
   imageUri: string | null;
-  cropType: string;
-  language: 'en' | 'ha';
+  /** null when the farmer chose "Not sure" */
+  severity?: Severity | null;
+  language: ScanLanguage;
   createdAt: number;
   status: QueuedScanStatus;
   attempts: number;
   nextAttemptAt: number;
   uploadStartedAt?: number;
+  /** Set once the server saved the scan (diagnosed or rejected); history then lists the server copy */
   serverScanId?: string;
-  analyzingSince?: number;
+  /** treatment-rec payload; its status is 'diagnosed' or 'rejected' */
   result?: any;
   errorMessage?: string;
+  /** The server found the photo unusable (blurry, dark…) and saved nothing */
+  qualityRejected?: boolean;
   /** Rejected because the farmer's plan doesn't allow more scans (e.g. daily limit) */
   planLimited?: boolean;
   notifiedAt?: number;
@@ -101,8 +96,7 @@ export function onQueueChange(listener: (queue: QueuedScan[]) => void) {
   return () => { listeners.delete(listener); };
 }
 
-const isActive = (item: QueuedScan) =>
-  item.status === 'queued' || item.status === 'uploading' || item.status === 'analyzing';
+export const isActive = (item: QueuedScan) => item.status === 'queued' || item.status === 'uploading';
 
 // ─── Enqueue ──────────────────────────────────────────────────────────────────
 
@@ -119,12 +113,12 @@ async function copyImageToAppStorage(sourceUri: string, id: string) {
 }
 
 /**
- * Save a scan taken without internet so it is uploaded later
+ * Save a photo taken without internet so it is diagnosed later
  */
-export async function enqueueScan({ imageUri, cropType, language, userId }: {
+export async function enqueueScan({ imageUri, severity, language, userId }: {
   imageUri: string;
-  cropType: string;
-  language: 'en' | 'ha';
+  severity?: Severity | null;
+  language: ScanLanguage;
   userId?: string | null;
 }): Promise<QueuedScan> {
   const id = newId();
@@ -135,7 +129,7 @@ export async function enqueueScan({ imageUri, cropType, language, userId }: {
     id,
     userId: userId || 'offline-user',
     imageUri: storedImageUri,
-    cropType,
+    severity: severity || null,
     language,
     createdAt: now,
     status: 'queued',
@@ -146,43 +140,6 @@ export async function enqueueScan({ imageUri, cropType, language, userId }: {
   await updateQueue(queue => [...queue, item]);
   logger.info('Offline scan queued', { id });
 
-  await afterEnqueue();
-  return item;
-}
-
-/**
- * Track a scan that was already uploaded but whose diagnosis wasn't ready
- * before the farmer left the screen (e.g. slow network, polling timeout)
- */
-export async function trackUploadedScan({ serverScanId, cropType, language, userId }: {
-  serverScanId: string;
-  cropType: string;
-  language: 'en' | 'ha';
-  userId?: string | null;
-}): Promise<QueuedScan> {
-  const now = Date.now();
-  const item: QueuedScan = {
-    id: newId(),
-    userId: userId || 'offline-user',
-    imageUri: null,
-    cropType,
-    language,
-    createdAt: now,
-    status: 'analyzing',
-    attempts: 0,
-    nextAttemptAt: now + POLL_INTERVAL_MS,
-    serverScanId,
-    analyzingSince: now,
-  };
-
-  await updateQueue(queue => [...queue, item]);
-  logger.info('Uploaded scan tracked for result', { id: item.id, serverScanId });
-
-  await afterEnqueue();
-  return item;
-}
-
-async function afterEnqueue() {
   await registerBackgroundSync();
   // Ask now, in context, so the result notification can be shown later
   try {
@@ -193,12 +150,13 @@ async function afterEnqueue() {
   } catch (error) {
     logger.warn('Notification permission request failed', error);
   }
+  return item;
 }
 
 // ─── Processing ───────────────────────────────────────────────────────────────
 
-const backoffMs = (attempts: number) => Math.min(60000 * 2 ** attempts, MAX_BACKOFF_MS);
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// 30 s, 1 min, 2 min… up to 6 h
+const backoffMs = (attempts: number) => Math.min(30000 * 2 ** (attempts - 1), MAX_BACKOFF_MS);
 
 async function deleteImage(uri?: string | null) {
   if (!uri) return;
@@ -209,87 +167,51 @@ async function deleteImage(uri?: string | null) {
   }
 }
 
-async function uploadItem(item: QueuedScan) {
+async function sendItem(item: QueuedScan) {
   await updateItem(item.id, { status: 'uploading', uploadStartedAt: Date.now() });
 
-  try {
-    const info = item.imageUri ? await FileSystem.getInfoAsync(item.imageUri) : { exists: false };
-    if (!info.exists) {
-      throw Object.assign(new Error('Saved photo is missing'), { code: 'FILE_MISSING' });
-    }
+  const info = item.imageUri ? await FileSystem.getInfoAsync(item.imageUri) : { exists: false };
+  if (!info.exists) {
+    await finishItem(item, 'failed', { errorMessage: 'Saved photo is missing' });
+    return;
+  }
 
-    const response: any = await createScan({
-      imageUri: item.imageUri as string,
-      cropType: item.cropType,
-      language: item.language,
-      clientScanId: item.id,
-    });
-    const serverScan = response?.data?.scan || response?.scan;
-    if (!serverScan?._id) {
-      throw new Error('Received empty response from server after upload');
-    }
+  const outcome = await submitScan({
+    imageUri: item.imageUri as string,
+    severity: item.severity,
+    language: item.language,
+  });
 
-    const now = Date.now();
-    await updateItem(item.id, {
-      status: 'analyzing',
-      serverScanId: serverScan._id,
-      analyzingSince: now,
-      nextAttemptAt: now,
-      attempts: 0,
-      errorMessage: undefined,
-    });
-    logger.info('Offline scan uploaded', { id: item.id, serverScanId: serverScan._id });
-    return true;
-  } catch (error: any) {
-    const attempts = item.attempts + 1;
-    if (RETRYABLE_CODES.has(error?.code) || !error?.code) {
-      logger.warn('Offline scan upload will be retried', { id: item.id, code: error?.code, attempts });
+  switch (outcome.kind) {
+    case 'diagnosed':
+    case 'rejected':
+      logger.info('Offline scan diagnosed', { id: item.id, status: outcome.scan?.status });
+      await finishItem(item, 'diagnosed', {
+        result: buildScanResult(outcome.scan, item.language),
+        serverScanId: outcome.scan?._id,
+      });
+      return;
+    case 'quality':
+      await finishItem(item, 'failed', { qualityRejected: true, errorMessage: outcome.message });
+      return;
+    case 'limit':
+      await finishItem(item, 'failed', { planLimited: true, errorMessage: outcome.message });
+      return;
+    case 'unavailable': {
+      // Still offline, weak signal or the AI is busy: keep the photo and try later
+      const attempts = item.attempts + 1;
+      logger.warn('Offline scan will be retried', { id: item.id, attempts });
       await updateItem(item.id, {
         status: 'queued',
         attempts,
         nextAttemptAt: Date.now() + backoffMs(attempts),
-        errorMessage: error?.message,
+        errorMessage: outcome.message,
       });
-    } else {
-      logger.error('Offline scan upload rejected', error);
-      await finishItem({ ...item, attempts }, 'failed', {
-        errorMessage: error?.message,
-        planLimited: isPlanLimitError(getServerErrorCode(error)),
-      });
-    }
-    return false;
-  }
-}
-
-async function checkItem(item: QueuedScan) {
-  try {
-    const response: any = await getScanById(item.serverScanId as string);
-    const scan = response?.data?.scan || response?.scan;
-
-    if (scan?.status === 'diagnosed') {
-      await finishItem(item, 'diagnosed', { result: buildScanResult(scan, item.language) });
       return;
     }
-
-    const permanentlyFailed =
-      scan?.status === 'failed' ||
-      (scan?.status === 'pending' && scan?.error?.code && !scan?.error?.retryable);
-    if (permanentlyFailed || !scan) {
-      await finishItem(item, 'failed', { errorMessage: scan?.error?.message || 'Diagnosis failed' });
-      return;
-    }
-
-    if (Date.now() - (item.analyzingSince || item.createdAt) > MAX_ANALYSIS_WAIT_MS) {
-      await finishItem(item, 'failed', { errorMessage: 'Diagnosis took too long' });
-      return;
-    }
-
-    await updateItem(item.id, { nextAttemptAt: Date.now() + POLL_INTERVAL_MS });
-  } catch (error: any) {
-    // Network blips while polling are fine; try again on the next run
-    const attempts = item.attempts + 1;
-    logger.warn('Checking offline scan result failed', { id: item.id, code: error?.code });
-    await updateItem(item.id, { attempts, nextAttemptAt: Date.now() + Math.min(backoffMs(attempts), 15 * 60000) });
+    default:
+      logger.error('Offline scan rejected by the server', { id: item.id, message: outcome.message });
+      await finishItem(item, 'failed', { errorMessage: outcome.message });
   }
 }
 
@@ -301,45 +223,45 @@ async function finishItem(item: QueuedScan, status: 'diagnosed' | 'failed', chan
 }
 
 let processing: Promise<void> | null = null;
+// A trigger that arrived while a run was in progress; served by another pass
+let pendingRun: { force: boolean } | null = null;
 
 /**
- * Upload due scans and check on scans waiting for a diagnosis.
- * Safe to call often: concurrent calls share one run.
- * @param waitForResultsMs - keep polling for results this long after uploading
+ * Send the photos that are due. Safe to call often: a call during a run
+ * schedules one more pass after it, so a "back online" trigger is never lost.
+ * @param force - send every waiting photo now, ignoring the retry backoff.
+ *   Used when the network returns or the app opens; the background task waits for the backoff.
  */
-export function processOfflineScans({ waitForResultsMs = 0 } = {}) {
-  if (!processing) {
-    processing = runQueue(waitForResultsMs).finally(() => { processing = null; });
+export function processOfflineScans({ force = false } = {}) {
+  if (processing) {
+    pendingRun = { force: force || !!pendingRun?.force };
+    return processing;
   }
+  processing = (async () => {
+    let run: { force: boolean } | null = { force };
+    while (run) {
+      pendingRun = null;
+      await runQueue(run.force);
+      run = pendingRun;
+    }
+  })().finally(() => { processing = null; });
   return processing;
 }
 
-async function runQueue(waitForResultsMs: number) {
+async function runQueue(force: boolean) {
+  // Scans queued before diagnosis happened in the request were already uploaded
+  // and are listed (with Try again) from the server's history
+  await updateQueue(queue => queue.filter(item => (item.status as string) !== 'analyzing'));
+
   if (!(await isOnline())) return;
 
-  const deadline = Date.now() + waitForResultsMs;
-
-  // Uploads first, then status checks; repeat checks while within the time budget
-  for (let pass = 0; ; pass++) {
-    const now = Date.now();
-    const queue = await getQueue();
-
-    for (const item of queue) {
-      const staleUpload = item.status === 'uploading' && now - (item.uploadStartedAt || 0) > STALE_UPLOAD_MS;
-      if ((item.status === 'queued' && item.nextAttemptAt <= now) || staleUpload) {
-        await uploadItem(item);
-      }
+  const now = Date.now();
+  for (const item of await getQueue()) {
+    const staleUpload = item.status === 'uploading' && now - (item.uploadStartedAt || 0) > STALE_UPLOAD_MS;
+    const due = item.status === 'queued' && (force || item.nextAttemptAt <= now);
+    if (due || staleUpload) {
+      await sendItem(item);
     }
-
-    for (const item of await getQueue()) {
-      if (item.status === 'analyzing' && (pass === 0 || item.nextAttemptAt <= Date.now())) {
-        await checkItem(item);
-      }
-    }
-
-    const stillAnalyzing = (await getQueue()).some(item => item.status === 'analyzing');
-    if (!stillAnalyzing || Date.now() + POLL_INTERVAL_MS > deadline) break;
-    await sleep(POLL_INTERVAL_MS);
   }
 
   await pruneQueue();
@@ -358,7 +280,7 @@ async function pruneQueue() {
 // ─── Notifications ────────────────────────────────────────────────────────────
 
 const CROP_NAMES_HA: Record<string, string> = {
-  maize: 'Masara', rice: 'Shinkafa', tomato: 'Tumatur', beans: 'Wake', cassava: 'Rogo',
+  maize: 'Masara', rice: 'Shinkafa', tomato: 'Tumatur', bean: 'Wake', beans: 'Wake', cassava: 'Rogo',
   cabbage: 'Kabeji', cucumber: 'Kokomba', onion: 'Albasa', yam: 'Doya', potato: 'Dankali',
 };
 
@@ -379,38 +301,50 @@ async function notifyFarmer(item: QueuedScan) {
     await ensureNotificationChannel();
 
     const isHausa = item.language === 'ha';
-    const crop = isHausa
-      ? CROP_NAMES_HA[item.cropType] || item.cropType
-      : item.cropType.charAt(0).toUpperCase() + item.cropType.slice(1);
+    const cropType: string | undefined = item.result?.cropType;
+    const crop = cropType
+      ? isHausa ? CROP_NAMES_HA[cropType] || cropType : cropType.charAt(0).toUpperCase() + cropType.slice(1)
+      : null;
+    const subject = crop ? `${crop}: ` : '';
     const diagnosis = item.result?.name || item.result?.disease;
 
     const content = item.planLimited
       ? {
-          title: isHausa ? 'Iyakar tsarinka ta cika' : 'Plan limit reached',
+          title: isHausa ? 'Iyakar tsarinka ta cika' : 'Daily limit reached',
           body: isHausa
-            ? `Ba a binciki hoton ${crop} ba saboda iyakar tsarinka. Danna don duba tsare-tsare.`
-            : `Your ${crop} photo wasn't analyzed because of your plan's limit. Tap to see plans.`,
+            ? 'Ba a binciki hotonka ba saboda iyakar tsarinka ta yau. Danna don duba tsare-tsare.'
+            : "Your photo wasn't diagnosed because you've used today's diagnoses. Tap to see plans.",
+        }
+      : item.qualityRejected
+      ? {
+          title: isHausa ? 'Hoton bai fito sarai ba' : 'Your photo was too unclear',
+          body: isHausa
+            ? 'Ba a iya binciken hoton ba. Danna don ɗaukar sabo.'
+            : "We couldn't diagnose it. Tap to take a new one.",
+        }
+      : item.status === 'diagnosed' && item.result?.status === 'rejected'
+      ? {
+          title: isHausa ? 'Ba a iya gane matsalar ba' : "Couldn't diagnose your photo",
+          body: describeRejection(item.result?.rejection, isHausa),
         }
       : item.status === 'diagnosed' && item.result?.lowConfidence
       ? {
           // No treatment for unconfirmed results: point to the free expert review
           title: isHausa ? 'Ba a tabbatar da sakamakon ba' : 'Result not confirmed',
           body: isHausa
-            ? `${crop}: wataƙila ${diagnosis}. Danna don tambayar kwararre kyauta.`
-            : `${crop}: possibly ${diagnosis}. Tap to ask an expert for free.`,
+            ? `${subject}wataƙila ${diagnosis}. Danna don tambayar kwararre kyauta.`
+            : `${subject}possibly ${diagnosis}. Tap to ask an expert for free.`,
         }
       : item.status === 'diagnosed'
       ? {
           title: isHausa ? 'Sakamakon binciken ya shirya' : 'Your scan result is ready',
           body: isHausa
-            ? `${crop}: ${diagnosis}. Danna don ganin magani.`
-            : `${crop}: ${diagnosis}. Tap to see the treatment.`,
+            ? `${subject}${diagnosis}. Danna don ganin magani.`
+            : `${subject}${diagnosis}. Tap to see the treatment.`,
         }
       : {
-          title: isHausa ? 'An kasa binciken hoto' : 'Scan could not be analyzed',
-          body: isHausa
-            ? `Ba a iya binciken hoton ${crop} ba. Danna don sake daukar hoto.`
-            : `We couldn't analyze your ${crop} photo. Tap to take a new one.`,
+          title: isHausa ? 'An kasa binciken hoto' : "Your photo couldn't be diagnosed",
+          body: isHausa ? 'Danna don ɗaukar sabon hoto.' : 'Tap to take a new one.',
         };
 
     await Notifications.scheduleNotificationAsync({
@@ -462,7 +396,7 @@ async function unregisterBackgroundSync() {
 }
 
 /**
- * Re-register the background task on startup if scans are still waiting
+ * Re-register the background task on startup if photos are still waiting
  */
 export async function resumeBackgroundSyncIfNeeded() {
   if ((await getQueue()).some(isActive)) {
@@ -472,7 +406,6 @@ export async function resumeBackgroundSyncIfNeeded() {
 
 export default {
   enqueueScan,
-  trackUploadedScan,
   processOfflineScans,
   getQueue,
   getQueuedScan,

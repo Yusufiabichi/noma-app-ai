@@ -14,6 +14,8 @@ export interface ProfileStats {
   total: number;
   healthy: number;
   issues: number;
+  /** Photos the AI couldn't diagnose, if known */
+  rejected?: number | null;
   /** Scans the server counted today, if known */
   today: number | null;
   /** Remaining scans today as reported by the server, if it does */
@@ -57,6 +59,7 @@ async function fromStatsEndpoint(): Promise<ProfileStats | null> {
     total,
     healthy,
     issues,
+    rejected: firstNumber(stats, ['rejectedScans', 'rejected']),
     today: firstNumber(stats, ['today', 'scansToday', 'todayCount', 'dailyUsed']),
     remainingToday: firstNumber(stats, ['remainingToday', 'scansRemainingToday', 'dailyRemaining']),
     updatedAt: Date.now(),
@@ -75,6 +78,7 @@ async function fromRecentScans(): Promise<ProfileStats | null> {
     total: pagination?.total ?? scans.length,
     healthy,
     issues: diagnosed.length - healthy,
+    rejected: scans.filter((scan: any) => scan.status === 'rejected').length,
     today: scans.filter((scan: any) => scan.createdAt && isToday(scan.createdAt)).length,
     remainingToday: null,
     updatedAt: Date.now(),

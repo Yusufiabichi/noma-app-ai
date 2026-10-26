@@ -1,5 +1,6 @@
 // src/utils/scanResult.ts
-// Maps a diagnosed server scan to the payload the treatment-rec screen expects
+// Maps a finished server scan (diagnosed or rejected) to the payload the
+// treatment-rec screen expects
 
 // Server default (LOW_CONFIDENCE_THRESHOLD); the server sends the real value per diagnosis
 export const DEFAULT_CONFIDENCE_THRESHOLD = 0.7;
@@ -24,11 +25,16 @@ export function buildScanResult(diagnosedScan: any, languageCode: string) {
   const lowConfidence = isLowConfidenceDiagnosis(source);
 
   return {
+    status:           diagnosedScan?.status === 'rejected' ? 'rejected' : 'diagnosed',
+    rejection:        diagnosedScan?.rejection || null,
     disease:          diagnosis.disease || diagnosedScan.disease,
     name:             diagnosis.name || diagnosedScan.name,
-    cropType:         diagnosedScan.cropType,
+    // The AI detects the crop; older scans carry the farmer's pick on the scan
+    cropType:         diagnosis.cropType || diagnosedScan.cropType,
     confidence:       diagnosis.confidence ?? diagnosedScan.confidence,
+    cropConfidence:   diagnosis.cropConfidence,
     severity:         diagnosis.severity || diagnosedScan.severity,
+    severityAssumed:  diagnosis.severityAssumed === true,
     recommendations:  diagnosis.recommendations || diagnosedScan.recommendations || [],
     futurePrevention: diagnosis.futurePrevention || diagnosedScan.futurePrevention || [],
     applicationSteps: diagnosis.applicationSteps || diagnosedScan.applicationSteps || [],

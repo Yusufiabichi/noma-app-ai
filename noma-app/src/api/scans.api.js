@@ -11,43 +11,38 @@
  * - DELETE /scans/:id
  */
 
-import apiClient from './client';
+import { Platform } from 'react-native';
+import apiClient, { rawClient } from './client';
+
+// The server diagnoses while the request is open; a cold start can take ~30 s
+const DIAGNOSIS_TIMEOUT_MS = 60000;
 
 /**
- * Create a new scan with image upload
- * @param {Object} scanData - Scan data
- * @param {string} scanData.imageUri - Local URI of the image
- * @param {string} [scanData.farmId] - Associated farm ID
- * @param {string} [scanData.cropType] - Type of crop
- * @param {string} [scanData.language] - Language for recommendations
- * @param {string} [scanData.clientScanId] - Device-generated ID so the server can ignore duplicate uploads
- * @param {Function} [onProgress] - Upload progress callback
- * @returns {Promise<{scan: Object}>}
+ * Upload a photo and get the finished diagnosis back in the same response.
+ * The AI detects the crop, so no crop type is sent.
+ * @param {Object} scanData
+ * @param {string} scanData.imageUri - Local URI of a JPEG prepared by preparePhotoForUpload
+ * @param {'low'|'moderate'|'high'} [scanData.severity] - Omitted for "Not sure" (server assumes moderate)
+ * @param {'en'|'ha'} [scanData.language] - Language of the treatment text
+ * @returns {Promise<{success: boolean, data: {scan: Object}}>}
  */
-export const createScan = async (scanData, onProgress = null) => {
-  const { imageUri, cropType, language, clientScanId } = scanData;
-  
-  // Create form data for multipart upload
-  const fileName = imageUri.split('/').pop();
-  const fileType = fileName.toLowerCase().endsWith('.png') 
-    ? 'image/png' 
-    : 'image/jpeg';
-
+export const createScan = async ({ imageUri, severity, language }) => {
   const formData = new FormData();
-  
-  // Append image file
-  formData.append('image', {
-    uri: imageUri,
-    name: fileName,
-    type: fileType,
-  });
-  
-  if (cropType) formData.append('cropType', cropType);
-  if (language) formData.append('language', language);
-  if (clientScanId) formData.append('clientScanId', clientScanId);
 
-  const response = await apiClient.uploadFile('/scans', formData, onProgress);
-  return response;
+  if (Platform.OS === 'web') {
+    const blob = await (await fetch(imageUri)).blob();
+    formData.append('image', blob, 'scan.jpg');
+  } else {
+    formData.append('image', { uri: imageUri, name: 'scan.jpg', type: 'image/jpeg' });
+  }
+  if (severity) formData.append('severity', severity);
+  formData.append('language', language === 'ha' ? 'ha' : 'en');
+
+  const response = await rawClient.post('/scans', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: DIAGNOSIS_TIMEOUT_MS,
+  });
+  return response.data;
 };
 
 /**
@@ -55,7 +50,7 @@ export const createScan = async (scanData, onProgress = null) => {
  * @param {Object} [params] - Query parameters
  * @param {number} [params.page=1] - Page number
  * @param {number} [params.limit=20] - Items per page
- * @param {string} [params.status] - Filter by status (pending, processing, diagnosed, failed)
+ * @param {string} [params.status] - Filter by status (diagnosed, rejected; pending/failed on old scans)
  * @param {string} [params.farmId] - Filter by farm ID
  * @param {string} [params.cropType] - Filter by crop type
  * @returns {Promise<{scans: Object[], pagination: Object}>}
@@ -112,13 +107,20 @@ export const getScanById = async (scanId) => {
 };
 
 /**
- * Retry failed diagnosis for a scan
+ * Diagnose an old pending/failed scan again. Responds with the finished scan.
  * @param {string} scanId - Scan ID
- * @returns {Promise<{scan: Object}>}
+ * @param {Object} [options]
+ * @param {'low'|'moderate'|'high'} [options.severity]
+ * @param {'en'|'ha'} [options.language]
+ * @returns {Promise<{success: boolean, data: {scan: Object}}>}
  */
-export const retryScanDiagnosis = async (scanId) => {
-  const response = await apiClient.post(`/scans/${scanId}/retry`);
-  return response;
+export const retryScanDiagnosis = async (scanId, { severity, language } = {}) => {
+  const response = await rawClient.post(
+    `/scans/${scanId}/retry`,
+    { ...(severity && { severity }), ...(language && { language }) },
+    { timeout: DIAGNOSIS_TIMEOUT_MS }
+  );
+  return response.data;
 };
 
 /**

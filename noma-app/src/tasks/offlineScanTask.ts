@@ -8,13 +8,12 @@ import { initializeClient } from '@/src/api/client';
 import { OFFLINE_SCAN_TASK, processOfflineScans } from '@/src/services/offlineScanQueue';
 import logger from '@/src/utils/logger';
 
-// iOS gives background tasks about 30 seconds; leave room to finish writing
-const RESULT_WAIT_MS = 20000;
-
+// Each queued photo is one request that returns the finished diagnosis. If the
+// OS ends the task mid-request, the photo stays queued and is sent next time.
 TaskManager.defineTask(OFFLINE_SCAN_TASK, async () => {
   try {
     await initializeClient();
-    await processOfflineScans({ waitForResultsMs: RESULT_WAIT_MS });
+    await processOfflineScans();
     return BackgroundTask.BackgroundTaskResult.Success;
   } catch (error) {
     logger.error('Offline scan background task failed', error);

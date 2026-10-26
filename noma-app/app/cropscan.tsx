@@ -1,70 +1,51 @@
 import CaptureGuideOverlay from '@/app/components/CaptureGuideOverlay';
 import RequireAccess, { lockedMessage } from '@/app/components/RequireAccess';
 import VoiceAssistantSheet from '@/app/components/VoiceAssistantSheet';
-import { createScan } from '@/src/api/scans.api';
-import { checkAccess, isPlanLimitError } from '@/src/auth/access';
+import AnalysingView from '@/app/components/scan/AnalysingView';
+import ScanOutcomeView, { ScanEndState } from '@/app/components/scan/ScanOutcomeView';
+import SeverityStep, { SeverityChoice } from '@/app/components/scan/SeverityStep';
+import { checkAccess } from '@/src/auth/access';
 import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
-import { enqueueScan, trackUploadedScan } from '@/src/services/offlineScanQueue';
-import { getServerErrorCode } from '@/src/utils/errors';
+import { enqueueScan } from '@/src/services/offlineScanQueue';
+import { submitScan } from '@/src/services/scanSubmission';
 import logger from '@/src/utils/logger';
 import { isOnline } from '@/src/utils/network';
-import { pollUntilDiagnosed } from '@/src/utils/pollScan';
 import { buildScanResult } from '@/src/utils/scanResult';
-import { getLanguageCode } from '@/src/utils/useLanguageCode';
+import { preparePhotoForUpload } from '@/src/utils/scanPhoto';
 import { Ionicons } from '@expo/vector-icons';
-import { CameraCapturedPicture, CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, BackHandler, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const CROPS = [
-  { id: 'maize', name: 'Maize', scientificName: 'Zea mays (Masara)', category: 'Cereals' },
-  { id: 'rice', name: 'Rice', scientificName: 'Oryza sativa (Shinkafa)', category: 'Cereals' },
-  { id: 'tomato', name: 'Tomato', scientificName: 'Solanum lycopersicum (Tumatur)', category: 'Vegetables' },
-  { id: 'beans', name: 'Beans', scientificName: 'Phaseolus vulgaris (Wake)', category: 'Legumes' },
-  { id: 'cassava', name: 'Cassava', scientificName: 'Manihot esculenta (Rogo)', category: 'Tubers' },
-  { id: 'cabbage', name: 'Cabbage', scientificName: 'Brassica oleracea (Kabeji)', category: 'Vegetables' },
-  { id: 'cucumber', name: 'Cucumber', scientificName: 'Cucumis sativus (Kokomba)', category: 'Vegetables' },
-  { id: 'onion', name: 'Onion', scientificName: 'Allium cepa (Albasa)', category: 'Vegetables' },
-  { id: 'yam', name: 'Yam', scientificName: 'Dioscorea (Doya)', category: 'Tubers' },
-  { id: 'potato', name: 'Potato', scientificName: 'Solanum tuberosum (Dankali)', category: 'Tubers' },
-  { id: 'other', name: 'Other', scientificName: 'Other Crops (Sauransu)', category: 'Other' },
-];
-
-const CATEGORIES = [
-  { id: 'all', label: 'All Crops', icon: 'leaf-outline' },
-  { id: 'Cereals', label: 'Cereals', icon: 'nutrition-outline' },
-  { id: 'Vegetables', label: 'Vegetables', icon: 'leaf-outline' },
-  { id: 'Legumes', label: 'Legumes', icon: 'nutrition-outline' },
-  { id: 'Tubers', label: 'Tubers', icon: 'color-filter-outline' },
-];
+// capture → severity → analysing → result screen (or an end state below).
+// The server diagnoses while the request is open, so nothing is polled.
+type Step = 'capture' | 'preparing' | 'severity' | 'analysing' | 'ended';
 
 function CropScan() {
   const router = useRouter();
+  // "Change severity" on the result screen comes back with the same photo
+  const params = useLocalSearchParams<{ photoUri?: string }>();
   const { language } = useLanguage();
   const { showAlert } = useAlert();
   const isHausa = language === 'hausa';
+  const t = (ha: string, en: string) => (isHausa ? ha : en);
   const { user } = useAuth();
-  const cameraRef = useRef<any>(null);
+  const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [taking, setTaking] = useState(false);
-  const [photo, setPhoto] = useState<CameraCapturedPicture | { uri: string } | null>(null);
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
-  const [processingStep, setProcessingStep] = useState<'uploading' | 'analyzing' | null>(null);
   const [voiceVisible, setVoiceVisible] = useState(false);
-  const languageCode = useMemo(() => {
-        return language === 'hausa' ? 'ha' : 'en';
-  }, [language]);
 
+  const [step, setStep] = useState<Step>(params.photoUri ? 'severity' : 'capture');
+  const [photoUri, setPhotoUri] = useState<string | null>(params.photoUri || null);
+  const [severityChoice, setSeverityChoice] = useState<SeverityChoice | null>(null);
+  const [endState, setEndState] = useState<ScanEndState | null>(null);
+  const submitting = useRef(false);
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -72,22 +53,26 @@ function CropScan() {
     }
   }, [permission]);
 
-  const filteredCrops = useMemo(() => {
-    return CROPS.filter(crop => {
-      const matchesCategory = selectedCategory === 'all' || crop.category === selectedCategory;
-      const matchesSearch = crop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        crop.scientificName.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+  // Back steps through the flow; it can't cancel a diagnosis in progress
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (step === 'analysing' || step === 'preparing') return true;
+      if (step === 'severity' || step === 'ended') {
+        retake();
+        return true;
+      }
+      return false;
     });
-  }, [searchQuery, selectedCategory]);
+    return () => subscription.remove();
+  }, [step]);
 
   function showUpgrade(title: string, message: string) {
     showAlert({
       title,
       message,
       buttons: [
-        { text: isHausa ? 'Soke' : 'Cancel', style: 'cancel' },
-        { text: isHausa ? 'Duba tsare-tsare' : 'View plans', onPress: () => router.push('/(onboarding)/plans') },
+        { text: t('Soke', 'Cancel'), style: 'cancel' },
+        { text: t('Duba tsare-tsare', 'View plans'), onPress: () => router.push('/(onboarding)/plans') },
       ]
     });
   }
@@ -102,236 +87,134 @@ function CropScan() {
     showUpgrade(title, body);
   }
 
+  function retake() {
+    setPhotoUri(null);
+    setSeverityChoice(null);
+    setEndState(null);
+    setStep('capture');
+  }
+
+  // Resize to ~1280 px JPEG before the severity question, so the upload is ready
+  async function acceptPhoto(uri: string, size?: { width?: number; height?: number }) {
+    setStep('preparing');
+    try {
+      const prepared = await preparePhotoForUpload(uri, size);
+      setPhotoUri(prepared.uri);
+      setStep('severity');
+    } catch (error) {
+      logger.error('Preparing photo failed', error);
+      setStep('capture');
+      showAlert({
+        title: t('Kuskure', 'Error'),
+        message: t('An kasa shirya hoton. Ka sake ɗauka.', "Couldn't use that photo. Take it again."),
+        buttons: [{ text: t('Yarda', 'OK') }],
+      });
+    }
+  }
+
   async function takePicture() {
     if (!cameraRef.current || taking) return;
     setTaking(true);
     try {
-      const photoTaken = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-        skipProcessing: true,
-      });
-      setPhoto(photoTaken);
-      setPreviewVisible(true);
+      const picture = await cameraRef.current.takePictureAsync({ quality: 0.9 });
+      if (picture) await acceptPhoto(picture.uri, { width: picture.width, height: picture.height });
     } catch (err) {
-      console.error('takePicture error', err);
+      logger.error('takePicture error', err);
       showAlert({
-        title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'An kasa daukar hoto. Da fatan a sake gwadawa.' : 'Could not take photo. Try again.',
-        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
+        title: t('Kuskure', 'Error'),
+        message: t('An kasa ɗaukar hoto. Da fatan a sake gwadawa.', 'Could not take photo. Try again.'),
+        buttons: [{ text: t('Yarda', 'OK') }]
       });
     } finally {
       setTaking(false);
     }
   }
 
-  async function imgCrop(){
-    if (!selectedCrop) {
-      showAlert({
-        title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'Da fatan za a zabi nau\'in amfanin gona' : 'Please select a crop type',
-        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-      });
-      return;
-    }
-
-    if (!photo?.uri) {
-      showAlert({
-        title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'Ba a zabi hoto ba' : 'No image selected',
-        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-      });
-      return;
-    }
-
-    setProcessingStep('uploading');
-    setIsProcessing(true);
-
+  async function openGallery() {
     try {
-      const online = await isOnline();
-      
-      if (online) {
-        logger.info('Device is online, processing scan immediately');
-        await processScanOnline((photo as any).uri, selectedCrop);
-      } else {
-        logger.info('Device is offline, saving scan locally');
-        await processScanOffline((photo as any).uri, selectedCrop);
-      }
-    } catch (error: any) {
-      logger.error('Error processing scan', error);
-      // Detailed debug logs for production troubleshooting
-      console.log("--- SCAN ERROR DEBUG ---");
-      console.log("TYPE:", error?.name);
-      console.log("MESSAGE:", error?.message);
-      console.log("STATUS CODE:", error?.statusCode);
-      if (error?.originalError) {
-        console.log("ORIGINAL ERROR MESSAGE:", error.originalError.message);
-        console.log("SERVER RESPONSE:", error.originalError.response?.data);
-      }
-      console.log("------------------------");
-
-      if (isPlanLimitError(getServerErrorCode(error))) {
-        // e.g. daily diagnosis limit for the farmer's plan
-        showUpgrade(
-          isHausa ? 'Iyakar tsarinka ta cika' : 'Plan limit reached',
-          isHausa
-            ? 'Ka kai iyakar binciken da tsarinka ya bayar. Ka zabi tsari mafi girma don ci gaba.'
-            : (error?.message || 'You have reached the limit of your plan. Choose a bigger plan to continue.')
-        );
-      } else {
-        showAlert({
-          title: isHausa ? 'Kuskure' : 'Error',
-          message: isHausa ? 'An kasa aiwatar da binciken' : (error?.message || 'Failed to process scan'),
-          buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-        });
-      }
-      // Reset processing state on error so user can try again
-      setIsProcessing(false);
-      setProcessingStep(null);
+      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
+      const asset = !result.canceled ? result.assets?.[0] : null;
+      if (asset?.uri) await acceptPhoto(asset.uri, { width: asset.width, height: asset.height });
+    } catch (err) {
+      logger.error('openGallery error', err);
     }
-    // Note: finally block removed to avoid resetting state if navigation is in progress
   }
 
-  async function processScanOnline(imageUri: string, cropType: string) {
-    const freshLanguageCode = await getLanguageCode();
-    let scanId: string | null = null;
+  async function diagnose() {
+    if (!photoUri || !severityChoice || submitting.current) return;
+    submitting.current = true;
+    const severity = severityChoice === 'unsure' ? null : severityChoice;
+    const scanLanguage = isHausa ? 'ha' : 'en';
 
     try {
-      logger.info('Starting online scan upload...');
-
-      const response = await createScan({
-        imageUri,
-        cropType,
-        language: freshLanguageCode,
-      });
-      
-      logger.info('Upload complete. Response:', response);
-
-      const pendingScan = response?.data?.scan || response?.scan;
-
-      if (!pendingScan) {
-        throw new Error('Received empty response from server after upload');
-      }
-
-      scanId = pendingScan._id;
-      logger.info('Scan Created successfully', { scanId });
-
-      // SWITCH TO ANALYZING STATE
-      setProcessingStep('analyzing');
-      logger.info('State changed to: analyzing');
-
-      const diagnosedScan = await pollUntilDiagnosed(scanId as string);
-
-      logger.info('Diagnosis complete!', {
-          scanId,
-          disease: diagnosedScan.diagnosis?.disease || diagnosedScan.disease,
-      });
-
-      // Prepare result for navigation
-      const resultData = buildScanResult(diagnosedScan, languageCode);
-
-      router.replace({
-        pathname: './treatment-rec',
-        params: {
-          scanResult: JSON.stringify(resultData),
-        },
-      });
-    } catch (error: any) {
-      logger.error('processScanOnline failed', error);
-
-      // Upload never reached the server (weak signal, timeout, server down): keep the scan and retry later
-      if (!scanId && ['NETWORK_ERROR', 'TIMEOUT_ERROR', 'SERVER_ERROR'].includes(error?.code)) {
-        logger.info('Upload failed on a weak connection, queueing scan for later');
-        await processScanOffline(imageUri, cropType);
+      if (!(await isOnline())) {
+        await enqueueScan({ imageUri: photoUri, severity, language: scanLanguage, userId: user?.id });
+        setEndState({ kind: 'queued' });
+        setStep('ended');
         return;
       }
 
-      // Uploaded but the diagnosis wasn't ready in time (failed scans carry a scanId on the error)
-      if (scanId && !error?.scanId) {
-        const tracked = await trackUploadedScan({
-          serverScanId: scanId,
-          cropType,
-          language: freshLanguageCode,
-          userId: user?.id,
-        });
+      setStep('analysing');
+      const outcome = await submitScan({ imageUri: photoUri, severity, language: scanLanguage });
+
+      if (outcome.kind === 'diagnosed' || outcome.kind === 'rejected') {
         router.replace({
-          pathname: './treatment-rec',
+          pathname: '/treatment-rec',
           params: {
-            scanResult: JSON.stringify({
-              status: 'pending',
-              cropType,
-              language: freshLanguageCode,
-              isOnline: false,
-              queueId: tracked.id,
-              isFallback: false,
-            }),
+            scanResult: JSON.stringify(buildScanResult(outcome.scan, scanLanguage)),
+            photoUri,
           },
         });
         return;
       }
-
-      throw error;
+      setEndState(outcome);
+      setStep('ended');
+    } catch (error) {
+      // Only saving the photo for later can throw here
+      logger.error('Saving scan for later failed', error);
+      setEndState({ kind: 'unavailable' });
+      setStep('ended');
+    } finally {
+      submitting.current = false;
     }
   }
 
-  async function processScanOffline(imageUri: string, cropType: string) {
-    try {
-      // Save photo and queue it; it's uploaded automatically when internet returns
-      const freshLanguageCode = await getLanguageCode();
-      const queued = await enqueueScan({
-        imageUri,
-        cropType,
-        language: freshLanguageCode,
-        userId: user?.id,
-      });
-
-      logger.info('Offline scan queued', { queueId: queued.id });
-
-      // Navigate to treatment recommendations showing pending status
-      router.replace({
-        pathname: './treatment-rec',
-        params: {
-          scanResult: JSON.stringify({
-            status: 'pending',
-            cropType,
-            language: freshLanguageCode,
-            isOnline: false,
-            queueId: queued.id,
-            isFallback: false,
-          }),
-        },
-      });
-    } catch (error: any) {
-      logger.error('Offline scan processing failed', error);
-      throw error;
-    }
+  if (step === 'severity' && photoUri) {
+    return (
+      <SeverityStep
+        photoUri={photoUri}
+        choice={severityChoice}
+        isHausa={isHausa}
+        onChoose={setSeverityChoice}
+        onDiagnose={diagnose}
+        onRetake={retake}
+      />
+    );
   }
 
-  async function openGallery() {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.8,
-      });
+  if (step === 'analysing' && photoUri) {
+    return <AnalysingView photoUri={photoUri} isHausa={isHausa} />;
+  }
 
-      const canceled = (result as any).canceled ?? (result as any).cancelled ?? false;
-      if (!canceled) {
-        const uri =
-          (result as any).assets?.[0]?.uri || (result as any).uri || null;
-        if (uri) {
-          setPhoto({ uri });
-          setPreviewVisible(true);
-        }
-      }
-    } catch (err) {
-      console.error('openGallery error', err);
-    }
+  if (step === 'ended' && endState) {
+    return (
+      <ScanOutcomeView
+        state={endState}
+        photoUri={photoUri}
+        isHausa={isHausa}
+        onRetake={retake}
+        onTryAgain={diagnose}
+        onPlans={() => router.push('/(onboarding)/plans')}
+        onDone={() => router.replace('/(tabs)')}
+      />
+    );
   }
 
   if (!permission) {
     return (
       <SafeAreaView style={styles.center}>
         <ActivityIndicator />
-        <Text style={{ marginTop: 8 }}>Requesting camera permission...</Text>
+        <Text style={{ marginTop: 8 }}>{t('Ana neman izinin kyamara...', 'Requesting camera permission...')}</Text>
       </SafeAreaView>
     );
   }
@@ -339,11 +222,17 @@ function CropScan() {
   if (!permission.granted) {
     return (
       <SafeAreaView style={styles.center}>
-        <Text style={{ textAlign: 'center', marginBottom: 12 }}>
-          Camera permission is required. Please enable it in settings.
+        <Text style={styles.permissionText}>
+          {t(
+            'Ana bukatar izinin kyamara. Ko ka zaɓi hoto daga cikin wayarka.',
+            'Camera access is needed. You can also choose a photo from your gallery.'
+          )}
         </Text>
         <TouchableOpacity onPress={requestPermission} style={styles.button}>
-          <Text style={styles.buttonText}>Try again</Text>
+          <Text style={styles.buttonText}>{t('Ba da izini', 'Allow camera')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={openGallery} style={styles.textButton}>
+          <Text style={styles.textButtonText}>{t('Zaɓi daga hotuna', 'Choose from gallery')}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -353,66 +242,44 @@ function CropScan() {
     <SafeAreaView style={styles.container}>
       <View style={styles.cameraWrapper}>
         {Platform.OS !== 'web' ? (
-
           <>
-          <CameraView
-            ref={cameraRef}
-            style={styles.camera}
-            facing="back"
-            onCameraReady={() => setIsCameraReady(true)}
-          />
-
-        {/* Overlay sits on top of camera preview */}
-        <CaptureGuideOverlay
-          language={language === 'hausa' ? 'ha' : 'en'}
-        />
-        </>
-
+            <CameraView
+              ref={cameraRef}
+              style={styles.camera}
+              facing="back"
+              onCameraReady={() => setIsCameraReady(true)}
+            />
+            {/* Frame and tips sit on top of the camera preview */}
+            <CaptureGuideOverlay language={isHausa ? 'ha' : 'en'} />
+          </>
         ) : (
-          <View
-            style={[
-              styles.camera,
-              { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
-            ]}
-          >
-            <Text style={{ color: 'white' }}>Camera not available on web</Text>
+          <View style={[styles.camera, styles.center, { backgroundColor: '#000' }]}>
+            <Text style={{ color: 'white' }}>{t('Babu kyamara a nan. Zaɓi hoto.', 'No camera here. Choose a photo.')}</Text>
           </View>
         )}
 
         {/* Top controls */}
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('./')}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.back()} accessibilityLabel={t('Koma baya', 'Back')}>
             <Ionicons name="arrow-back" size={22} color="white" />
           </TouchableOpacity>
-          <View style={styles.topBarRight}>
           <TouchableOpacity
             style={styles.iconButton}
             onPress={openVoiceAssistant}
             accessibilityRole="button"
-            accessibilityLabel={isHausa ? 'Yi tambaya da murya' : 'Ask by voice'}
+            accessibilityLabel={t('Yi tambaya da murya', 'Ask by voice')}
           >
             <Ionicons name="mic-outline" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() =>
-              showAlert({
-                title: isHausa ? 'Shawarwari' : 'Scan tips',
-                message: isHausa
-                  ? 'Tabbatar ganyen ya cika hoton kuma a guji hasken rana mai karfi daga baya.'
-                  : 'Ensure the leaf fills the frame and avoid strong backlight.',
-                buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-              })
-            }
-          >
-            <Ionicons name="help-circle-outline" size={26} color="white" />
-          </TouchableOpacity>
-          </View>
         </View>
 
         {/* Bottom controls */}
         <View style={styles.bottomBar}>
-          <TouchableOpacity onPress={openGallery} style={styles.sideButton}>
+          <TouchableOpacity
+            onPress={openGallery}
+            style={styles.sideButton}
+            accessibilityLabel={t('Zaɓi daga hotuna', 'Choose from gallery')}
+          >
             <Ionicons name="images-outline" size={28} color="white" />
           </TouchableOpacity>
 
@@ -420,23 +287,21 @@ function CropScan() {
             onPress={takePicture}
             style={styles.shutterButton}
             disabled={!isCameraReady || taking}
+            accessibilityLabel={t('Ɗauki hoto', 'Take photo')}
           >
             <View style={[styles.shutterOuter, taking && { opacity: 0.6 }]}>
               <View style={styles.shutterInner} />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => showAlert({
-              title: isHausa ? 'Bayani' : 'Info',
-              message: isHausa ? 'Za a kara wannan fasalin nan ba da jimawa ba.' : 'This feature will be added soon.',
-              buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-            })}
-            style={styles.sideButton}
-          >
-            <Ionicons name="camera-reverse-outline" size={28} color="white" />
-          </TouchableOpacity>
+          <View style={styles.sideButtonSpacer} />
         </View>
+
+        {step === 'preparing' && (
+          <View style={styles.preparing}>
+            <ActivityIndicator size="large" color="white" />
+          </View>
+        )}
       </View>
 
       {/* Hausa voice assistant */}
@@ -444,138 +309,8 @@ function CropScan() {
         visible={voiceVisible}
         onClose={() => setVoiceVisible(false)}
         language={language}
-        cropType={selectedCrop}
+        cropType={null}
       />
-
-      {/* Preview modal */}
-      <Modal visible={previewVisible} animationType="slide" onRequestClose={() => setPreviewVisible(false)}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-          <View style={{ flex: 1 }}>
-            {photo ? (
-              <View style={{ flex: 1 }}>
-                <View style={{ height: 250, backgroundColor: '#000' }}>
-                  <Image
-                    source={{ uri: (photo as any).uri }}
-                    style={{ flex: 1, resizeMode: 'contain' }}
-                  />
-                  <TouchableOpacity
-                    style={styles.closePreview}
-                    onPress={() => setPreviewVisible(false)}
-                  >
-                    <Ionicons name="close" size={24} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Step header */}
-                <View style={styles.stepHeader}>
-                  <View style={styles.stepBadge}><Text style={styles.stepBadgeText}>1</Text></View>
-                  <Text style={styles.stepTitle}>Select your crop type</Text>
-                </View>
-
-                {/* Search */}
-                <View style={styles.searchBox}>
-                  <Ionicons name="search-outline" size={18} color="#9CA3AF" />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search crops (e.g. Maize, Tomato, Cassava...)"
-                    placeholderTextColor="#9CA3AF"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                  />
-                </View>
-
-                {/* Category pills */}
-                <View>
-                  <FlatList
-                    data={CATEGORIES}
-                    keyExtractor={item => item.id}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.categoryList}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity
-                        onPress={() => setSelectedCategory(item.id)}
-                        style={[styles.categoryPill, selectedCategory === item.id && styles.categoryPillActive]}
-                      >
-                        <Ionicons
-                          name={item.icon as any}
-                          size={16}
-                          color={selectedCategory === item.id ? '#fff' : '#6B7280'}
-                        />
-                        <Text style={[styles.categoryText, selectedCategory === item.id && styles.categoryTextActive]}>
-                          {item.label}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  />
-                </View>
-
-                {/* Crop list */}
-                <FlatList
-                  data={filteredCrops}
-                  keyExtractor={item => item.id}
-                  style={styles.cropList}
-                  contentContainerStyle={{ paddingBottom: 20 }}
-                  renderItem={({ item }) => {
-                    const isSelected = selectedCrop === item.id;
-                    return (
-                      <TouchableOpacity
-                        onPress={() => setSelectedCrop(item.id)}
-                        style={[styles.cropRow, isSelected && styles.cropRowSelected]}
-                      >
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.cropName, isSelected && { color: '#16A34A' }]}>{item.name}</Text>
-                          <Text style={styles.cropSci}>{item.scientificName}</Text>
-                        </View>
-                        {isSelected && (
-                          <View style={styles.checkCircle}>
-                            <Ionicons name="checkmark" size={14} color="#fff" />
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
-              </View>
-            ) : (
-              <View style={styles.center}>
-                <Text style={{ color: '#000' }}>No image</Text>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.previewFooter}>
-            <TouchableOpacity
-              style={[styles.previewButton, styles.previewButtonSecondary]}
-              onPress={() => setPreviewVisible(false)}
-              disabled={isProcessing}
-            >
-              <Ionicons name="arrow-back" size={18} color="#111" />
-              <Text style={styles.previewButtonSecondaryText}>Retake</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.previewButton, styles.previewButtonPrimary, (!selectedCrop || isProcessing) && { opacity: 0.6 }]}
-              onPress={imgCrop}
-              disabled={isProcessing || !selectedCrop}
-            >
-              {isProcessing ? (
-                <>
-                  <ActivityIndicator size="small" color="white" />
-                  <Text style={[styles.previewButtonPrimaryText, { marginLeft: 8 }]}>
-                    {processingStep === 'uploading' ? 'Uploading...' : 'Analyzing...'}
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.previewButtonPrimaryText}>Use Photo</Text>
-                  <Ionicons name="checkmark" size={18} color="#fff" />
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -584,36 +319,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   cameraWrapper: { flex: 1, position: 'relative' },
   camera: { flex: 1 },
-  overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  overlayInner: {
-    width: '90%',
-    aspectRatio: 4 / 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  frame: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.95)',
-    backgroundColor: 'transparent',
-  },
-  hintBubble: {
-    position: 'absolute',
-    left: 16,
-    bottom: 120,
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    maxWidth: '80%',
-  },
-  hintText: { color: '#111', fontWeight: '600' },
   topBar: {
     position: 'absolute',
     top: 8,
@@ -625,7 +330,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 6,
   },
-  topBarRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconButton: {
     padding: 8,
     backgroundColor: 'rgba(0,0,0,0.35)',
@@ -650,6 +354,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  sideButtonSpacer: { width: 48 },
   shutterButton: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -669,96 +374,23 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: 'white',
   },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  previewFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
-  previewButton: {
-    flex: 1,
-    marginHorizontal: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 16,
+  preparing: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
   },
-  previewButtonSecondary: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  previewButtonPrimary: {
-    backgroundColor: '#16A34A',
-    shadowColor: '#000',
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  previewButtonSecondaryText: {
-    color: '#111',
-    fontWeight: '600',
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  previewButtonPrimaryText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 16,
-    marginRight: 8,
-  },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  permissionText: { textAlign: 'center', marginBottom: 16, fontSize: 16, lineHeight: 22, color: '#0E3B2C' },
   button: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#1a73e8',
-    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#16A34A',
+    borderRadius: 12,
   },
-  buttonText: { color: 'white', fontWeight: '700' },
-  cropItem: {
-  paddingHorizontal: 16,
-  paddingVertical: 10,
-  borderRadius: 20,
-  backgroundColor: 'rgba(255,255,255,0.15)',
-  marginRight: 10,
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.3)',
-},
-cropItemSelected: {
-  backgroundColor: '#16A34A',
-  borderColor: '#16A34A',
-},
-cropText: {
-  color: '#fff',
-  fontWeight: '600',
-},
-cropTextSelected: {
-  color: '#fff',
-},
-stepHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, paddingBottom: 8 },
-stepBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' },
-stepBadgeText: { color: '#fff', fontSize: 13, fontWeight: '700' },
-stepTitle: { fontSize: 17, fontWeight: '700', color: '#111' },
-searchBox: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 16, marginBottom: 8, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fff' },
-searchInput: { flex: 1, fontSize: 15, color: '#111' },
-categoryList: { paddingHorizontal: 16, paddingVertical: 8, gap: 10 },
-categoryPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB' },
-categoryPillActive: { backgroundColor: '#16A34A', borderColor: '#16A34A' },
-categoryText: { fontSize: 14, color: '#6B7280', fontWeight: '600' },
-categoryTextActive: { color: '#fff' },
-cropList: { flex: 1, backgroundColor: '#fff' },
-cropRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-cropRowSelected: { backgroundColor: '#F0FDF4', borderBottomColor: '#DCFCE7' },
-cropName: { fontSize: 15, fontWeight: '700', color: '#111' },
-cropSci: { fontSize: 13, color: '#6B7280', fontStyle: 'italic', marginTop: 3 },
-checkCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' },
-closePreview: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, padding: 4 },
-
+  buttonText: { color: 'white', fontWeight: '700', fontSize: 16 },
+  textButton: { paddingVertical: 14 },
+  textButtonText: { color: '#16A34A', fontWeight: '600', fontSize: 16 },
 });
 
 export default function CropScanWithAccess() {

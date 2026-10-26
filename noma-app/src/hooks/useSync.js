@@ -11,6 +11,8 @@ import { syncPendingScans } from '../services/syncService';
 import { processOfflineScans, resumeBackgroundSyncIfNeeded } from '../services/offlineScanQueue';
 import logger from '../utils/logger';
 
+const QUEUE_RETRY_CHECK_MS = 60 * 1000;
+
 export const useSync = () => {
   const { user } = useAuth();
 
@@ -24,10 +26,11 @@ export const useSync = () => {
     };
   }, []);
 
-  // Offline scan queue: process on launch, when back online, and when the app returns to the foreground
+  // Offline scan queue: send waiting photos on launch, when back online, and when
+  // the app returns to the foreground, without waiting out earlier retry delays
   useEffect(() => {
     const runQueue = () => {
-      processOfflineScans({ waitForResultsMs: 60000 }).catch((error) => logger.error('Offline scan queue failed', error));
+      processOfflineScans({ force: true }).catch((error) => logger.error('Offline scan queue failed', error));
     };
 
     resumeBackgroundSyncIfNeeded();
@@ -39,10 +42,17 @@ export const useSync = () => {
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') runQueue();
     });
+    // While the app is open, retry photos whose backoff has passed (e.g. a send
+    // that failed because the connection was still settling after a reconnect)
+    const retryTimer = setInterval(() => {
+      if (AppState.currentState !== 'active') return;
+      processOfflineScans().catch((error) => logger.error('Offline scan queue failed', error));
+    }, QUEUE_RETRY_CHECK_MS);
 
     return () => {
       unsubscribeNetwork();
       appStateSubscription.remove();
+      clearInterval(retryTimer);
     };
   }, []);
 

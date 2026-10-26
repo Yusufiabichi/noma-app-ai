@@ -12,22 +12,25 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '@/src/context/LanguageContext';
-import { useAuth } from '@/src/hooks/useAuth';
 import { getScans } from '@/src/api/scans.api';
 import { format } from 'date-fns';
-import apiClient from '@/src/api/client';
 import RequireAccess from '@/app/components/RequireAccess';
+import { useAlert } from '@/src/context/AlertContext';
 import { getQueue, onQueueChange, QueuedScan } from '@/src/services/offlineScanQueue';
+import { describeQualityRejection, describeRejection, retryOldScan } from '@/src/services/scanSubmission';
 import { buildScanResult, isLowConfidenceDiagnosis } from '@/src/utils/scanResult';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface Diagnosis {
   _id: string;
-  cropType: string;
+  /** Older scans carry the farmer's pick here; new ones only have diagnosis.cropType */
+  cropType?: string | null;
+  /** diagnosed | rejected; pending/failed only on scans from before diagnosis happened in the request */
   status: string;
   diagnosis?: {
     disease?: string;
     name?: string;
+    cropType?: string;
     confidence?: number;
     severity?: string;
     recommendations?: string[];
@@ -36,17 +39,17 @@ interface Diagnosis {
     lowConfidence?: boolean;
     confidenceThreshold?: number;
   };
+  rejection?: { code?: string; reason?: string; message?: string } | null;
   createdAt: string;
-  /** Set for scans still on this phone (offline queue), not yet on the server */
+  /** Set for photos still on this phone (offline queue), not yet on the server */
   localQueueId?: string;
 }
 
-// Scans still on the phone. Once uploaded they have a serverScanId and the
+// Photos still on the phone. Once sent they have a serverScanId and the
 // server's copy is listed instead, so nothing shows twice.
 const toLocalDiagnosis = (item: QueuedScan): Diagnosis => ({
   _id: item.id,
   localQueueId: item.id,
-  cropType: item.cropType,
   status: item.status === 'failed' ? 'failed' : 'pending',
   createdAt: new Date(item.createdAt).toISOString(),
 });
@@ -69,8 +72,8 @@ const CROP_FILTERS = [
 const STATUS_FILTERS = [
   { label: 'All', labelHa: 'Duka', value: '' },
   { label: 'Diagnosed', labelHa: 'An kammala', value: 'diagnosed' },
+  { label: "Couldn't diagnose", labelHa: 'Ba a gane ba', value: 'rejected' },
   { label: 'Pending', labelHa: 'Ana jira', value: 'pending' },
-  { label: 'Processing', labelHa: 'Ana dubawa', value: 'processing' },
   { label: 'Failed', labelHa: 'Ya gaza', value: 'failed' },
 ];
 
@@ -79,11 +82,15 @@ const PAGE_SIZE = 3; // Load 3 items per request
 // ─── Main Component ──────────────────────────────────────────────────────
 function DiagnosisHistoryScreen() {
   const { language } = useLanguage();
-  const { user } = useAuth();
+  const { showAlert } = useAlert();
   const router = useRouter();
 
   // The language context stores 'hausa' (not 'ha')
   const isHausa = language === 'hausa';
+  const t = (ha: string, en: string) => (isHausa ? ha : en);
+
+  // Old pending/failed scan being diagnosed again
+  const [retryingId, setRetryingId] = useState<string | null>(null);
 
   // State
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
@@ -150,7 +157,8 @@ function DiagnosisHistoryScreen() {
   useEffect(() => {
     let unsentCount = -1;
     const apply = (queue: QueuedScan[]) => {
-      const unsent = queue.filter((item) => !item.serverScanId);
+      // Unusable photos were never saved by the server, so they stay out of history too
+      const unsent = queue.filter((item) => !item.serverScanId && !item.qualityRejected);
       // A scan just reached the server: reload so its server entry appears
       if (unsentCount !== -1 && unsent.length < unsentCount) fetchDiagnoses(1, true);
       unsentCount = unsent.length;
@@ -160,10 +168,9 @@ function DiagnosisHistoryScreen() {
     return onQueueChange(apply);
   }, [fetchDiagnoses]);
 
+  // Photos on the phone have no crop until the AI sees them
   const visibleLocalScans = localScans.filter(
-    (item) =>
-      (!selectedCrop || item.cropType === selectedCrop) &&
-      (!selectedStatus || item.status === selectedStatus)
+    (item) => !selectedCrop && (!selectedStatus || item.status === selectedStatus)
   );
   const listData = [...visibleLocalScans, ...diagnoses];
 
@@ -180,75 +187,104 @@ function DiagnosisHistoryScreen() {
     fetchDiagnoses(page + 1, false);
   };
 
+  const openResult = (scan: any) =>
+    router.push({
+      pathname: '/treatment-rec',
+      params: {
+        scanResult: JSON.stringify(buildScanResult(scan, scan?.diagnosis?.language || (isHausa ? 'ha' : 'en'))),
+      },
+    });
+
+  // Scans from before diagnosis happened in the request: diagnose them now
+  const retry = async (item: Diagnosis) => {
+    if (retryingId) return;
+    setRetryingId(item._id);
+    try {
+      const outcome = await retryOldScan(item._id, { language: isHausa ? 'ha' : 'en' });
+      if (outcome.kind === 'diagnosed' || outcome.kind === 'rejected') {
+        fetchDiagnoses(1, true);
+        openResult(outcome.scan);
+        return;
+      }
+      if (outcome.kind === 'limit') {
+        showAlert({
+          title: t('Ka yi amfani da duk binciken yau', "You've used today's diagnoses"),
+          message: t('Ka zaɓi babban tsari don ci gaba yau.', 'Choose a bigger plan to keep diagnosing today.'),
+          buttons: [
+            { text: t('Soke', 'Cancel'), style: 'cancel' },
+            { text: t('Duba tsare-tsare', 'See plans'), onPress: () => router.push('/(onboarding)/plans') },
+          ],
+        });
+        return;
+      }
+      let message: string;
+      if (outcome.kind === 'quality') {
+        const described = describeQualityRejection(outcome, isHausa);
+        message = [described.problem, described.tip, t('Ka ɗauki sabon hoto.', 'Take a new photo.')]
+          .filter(Boolean)
+          .join(' ');
+      } else if (outcome.kind === 'unavailable') {
+        message = t('Ba a iya bincike a yanzu. Ka sake gwadawa nan da ɗan lokaci.', 'Diagnosis is temporarily unavailable. Try again in a moment.');
+      } else {
+        message = isHausa ? 'An kasa sake binciken wannan hoton.' : outcome.message || "This scan couldn't be diagnosed.";
+      }
+      showAlert({ title: t('Ba a gane ba', "Couldn't diagnose"), message, buttons: [{ text: t('Yarda', 'OK') }] });
+    } finally {
+      setRetryingId(null);
+    }
+  };
+
   // ─── Render item ──────────────────────────────────────────────────────
   const renderItem = ({ item }: { item: Diagnosis }) => {
-    const statusText = isHausa
-      ? item.status === 'diagnosed'
-        ? 'An kammala'
-        : item.status === 'pending'
-        ? 'Ana jira'
-        : item.status === 'processing'
-        ? 'Ana dubawa'
-        : item.status === 'failed'
-        ? 'Ya gaza'
-        : item.status
-      : item.status === 'diagnosed'
-      ? 'Completed'
-      : item.status.charAt(0).toUpperCase() + item.status.slice(1);
-
     const isLocal = !!item.localQueueId;
+    const isRejected = item.status === 'rejected';
+    // Old scans the server never finished: offer Try again
+    const isUnfinished = !isLocal && (item.status === 'pending' || item.status === 'failed');
     // Diagnosed but below the confidence threshold: no treatment, expert review only
     const notConfirmed = item.status === 'diagnosed' && isLowConfidenceDiagnosis(item.diagnosis);
 
+    const statusText = notConfirmed
+      ? t('Ba a tabbatar ba', 'Not confirmed')
+      : isRejected
+      ? t('Ba a gane ba', "Couldn't diagnose")
+      : item.status === 'diagnosed'
+      ? t('An kammala', 'Completed')
+      : item.status === 'pending'
+      ? t('Ana jira', 'Pending')
+      : t('Ya gaza', 'Failed');
+
     const statusColor =
-      notConfirmed
+      notConfirmed || isRejected
         ? '#B45309'
         : item.status === 'diagnosed'
         ? '#16A34A'
-        : item.status === 'pending' || item.status === 'processing'
+        : item.status === 'pending'
         ? '#D97706'
         : '#DC2626';
+
+    const cropType = item.diagnosis?.cropType || item.cropType;
+    const cropLabel = isLocal ? t('Hoto a wayarka', 'Photo on this phone') : cropType || t('Amfanin gona', 'Crop');
 
     return (
       <TouchableOpacity
         style={styles.card}
+        disabled={isLocal && item.status === 'pending'}
         onPress={() => {
-          if (isLocal && item.status === 'pending') {
-            // Same pending screen as right after an offline scan
-            router.push({
-              pathname: '/treatment-rec',
-              params: {
-                scanResult: JSON.stringify({
-                  status: 'pending',
-                  cropType: item.cropType,
-                  isOnline: false,
-                  queueId: item.localQueueId,
-                  isFallback: false,
-                }),
-              },
-            });
-          } else if (isLocal) {
+          if (isLocal) {
             router.push('/cropscan');
-          } else if (item.status === 'diagnosed') {
+          } else if (item.status === 'diagnosed' || isRejected) {
             // Full result, including dosage, steps and timing
-            router.push({
-              pathname: '/treatment-rec',
-              params: {
-                scanResult: JSON.stringify(
-                  buildScanResult(item, item.diagnosis?.language || (isHausa ? 'ha' : 'en'))
-                ),
-              },
-            });
+            openResult(item);
+          } else if (isUnfinished) {
+            retry(item);
           }
         }}
         activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cropType}>{item.cropType.toUpperCase()}</Text>
+          <Text style={styles.cropType}>{cropLabel}</Text>
           <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
-            <Text style={[styles.statusText, { color: statusColor }]}>
-              {notConfirmed ? (isHausa ? 'Ba a tabbatar ba' : 'Not confirmed') : statusText}
-            </Text>
+            <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
           </View>
         </View>
 
@@ -261,13 +297,29 @@ function DiagnosisHistoryScreen() {
             />
             <Text style={styles.localText}>
               {item.status === 'failed'
-                ? (isHausa
-                    ? 'Ba a iya aika wannan hoton ba. Danna don sake daukar hoto.'
-                    : "This photo couldn't be sent. Tap to take a new one.")
-                : (isHausa
-                    ? 'An adana a wayarka. Za a aika idan intanet ya dawo.'
-                    : "Saved on this phone. It will be sent when you're online.")}
+                ? t('Ba a iya binciken wannan hoton ba. Danna don ɗaukar sabo.', "This photo couldn't be diagnosed. Tap to take a new one.")
+                : t('Za a bincika idan intanet ya dawo.', "Will diagnose when you're online.")}
             </Text>
+          </View>
+        ) : isRejected ? (
+          <Text style={styles.rejectionText}>{describeRejection(item.rejection, isHausa)}</Text>
+        ) : isUnfinished ? (
+          <View style={styles.retryRow}>
+            <Text style={styles.localText}>
+              {t('Ba a kammala binciken wannan hoton ba.', "This photo's diagnosis wasn't finished.")}
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => retry(item)}
+              disabled={!!retryingId}
+              accessibilityRole="button"
+            >
+              {retryingId === item._id ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.retryButtonText}>{t('Sake gwadawa', 'Try again')}</Text>
+              )}
+            </TouchableOpacity>
           </View>
         ) : (
           <Text style={styles.diseaseName}>
@@ -426,6 +478,17 @@ function DiagnosisHistoryScreen() {
 const styles = StyleSheet.create({
   localRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginVertical: 6 },
   localText: { flex: 1, fontSize: 14, color: '#4B5563', lineHeight: 20 },
+  rejectionText: { fontSize: 14, color: '#4B5563', lineHeight: 20, marginBottom: 8 },
+  retryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 6 },
+  retryButton: {
+    backgroundColor: '#16A34A',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    minWidth: 96,
+    alignItems: 'center',
+  },
+  retryButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
   container: {
     flex: 1,
     backgroundColor: '#F8FFFB',
@@ -519,7 +582,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#16A34A',
-    textTransform: 'uppercase',
+    textTransform: 'capitalize',
   },
   statusBadge: {
     paddingVertical: 4,

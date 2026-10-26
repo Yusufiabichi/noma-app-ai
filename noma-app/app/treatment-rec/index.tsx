@@ -1,29 +1,26 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import React, { useMemo } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useLanguage } from '@/src/context/LanguageContext';
-import { useAlert } from '@/src/context/AlertContext';
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isOnline } from '@/src/utils/network';
-import { syncPendingScans } from '@/src/services/syncService';
-import * as localScanService from '@/src/services/localScanService';
-import { getQueuedScan, onQueueChange, processOfflineScans, QueuedScan } from '@/src/services/offlineScanQueue';
 import logger from '@/src/utils/logger';
-import { useAuth } from '@/src/hooks/useAuth';
-import { getLanguageCode } from '@/src/utils/useLanguageCode'
 import IssueCard from '@/app/components/IssueCard';
 import UnconfirmedDiagnosis from '@/app/components/UnconfirmedDiagnosis';
 import { DEFAULT_CONFIDENCE_THRESHOLD, isLowConfidenceDiagnosis } from '@/src/utils/scanResult';
+import { describeRejection } from '@/src/services/scanSubmission';
+import { SCAN_COLORS as C } from '@/src/theme/scan';
 
 interface ScanResult {
-  status?: string;
+  status?: 'diagnosed' | 'rejected';
+  rejection?: { code?: string; reason?: string; message?: string } | null;
   disease?: string;
   name?: string;
   cropType?: string;
-  cropDetected?: string;
   confidence?: number;
+  cropConfidence?: number;
   severity?: string;
+  severityAssumed?: boolean;
   recommendations?: string[];
   futurePrevention?: string[];
   applicationSteps?: string[];
@@ -34,452 +31,201 @@ interface ScanResult {
   followUpDays?: string[];
   inputSourcing?: string[];
   language?: string;
-  isOnline?: boolean;
   isFallback?: boolean;
-  localScanId?: string;
-  queueId?: string;
   scanId?: string;
   _id?: string;
   // Low-confidence fields (server decides; see isLowConfidenceDiagnosis)
   lowConfidence?: boolean;
-  requiresExpertReview?: boolean;
   confidenceThreshold?: number;
   safetyNotice?: { title?: string; message?: string } | null;
 }
 
 const TreatmentRecommendationScreen = () => {
-  const params = useLocalSearchParams();
+  // photoUri is set right after a scan, so "Change severity" can resend the same photo
+  const params = useLocalSearchParams<{ scanResult?: string; photoUri?: string }>();
   const { language } = useLanguage();
-  const { showAlert } = useAlert();
   const isHausa = language === 'hausa';
-  const { user } = useAuth();
+  const t = (ha: string, en: string) => (isHausa ? ha : en);
 
-  const [loading, setLoading] = useState(true);
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
-  const [isPending, setIsPending] = useState(false);
-  const [syncError, setSyncError] = useState<string | null>(null);
-  const [queueStatus, setQueueStatus] = useState<QueuedScan['status'] | null>(null);
-  // Below the threshold (or no confidence) the server sends no treatment: show the
-  // "not confirmed" screen instead of the treatment screen
-  const isLowConfidence = scanResult ? isLowConfidenceDiagnosis(scanResult) : false;
-  const languageCode = useMemo(() => {
-          return language === 'hausa' ? 'ha' : 'en';
-    }, [language]);
-
-  useEffect(() => {
-    const loadScanResult = async () => {
-      try {
-        if (params.scanResult) {
-          let result: ScanResult;
-
-          if (typeof params.scanResult === 'string') {
-            try {
-              result = JSON.parse(params.scanResult);
-            } catch (e) {
-              logger.error('Failed to parse scanResult string', { value: params.scanResult });
-              throw new Error('Invalid scan result format');
-            }
-          } else {
-            result = params.scanResult as unknown as ScanResult;
-          }
-
-          setScanResult(result);
-
-          // If offline/pending, show pending UI
-          if (result.status === 'pending') {
-            setIsPending(true);
-          }
-        }
-      } catch (error: any) {
-        logger.error('Failed to load scan result', {
-          message: error.message,
-          params: params.scanResult
-        });
-        showAlert({
-          title: isHausa ? 'Kuskure' : 'Error',
-          message: isHausa ? 'An kasa loda sakamakon binciken.' : ('Failed to load scan results: ' + (error.message || 'Unknown error')),
-          buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-        });
-      } finally {
-        setLoading(false);
-      }
-
-    };
-
-    loadScanResult();
+  const scanResult = useMemo<ScanResult | null>(() => {
+    if (!params.scanResult) return null;
+    try {
+      return JSON.parse(params.scanResult);
+    } catch {
+      logger.error('Failed to parse scanResult', { value: params.scanResult });
+      return null;
+    }
   }, [params.scanResult]);
 
-  // Queued scans update here automatically once the diagnosis arrives
-  const queueId = scanResult?.queueId;
-  useEffect(() => {
-    if (!queueId) return;
+  const scanId = scanResult?._id || scanResult?.scanId;
+  const consultExpert = (isLowConfidence: boolean) =>
+    router.push({
+      pathname: '../(tabs)/expertChat',
+      params: { scanId, isLowConfidence: isLowConfidence ? 'true' : 'false' },
+    });
+  const retake = () => router.replace('/cropscan');
+  const goHome = () => router.replace('/(tabs)');
 
-    const applyItem = (item: QueuedScan | null | undefined) => {
-      if (!item) return;
-      setQueueStatus(item.status);
-      if (item.status === 'diagnosed' && item.result) {
-        setScanResult(item.result);
-        setIsPending(false);
-        setSyncError(null);
-      } else if (item.status === 'failed') {
-        setSyncError(isHausa
-          ? 'An kasa binciken wannan hoton. Da fatan a sake daukar hoto.'
-          : 'This photo could not be analyzed. Please take a new photo.');
-      }
-    };
-
-    getQueuedScan(queueId).then(applyItem);
-    return onQueueChange(queue => applyItem(queue.find(item => item.id === queueId)));
-  }, [queueId]);
-
-  const handleSyncNow = async () => {
-    if (queueId) {
-      setLoading(true);
-      setSyncError(null);
-      try {
-        if (!(await isOnline())) {
-          setSyncError(isHausa ? 'Har yanzu babu intanet.' : 'Device is still offline');
-          return;
-        }
-        await processOfflineScans({ waitForResultsMs: 30000 });
-      } catch (error: any) {
-        logger.error('Offline scan sync failed', error);
-        setSyncError(error?.message || 'Sync failed');
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    if (!user?.id) {
-      showAlert({
-        title: isHausa ? 'Kuskure' : 'Error',
-        message: isHausa ? 'Ba a tantance mai amfani ba.' : 'User not authenticated',
-        buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-      });
-      return;
-    }
-
-    setLoading(true);
-    setSyncError(null);
-
-    try {
-      const online = await isOnline();
-      if (!online) {
-        setSyncError('Device is still offline');
-        return;
-      }
-
-      // Call sync service
-      const result = await syncPendingScans(user.id);
-
-      if (result.synced > 0) {
-        // Reload the scan result
-        const updatedScan = await localScanService.getScanById(scanResult?.localScanId);
-        if (updatedScan) {
-          setScanResult({
-            isOnline: true,
-            disease: updatedScan.disease,
-            name: updatedScan.diseaseName,
-            cropType: updatedScan.cropDetected,
-            confidence: updatedScan.confidence,
-            severity: updatedScan.severity,
-            recommendations: updatedScan.parseRecommendations(),
-            futurePrevention: updatedScan.parseFuturePrevention(),
-            applicationSteps: updatedScan.parseApplicationSteps(),
-            dosage: updatedScan.parseDosage(),
-            timing: updatedScan.parseTiming(),
-            safetyWarnings: updatedScan.parseSafetyWarnings(),
-            expectedOutcome: updatedScan.parseExpectedOutcome(),
-            followUpDays: updatedScan.parseFollowUpDays(),
-            inputSourcing: updatedScan.parseInputSourcing(),
-            isFallback: updatedScan.isFallback,
-            lowConfidence: updatedScan.lowConfidence,
-          });
-
-          setIsPending(false);
-          showAlert({
-            title: isHausa ? 'Nasara' : 'Success',
-            message: isHausa ? 'An kammala binciken hoton!' : 'Scan analysis complete!',
-            buttons: [{ text: isHausa ? 'Yarda' : 'OK' }]
-          });
-        }
-      } else if (result.failed > 0) {
-        setSyncError('Analysis failed. Please try again later.');
-      }
-    } catch (error) {
-      logger.error('Sync failed', error);
-      setSyncError(error.message || 'Sync failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Pending analysis UI
-  if (isPending || scanResult?.status === 'pending') {
+  if (!scanResult || (scanResult.status !== 'rejected' && !scanResult.disease)) {
     return (
-      <SafeAreaView edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.header}>{isHausa ? 'Ana jiran bincike' : 'Analysis Pending'}</Text>
-
-          <View style={styles.pendingCard}>
-            <Ionicons name="cloud-offline-outline" size={64} color="#ffb347" />
-            <Text style={styles.pendingTitle}>
-              {queueStatus === 'analyzing' || queueStatus === 'uploading'
-                ? (isHausa ? 'Ana binciken hotonka' : 'Analyzing your photo')
-                : (isHausa ? 'Babu intanet' : 'Device Offline')}
-            </Text>
-            <Text style={styles.pendingInfo}>
-              {isHausa
-                ? 'An adana hotonka a wayarka kuma yana jiran bincike.'
-                : 'Your scan has been saved locally and is waiting for analysis.'}
-            </Text>
-            <Text style={styles.pendingSubInfo}>
-              {languageCode === 'ha'
-                ? 'Za a tura hoton kai tsaye idan intanet ya dawo, ko da manhajar a rufe take. Za mu sanar da kai idan sakamakon ya shirya.'
-                : "Your photo will be sent automatically when internet returns, even if the app is closed. We'll notify you when the result is ready."}
-            </Text>
-
-            <View style={styles.cropInfo}>
-              <Text style={styles.cropLabel}>{isHausa ? "Nau'in amfanin gona:" : 'Crop Type:'}</Text>
-              <Text style={styles.cropValue}>{scanResult?.cropType || (isHausa ? 'Ba a fada ba' : 'Not specified')}</Text>
-            </View>
-
-            {syncError && (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>{syncError}</Text>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.syncButton}
-              onPress={handleSyncNow}
-              disabled={loading}
-            >
-              <Ionicons name="cloud-upload-outline" size={20} color="white" />
-              <Text style={styles.buttonText}>
-                {loading ? (isHausa ? 'Ana aikawa...' : 'Syncing...') : (isHausa ? 'Aika yanzu' : 'Sync Now')}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.push('./')}
-            >
-              <Text style={styles.backButtonText}>{isHausa ? 'Koma baya' : 'Back'}</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-
-  // Analysis complete UI
-  if (!scanResult?.disease) {
-    return (
-      <SafeAreaView>
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.header}>{isHausa ? 'Babu sakamako' : 'No Results'}</Text>
-          <View style={styles.issueCard}>
-            <Text style={styles.issueTitle}>{isHausa ? 'Babu sakamakon bincike' : 'No analysis results available'}</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.confirmButton}
-            onPress={() => router.push('./')}
-          >
-            <Text style={styles.buttonText}>{isHausa ? 'Koma baya' : 'Go Back'}</Text>
+          <Text style={styles.header}>{t('Babu sakamako', 'No result')}</Text>
+          <Text style={styles.bodyText}>{t('Babu sakamakon bincike a nan.', 'There is no diagnosis to show.')}</Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={goHome}>
+            <Text style={styles.primaryButtonText}>{t('Koma gida', 'Back home')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // Helper function to render section
-  const renderSection = (
-    icon: string,
-    title: string,
-    items: string[] | undefined,
-    isList: boolean = true,
-    showFallback: boolean = false
-  ) => {
-    if (!items || items.length === 0) return null;
+  // The photo was fine but the AI couldn't diagnose it (not a plant, unsupported crop, unsure)
+  if (scanResult.status === 'rejected') {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <ScrollView contentContainerStyle={styles.container}>
+          {params.photoUri && (
+            <Image source={{ uri: params.photoUri }} style={styles.rejectedPhoto} accessibilityIgnoresInvertColors />
+          )}
+          <Text style={styles.header} accessibilityRole="header">
+            {t('Ba a iya gane matsalar ba', "Couldn't diagnose this photo")}
+          </Text>
+          <Text style={styles.bodyText}>{describeRejection(scanResult.rejection, isHausa)}</Text>
+          <Text style={styles.mutedNote}>
+            {t(
+              'An adana shi a tarihinka, kuma bai rage maka binciken yau ba.',
+              "It's saved in your history and didn't use up one of today's diagnoses."
+            )}
+          </Text>
 
+          <TouchableOpacity style={styles.primaryButton} onPress={retake}>
+            <Ionicons name="camera-outline" size={18} color={C.white} />
+            <Text style={styles.primaryButtonText}>{t('Sake ɗaukar hoto', 'Retake photo')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => consultExpert(false)}>
+            <Ionicons name="chatbubbles-outline" size={18} color={C.ink} />
+            <Text style={styles.secondaryButtonText}>{t('Tambayi kwararre', 'Ask an expert')}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // Checked first: no treatment, dosage, timing or where-to-buy for unconfirmed results
+  if (isLowConfidenceDiagnosis(scanResult)) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <UnconfirmedDiagnosis
+            name={scanResult.name || scanResult.disease}
+            cropType={scanResult.cropType}
+            confidence={scanResult.confidence}
+            threshold={scanResult.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD}
+            safetyNotice={scanResult.safetyNotice}
+            isHausa={isHausa}
+            onConsultExpert={() => consultExpert(true)}
+            onRetake={retake}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  const renderSection = (icon: string, title: string, items: string[] | undefined, numbered = true) => {
+    if (!items || items.length === 0) return null;
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Ionicons name={icon as any} size={20} color="#2e7d32" />
+          <Ionicons name={icon as any} size={20} color={C.primary} />
           <Text style={styles.sectionTitle}>{title}</Text>
         </View>
-        {isList ? (
-          items.map((item, index) => (
-            <View key={index} style={styles.listContainer}>
-              <View style={styles.listHeader}>
-                <View style={styles.listNumberBox}>
-                  <Text style={styles.listNumber}>{index + 1}</Text>
-                </View>
-                <Text style={styles.listText}>{item}</Text>
+        {items.map((item, index) => (
+          <View key={index} style={styles.item}>
+            {numbered && (
+              <View style={styles.itemNumber}>
+                <Text style={styles.itemNumberText}>{index + 1}</Text>
               </View>
-            </View>
-          ))
-        ) : (
-          items.map((item, index) => (
-            <View key={index} style={styles.textContainer}>
-              <Text style={styles.textContent}>{item}</Text>
-            </View>
-          ))
-        )}
+            )}
+            <Text style={styles.itemText}>{item}</Text>
+          </View>
+        ))}
       </View>
     );
   };
 
-  return (
-    <SafeAreaView edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>{isHausa ? 'Sakamakon bincike' : 'Analysis Results'}</Text>
+  const changeSeverity = () =>
+    router.replace({ pathname: '/cropscan', params: params.photoUri ? { photoUri: params.photoUri } : {} });
 
-        {isLowConfidence ? (
-          <UnconfirmedDiagnosis
-            name={scanResult?.name || scanResult?.disease}
-            cropType={scanResult?.cropDetected || scanResult?.cropType}
-            confidence={scanResult?.confidence}
-            threshold={scanResult?.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD}
-            safetyNotice={scanResult?.safetyNotice}
-            isHausa={isHausa}
-            onConsultExpert={() => router.push({
-              pathname: '../(tabs)/expertChat',
-              params: {
-                scanId: scanResult?._id || scanResult?.scanId,
-                isLowConfidence: 'true',
-              },
-            })}
-            onRetake={() => router.replace('/cropscan')}
-          />
-        ) : (
-        <>
-        {/* Detected Issue */}
+  return (
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.header}>{t('Sakamakon bincike', 'Diagnosis')}</Text>
+
         <IssueCard
-          diseaseName={scanResult?.name || scanResult?.disease || (isHausa ? 'Matsala da ba a sani ba' : 'Unknown issue')}
-          cropType={scanResult?.cropDetected || scanResult?.cropType || (isHausa ? 'Amfanin gona da ba a sani ba' : 'Unknown crop')}
-          confidence={scanResult?.confidence || 0}
-          severity={scanResult?.severity}
+          diseaseName={scanResult.name || scanResult.disease || t('Matsala da ba a sani ba', 'Unknown issue')}
+          cropType={scanResult.cropType || t('Amfanin gona da ba a sani ba', 'Unknown crop')}
+          confidence={scanResult.confidence || 0}
+          severity={scanResult.severity}
         />
 
-        {scanResult?.isFallback && (
-          <View style={styles.fallbackBanner}>
-            <Ionicons name="information-circle-outline" size={18} color="#7c4a00" />
-            <Text style={styles.fallbackText}>
-              {languageCode === 'ha'
-                ? 'Ba mu sami bayanan wannan cuta a cikin kundin mu ba. Muna bada shawarar tintubar Masana.'
-                : 'Specific data for this disease is not yet in our database. Showing general recommendations — consult an agronomist for targeted advice.'}
+        {scanResult.severityAssumed && (
+          <View style={styles.assumedBanner}>
+            <Text style={styles.assumedText}>
+              {t('An nuna magani don tsanani matsakaici.', 'Treatment shown for moderate severity.')}
             </Text>
+            <TouchableOpacity onPress={changeSeverity} hitSlop={8} accessibilityRole="button">
+              <Text style={styles.assumedLink}>{t('Canja tsanani', 'Change severity')}</Text>
+            </TouchableOpacity>
           </View>
         )}
 
-        {/* Confident result: full treatment */}
-        {(
-          <>
-            {/* Recommended Treatment */}
-            {renderSection(
-              'medkit-outline',
-              languageCode === 'ha' ? 'Yi wannan Yanzu' : 'Recommended Treatment',
-              scanResult?.recommendations
-            )}
-
-            {/* Application Steps */}
-            {renderSection(
-              'list-outline',
-              languageCode === 'ha' ? 'Yadda ake Aiwatarwa' : 'Application Steps',
-              scanResult?.applicationSteps
-            )}
-
-            {/* Dosage */}
-            {renderSection(
-              'flask-outline',
-              languageCode === 'ha' ? 'Adadin da za a yi amfani da shi' : 'Dosage',
-              scanResult?.dosage,
-              false
-            )}
-
-            {/* Timing */}
-            {renderSection(
-              'time-outline',
-              languageCode === 'ha' ? 'Lokacin da za a yi' : 'Timing',
-              scanResult?.timing,
-              false
-            )}
-
-            {/* Safety Warnings */}
-            {renderSection(
-              'warning-outline',
-              languageCode === 'ha' ? 'Gargadin Lafiya' : 'Safety Warnings',
-              scanResult?.safetyWarnings
-            )}
-
-            {/* Expected Outcome */}
-            {renderSection(
-              'trending-up-outline',
-              languageCode === 'ha' ? 'Sakamakon da za ayi Tsammani' : 'Expected Outcome',
-              scanResult?.expectedOutcome,
-              false
-            )}
-
-            {/* Follow-up Days */}
-            {renderSection(
-              'calendar-outline',
-              languageCode === 'ha' ? 'Kwanakin Bibiyar' : 'Follow-up Days',
-              scanResult?.followUpDays,
-              false
-            )}
-
-            {/* Input Sourcing */}
-            {renderSection(
-              'storefront-outline',
-              languageCode === 'ha' ? 'Inda za a Sayi Magunguna' : 'Where to Buy Inputs',
-              scanResult?.inputSourcing,
-              false
-            )}
-
-            {/* Future Prevention */}
-            {renderSection(
-              'shield-checkmark-outline',
-              languageCode === 'ha' ? 'Hanyoyin Rigakafi' : 'Future Prevention',
-              scanResult?.futurePrevention
-            )}
-          </>
+        {/* Always visible when present, even without treatment data */}
+        {!!scanResult.safetyWarnings?.length && (
+          <View style={styles.warningBox}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="warning-outline" size={20} color={C.cautionText} />
+              <Text style={[styles.sectionTitle, { color: C.cautionText }]}>{t('Gargadin lafiya', 'Safety warnings')}</Text>
+            </View>
+            {scanResult.safetyWarnings.map((warning, i) => (
+              <Text key={i} style={styles.warningText}>{warning}</Text>
+            ))}
+          </View>
         )}
 
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[
-              styles.confirmButton,
-              scanResult?.isFallback && styles.confirmButtonDisabled,
-            ]}
-            onPress={() => router.push('./')}
-            disabled={!!scanResult?.isFallback}
-          >
-            <Text style={styles.buttonText}>
-              {languageCode === 'ha' ? "Zanyi wannan" : "I will do this"}
+        {scanResult.isFallback ? (
+          // No treatment data for this disease: an expert instead of an empty section
+          <View style={styles.expertCard}>
+            <Text style={styles.expertTitle}>
+              {t('Babu shawarar magani ga wannan cuta tukuna', "We don't have treatment advice for this disease yet")}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.expertButton}
-            onPress={() => router.push({
-                pathname: '../(tabs)/expertChat',
-                params: {
-                  scanId: scanResult?._id || scanResult?.scanId,
-                  isLowConfidence: 'false',
-                },
-            })}
-          >
-            <Text style={styles.buttonText}>
-              {languageCode === "ha" ? "Tambayi Kwararru" : "Ask Expert"}
+            <Text style={styles.bodyText}>
+              {t('Kwararre zai iya gaya maka abin da za ka yi.', 'An expert can tell you what to do.')}
             </Text>
-          </TouchableOpacity>
-        </View>
-        </>
+            <TouchableOpacity style={styles.primaryButton} onPress={() => consultExpert(false)}>
+              <Ionicons name="chatbubbles-outline" size={18} color={C.white} />
+              <Text style={styles.primaryButtonText}>{t('Tuntubi kwararre', 'Consult an expert')}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {renderSection('medkit-outline', t('Yi wannan yanzu', 'Recommended treatment'), scanResult.recommendations)}
+            {renderSection('list-outline', t('Yadda ake aiwatarwa', 'Application steps'), scanResult.applicationSteps)}
+            {renderSection('flask-outline', t('Adadin da za a yi amfani da shi', 'Dosage'), scanResult.dosage, false)}
+            {renderSection('time-outline', t('Lokacin da za a yi', 'Timing'), scanResult.timing, false)}
+            {renderSection('trending-up-outline', t('Sakamakon da za a yi tsammani', 'Expected outcome'), scanResult.expectedOutcome, false)}
+            {renderSection('calendar-outline', t('Kwanakin bibiya', 'Follow-up days'), scanResult.followUpDays, false)}
+            {renderSection('storefront-outline', t('Inda za a sayi magunguna', 'Where to buy inputs'), scanResult.inputSourcing, false)}
+            {renderSection('shield-checkmark-outline', t('Hanyoyin rigakafi', 'Future prevention'), scanResult.futurePrevention)}
+
+            <TouchableOpacity style={styles.primaryButton} onPress={goHome}>
+              <Text style={styles.primaryButtonText}>{t('Zan yi wannan', 'I will do this')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryButton} onPress={() => consultExpert(false)}>
+              <Ionicons name="chatbubbles-outline" size={18} color={C.ink} />
+              <Text style={styles.secondaryButtonText}>{t('Tambayi kwararre', 'Ask an expert')}</Text>
+            </TouchableOpacity>
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -487,264 +233,90 @@ const TreatmentRecommendationScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: "#fff",
-    flexGrow: 1,
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0fff4'
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 15,
-    color: "#111",
-  },
-  fallbackBanner: {
+  safe: { flex: 1, backgroundColor: C.white },
+  container: { padding: 20, flexGrow: 1 },
+  header: { fontSize: 24, lineHeight: 30, fontWeight: "700", marginBottom: 14, color: C.ink },
+  bodyText: { fontSize: 16, lineHeight: 23, color: C.ink },
+  mutedNote: { fontSize: 14, lineHeight: 20, color: C.muted, marginTop: 12, marginBottom: 24 },
+  rejectedPhoto: { width: 112, height: 112, borderRadius: 18, marginBottom: 20, backgroundColor: C.line },
+  assumedBanner: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#fff8e1',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: 10,
+    rowGap: 4,
+    backgroundColor: C.paper,
     borderWidth: 1,
-    borderColor: '#ffe0b2',
-    borderRadius: 10,
+    borderColor: C.line,
+    borderRadius: 12,
     padding: 12,
     marginBottom: 16,
-    gap: 8,
   },
-  fallbackText: {
-    flex: 1,
-    fontSize: 13,
-    color: '#7c4a00',
-    lineHeight: 18,
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#111",
-    marginLeft: 6,
-  },
-  listContainer: {
-    backgroundColor: "#f9f9f9",
+  assumedText: { fontSize: 15, color: C.ink },
+  assumedLink: { fontSize: 15, color: C.primary, fontWeight: '700', textDecorationLine: 'underline' },
+  warningBox: {
+    backgroundColor: C.cautionBg,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
+    borderColor: C.cautionBorder,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 22,
   },
-  listHeader: {
+  warningText: { fontSize: 15, lineHeight: 22, color: C.cautionText, marginBottom: 4 },
+  expertCard: {
+    backgroundColor: C.paper,
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  expertTitle: { fontSize: 17, lineHeight: 23, fontWeight: '700', color: C.ink, marginBottom: 6 },
+  section: { marginBottom: 24 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 },
+  sectionTitle: { fontSize: 17, fontWeight: "700", color: C.ink },
+  item: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    gap: 10,
+    backgroundColor: C.paper,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
   },
-  listNumberBox: {
-    backgroundColor: "#e8f5e9",
-    width: 28,
-    height: 28,
+  itemNumber: {
+    backgroundColor: C.primarySoft,
+    width: 26,
+    height: 26,
     borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
   },
-  listNumber: {
-    fontWeight: "700",
-    color: "#16A34A",
-  },
-  listText: {
-    flex: 1,
-    fontSize: 15,
-    color: "#333",
-  },
-  textContainer: {
-    backgroundColor: "#f9f9f9",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 10,
-  },
-  textContent: {
-    fontSize: 15,
-    color: "#333",
-    lineHeight: 22,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 15,
-  },
-  confirmButton: {
-    flex: 1,
-    backgroundColor: "#16A34A",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginRight: 10,
-  },
-  expertButton: {
-    flex: 1,
-    backgroundColor: "#007bff",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  syncButton: {
-    flex: 1,
-    backgroundColor: "#0052cc",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    marginRight: 10,
-  },
-  backButton: {
-    flex: 1,
-    backgroundColor: "#e0e0e0",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  backButtonText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  pendingCard: {
-    backgroundColor: "#fff8e1",
-    borderWidth: 1,
-    borderColor: "#ffe0b2",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  pendingTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#ff8f00",
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  pendingInfo: {
-    fontSize: 14,
-    color: "#333",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  pendingSubInfo: {
-    fontSize: 12,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  cropInfo: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    width: "100%",
-  },
-  cropLabel: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 4,
-  },
-  cropValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    textTransform: "capitalize",
-  },
-  errorBox: {
-    backgroundColor: "#ffebee",
-    borderColor: "#ef5350",
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    alignSelf: "stretch",
-  },
-  errorText: {
-    color: "#c62828",
-    fontSize: 12,
-    textAlign: "center",
-  },
-  lowConfidenceBanner: {
+  itemNumberText: { fontWeight: "700", color: C.primary },
+  itemText: { flex: 1, fontSize: 15, lineHeight: 22, color: C.ink },
+  primaryButton: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#fff3e0',
+    gap: 8,
+    backgroundColor: C.primary,
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: 'center',
+    marginTop: 16,
+  },
+  primaryButtonText: { color: C.white, fontSize: 16, fontWeight: "700" },
+  secondaryButton: {
+    flexDirection: 'row',
+    gap: 8,
     borderWidth: 1,
-    borderColor: '#ffb74d',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20,
+    borderColor: C.line,
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: 'center',
+    marginTop: 10,
   },
-  lowConfidenceTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#7c4a00',
-    marginBottom: 4,
-  },
-  lowConfidenceText: {
-    fontSize: 13,
-    color: '#7c4a00',
-    lineHeight: 18,
-  },
-  expertPromptCard: {
-    alignItems: 'center',
-    backgroundColor: '#e8f0fe',
-    borderWidth: 1,
-    borderColor: '#b3c8f5',
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 25,
-  },
-  expertPromptTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#0052cc',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  expertPromptText: {
-    fontSize: 14,
-    color: '#0052cc',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  confirmButtonDisabled: {
-    backgroundColor: '#b0bec5',
-  },
-  expertButtonHighlighted: {
-    backgroundColor: '#0041a8',
-  },
-  issueCard: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  issueTitle: {
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
-  }
+  secondaryButtonText: { color: C.ink, fontSize: 16, fontWeight: "600" },
 });
 
 export default TreatmentRecommendationScreen;

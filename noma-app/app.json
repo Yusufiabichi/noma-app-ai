@@ -22,6 +22,7 @@
         "backgroundImage": "./assets/images/Background.jpg",
         "monochromeImage": "./assets/images/Monochrome.png"
       },
+      "googleServicesFile": "./android/app/google-services.json",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.yusufiabichi.mobileapp"

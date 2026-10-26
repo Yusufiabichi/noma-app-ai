@@ -21,7 +21,7 @@ const HOLD_MS = 2200;
 const OUT_MS  = 220;
 const IN_MS   = 360;
 
-const MAX_FONT = 64;
+const MAX_FONT = 44;
 const MIN_FONT = 30;
 // The widest greeting ("How far?" in bold) is ~4.5–4.8× the font size.
 const WIDEST_RATIO = 4.8;

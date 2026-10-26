@@ -23,7 +23,7 @@ import {
   getCachedProfileStats,
   ProfileStats,
 } from '@/src/services/profileStats';
-import { getQueue, onQueueChange } from '@/src/services/offlineScanQueue';
+import { getQueue, isActive as isQueueItemActive, onQueueChange, QueuedScan } from '@/src/services/offlineScanQueue';
 import { DIAGNOSES_PER_DAY, getEffectiveTier, isTrialActive } from '@/src/auth/access';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -162,10 +162,7 @@ const FarmerProfile = ({
     });
     loadStats();
 
-    const countUnsent = (queue: any[]) =>
-      setWaitingToSend(
-        queue.filter((item) => !item.serverScanId && item.status !== 'failed').length,
-      );
+    const countUnsent = (queue: QueuedScan[]) => setWaitingToSend(queue.filter(isQueueItemActive).length);
     getQueue().then(countUnsent);
     const unsubscribe = onQueueChange(countUnsent);
     return () => {
@@ -284,6 +281,7 @@ const FarmerProfile = ({
             total={stats?.total ?? null}
             healthy={stats?.healthy ?? null}
             issues={stats?.issues ?? null}
+            rejected={stats?.rejected ?? null}
             waitingToSend={waitingToSend}
             isHausa={isHausa}
           />

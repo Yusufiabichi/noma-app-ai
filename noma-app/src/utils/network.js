@@ -10,13 +10,18 @@ let isOnlineCache = null;
 let unsubscribe = null;
 const listeners = [];
 
+// isInternetReachable is null while NetInfo is still checking (right after a
+// reconnect) and on some networks it never resolves. Only an explicit `false`
+// means offline; the request itself fails if there really is no internet.
+const toOnline = (state) => state.isConnected === true && state.isInternetReachable !== false;
+
 /**
  * Initialize network monitoring
  */
 export const initNetworkMonitoring = () => {
   unsubscribe = NetInfo.addEventListener((state) => {
     const wasOnline = isOnlineCache;
-    isOnlineCache = state.isConnected && state.isInternetReachable;
+    isOnlineCache = toOnline(state);
     
     logger.info('Network status changed', {
       isOnline: isOnlineCache,
@@ -50,7 +55,7 @@ export const isOnline = async () => {
 
   try {
     const state = await NetInfo.fetch();
-    isOnlineCache = state.isConnected && state.isInternetReachable;
+    isOnlineCache = toOnline(state);
     return isOnlineCache;
   } catch (error) {
     logger.error('Failed to check network status', error);

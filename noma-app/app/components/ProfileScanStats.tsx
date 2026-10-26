@@ -134,12 +134,15 @@ export function ScanStatsSummary({
   total,
   healthy,
   issues,
+  rejected = null,
   waitingToSend,
   isHausa,
 }: {
   total: number | null;
   healthy: number | null;
   issues: number | null;
+  /** Photos the AI couldn't diagnose (not a plant, unsupported crop…) */
+  rejected?: number | null;
   waitingToSend: number;
   isHausa: boolean;
 }) {
@@ -175,6 +178,17 @@ export function ScanStatsSummary({
             {isHausa
               ? `Kashi ${Math.round(healthyShare * 100)} cikin 100 na amfanin gonarka da aka bincika suna da lafiya`
               : `${Math.round(healthyShare * 100)}% of your diagnosed crops were healthy`}
+          </Text>
+        </View>
+      )}
+
+      {!!rejected && rejected > 0 && (
+        <View style={styles.waitingRow}>
+          <Ionicons name="help-circle-outline" size={14} color={COLORS.textLight} />
+          <Text style={styles.waitingText}>
+            {isHausa
+              ? `Ba a iya gane matsalar hoto ${rejected} ba`
+              : `${rejected} photo${rejected === 1 ? '' : 's'} couldn't be diagnosed`}
           </Text>
         </View>
       )}

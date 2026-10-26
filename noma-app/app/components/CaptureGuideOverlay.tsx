@@ -18,17 +18,17 @@ const FRAME_Y = (SCREEN_H - FRAME_H) / 2 - 40; // nudged above center
 
 const TIPS: Record<string, string[]> = {
   en: [
-    'Fill the frame with the affected leaf',
-    'Use natural daylight — avoid direct shade',
+    'Photograph one affected leaf',
+    'Fill the frame with the leaf',
+    'Use daylight, outside if you can',
     'Hold your phone steady before tapping capture',
-    'Focus on the most visibly infected part',
     'Clean your camera lens for a clearer shot',
   ],
   ha: [
-    'Cika firam ɗin da ganyen da ya kamu',
-    'Yi hoton a waje mai rana — guji inuwa',
+    'Ɗauki hoton ganye ɗaya da ya kamu',
+    'Cika firam ɗin da ganyen',
+    'Yi amfani da hasken rana, a waje idan zai yiwu',
     'Riƙe wayar ka da kyau kafin ka ɗauka',
-    'Mai da hankali kan ɓangaren da ya fi kamuwa',
     'Goge idon kyamara don hoto mai kyau',
   ],
 };
