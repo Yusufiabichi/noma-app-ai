@@ -2,7 +2,7 @@
   "expo": {
     "name": "NomaApp AI",
     "slug": "mobile-app",
-    "version": "1.0.1",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/AppIcon.jpg",
     "scheme": ["nomaapp", "mobileapp"],
@@ -22,7 +22,7 @@
         "backgroundImage": "./assets/images/Background.jpg",
         "monochromeImage": "./assets/images/Monochrome.png"
       },
-      "googleServicesFile": "./android/app/google-services.json",
+      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.yusufiabichi.mobileapp"

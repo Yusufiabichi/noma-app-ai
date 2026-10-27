@@ -9,6 +9,7 @@ import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
 import { useAuth } from '@/src/hooks/useAuth';
 import { enqueueScan } from '@/src/services/offlineScanQueue';
+import { getScansLeftToday } from '@/src/services/profileStats';
 import { submitScan } from '@/src/services/scanSubmission';
 import logger from '@/src/utils/logger';
 import { isOnline } from '@/src/utils/network';
@@ -52,6 +53,17 @@ function CropScan() {
       requestPermission();
     }
   }, [permission]);
+
+  // Before the farmer takes a photo: none left today means no point capturing
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    (async () => {
+      const left = await getScansLeftToday(user, { online: await isOnline() });
+      if (active && left === 0 && !submitting.current) showLimitReached();
+    })();
+    return () => { active = false; };
+  }, [user]);
 
   // Back steps through the flow; it can't cancel a diagnosis in progress
   useEffect(() => {
@@ -140,6 +152,11 @@ function CropScan() {
     }
   }
 
+  function showLimitReached() {
+    setEndState({ kind: 'limit', message: '' });
+    setStep('ended');
+  }
+
   async function diagnose() {
     if (!photoUri || !severityChoice || submitting.current) return;
     submitting.current = true;
@@ -147,14 +164,22 @@ function CropScan() {
     const scanLanguage = isHausa ? 'ha' : 'en';
 
     try {
-      if (!(await isOnline())) {
+      const online = await isOnline();
+      if (online) setStep('analysing');
+
+      // Checked again right before every send: never send a diagnosis with none left today
+      if ((await getScansLeftToday(user, { online })) === 0) {
+        showLimitReached();
+        return;
+      }
+
+      if (!online) {
         await enqueueScan({ imageUri: photoUri, severity, language: scanLanguage, userId: user?.id });
         setEndState({ kind: 'queued' });
         setStep('ended');
         return;
       }
 
-      setStep('analysing');
       const outcome = await submitScan({ imageUri: photoUri, severity, language: scanLanguage });
 
       if (outcome.kind === 'diagnosed' || outcome.kind === 'rejected') {

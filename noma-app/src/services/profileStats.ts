@@ -1,10 +1,16 @@
 // Profile stats
-// Real scan totals for the profile: total, healthy, issues and scans used today.
+// Real scan totals for the profile: total, healthy, issues and diagnoses used today.
 // Uses GET /scans/stats when it returns numbers, otherwise counts from the
 // farmer's latest scans. The last result is cached for offline display.
+//
+// Diagnoses used today: a server count when /scans/stats sends one that clearly
+// means usage, otherwise today's diagnosed scans counted here. Rejected and
+// unusable photos don't use up a diagnosis, so they're never counted.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from '@/src/api/client';
 import { getScans, getScanStats } from '@/src/api/scans.api';
+import { DIAGNOSES_PER_DAY, getEffectiveTier, getRole } from '@/src/auth/access';
 import logger from '@/src/utils/logger';
 
 const CACHE_KEY = '@nomaapp_profile_stats';
@@ -16,7 +22,7 @@ export interface ProfileStats {
   issues: number;
   /** Photos the AI couldn't diagnose, if known */
   rejected?: number | null;
-  /** Scans the server counted today, if known */
+  /** Diagnoses used today (rejected photos excluded), if known */
   today: number | null;
   /** Remaining scans today as reported by the server, if it does */
   remainingToday: number | null;
@@ -36,8 +42,8 @@ const isHealthy = (scan: any) => {
   return /healthy|lafiya/i.test(label);
 };
 
-const isToday = (iso: string) => {
-  const date = new Date(iso);
+const isToday = (value: string | number) => {
+  const date = new Date(value);
   const now = new Date();
   return (
     date.getFullYear() === now.getFullYear() &&
@@ -45,6 +51,19 @@ const isToday = (iso: string) => {
     date.getDate() === now.getDate()
   );
 };
+
+// Above the largest daily limit (basic: 10), so a full day always fits
+const TODAY_SAMPLE_SIZE = 20;
+
+/**
+ * Diagnosed scans created today. Throws when the list can't be loaded, so a
+ * failed request never shows as "nothing used".
+ */
+async function countDiagnosedToday(): Promise<number> {
+  const body: any = await apiClient.get(`/scans?page=1&limit=${TODAY_SAMPLE_SIZE}&status=diagnosed`);
+  const scans: any[] = body?.data?.scans || body?.scans || (Array.isArray(body?.data) ? body.data : []);
+  return scans.filter((scan) => scan?.status === 'diagnosed' && scan.createdAt && isToday(scan.createdAt)).length;
+}
 
 async function fromStatsEndpoint(): Promise<ProfileStats | null> {
   const response: any = await getScanStats();
@@ -60,7 +79,8 @@ async function fromStatsEndpoint(): Promise<ProfileStats | null> {
     healthy,
     issues,
     rejected: firstNumber(stats, ['rejectedScans', 'rejected']),
-    today: firstNumber(stats, ['today', 'scansToday', 'todayCount', 'dailyUsed']),
+    // Only fields that mean diagnoses used; a plain "today" may include rejected photos
+    today: firstNumber(stats, ['diagnosesToday', 'diagnosesUsedToday', 'dailyUsed']),
     remainingToday: firstNumber(stats, ['remainingToday', 'scansRemainingToday', 'dailyRemaining']),
     updatedAt: Date.now(),
   };
@@ -79,7 +99,7 @@ async function fromRecentScans(): Promise<ProfileStats | null> {
     healthy,
     issues: diagnosed.length - healthy,
     rejected: scans.filter((scan: any) => scan.status === 'rejected').length,
-    today: scans.filter((scan: any) => scan.createdAt && isToday(scan.createdAt)).length,
+    today: diagnosed.filter((scan: any) => scan.createdAt && isToday(scan.createdAt)).length,
     remainingToday: null,
     updatedAt: Date.now(),
   };
@@ -88,7 +108,12 @@ async function fromRecentScans(): Promise<ProfileStats | null> {
 export async function getCachedProfileStats(): Promise<ProfileStats | null> {
   try {
     const raw = await AsyncStorage.getItem(CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const cached: ProfileStats | null = raw ? JSON.parse(raw) : null;
+    // Today's usage from an earlier day would show the wrong scans left
+    if (cached && !isToday(cached.updatedAt)) {
+      return { ...cached, today: null, remainingToday: null };
+    }
+    return cached;
   } catch {
     return null;
   }
@@ -111,10 +136,46 @@ export async function fetchProfileStats(): Promise<ProfileStats | null> {
       logger.warn('Could not count recent scans', error);
     }
   }
+  if (stats && stats.remainingToday === null && stats.today === null) {
+    try {
+      stats.today = await countDiagnosedToday();
+    } catch (error) {
+      logger.warn("Could not count today's diagnoses", error);
+    }
+  }
   if (stats) {
     try {
       await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(stats));
     } catch {}
   }
   return stats;
+}
+
+// ─── Scans left today ─────────────────────────────────────────────────────────
+
+/**
+ * Diagnoses the farmer can still run today: Infinity when the plan has no daily
+ * limit, null when unknown. Prefers counts made from fresh data over the cached
+ * user's scansRemaining, which can be from an earlier day.
+ */
+export function computeScansLeft(stats: ProfileStats | null, user: any): number | null {
+  const limit = DIAGNOSES_PER_DAY[getEffectiveTier(user)];
+  if (!Number.isFinite(limit)) return Infinity;
+
+  if (typeof stats?.remainingToday === 'number') return Math.max(0, stats.remainingToday);
+  if (typeof stats?.today === 'number') return Math.max(0, limit - stats.today);
+  const serverRemaining = user?.subscription?.scansRemaining;
+  return typeof serverRemaining === 'number' ? Math.max(0, serverRemaining) : null;
+}
+
+/**
+ * Checked before every diagnosis. Online it loads fresh numbers; offline (or if
+ * that fails) it uses today's cached ones. Only farmers have a daily limit.
+ */
+export async function getScansLeftToday(user: any, { online = true } = {}): Promise<number | null> {
+  if (getRole(user) !== 'farmer') return Infinity;
+  if (!Number.isFinite(DIAGNOSES_PER_DAY[getEffectiveTier(user)])) return Infinity;
+
+  const fresh = online ? await fetchProfileStats().catch(() => null) : null;
+  return computeScansLeft(fresh ?? (await getCachedProfileStats()), user);
 }

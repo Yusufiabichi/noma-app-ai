@@ -1,15 +1,26 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { format } from "date-fns";
+import PaymentSuccess from '@/app/components/PaymentSuccess';
+import RequireAccess from '@/app/components/RequireAccess';
+import { PaymentProvider, VerifyResult } from "@/src/api/payments.api";
 import { useLanguage } from "@/src/context/LanguageContext";
-import { VerifyResult, PaymentProvider } from "@/src/api/payments.api";
-import { clearPendingPayment, getPendingPayment, startCheckout, verifyUntilSettled } from "@/src/services/paymentFlow";
+import {
+  CHECKOUT_WINDOW_NAME,
+  clearPendingPayment,
+  closeCheckoutWindow,
+  getPendingPayment,
+  isCheckoutWindowOpen,
+  openCheckoutWindow,
+  showCheckout,
+  startCheckout,
+  verifyUntilSettled,
+} from "@/src/services/paymentFlow";
 import { getServerErrorCode } from "@/src/utils/errors";
 import logger from "@/src/utils/logger";
-import RequireAccess from '@/app/components/RequireAccess';
+import { Ionicons } from "@expo/vector-icons";
+import { format } from "date-fns";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const COLORS = {
   primary: "#16A34A",
@@ -38,7 +49,16 @@ const PaymentResultScreen = () => {
   const [stage, setStage] = useState<Stage>("verifying");
   const [result, setResult] = useState<VerifyResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [windowOpen, setWindowOpen] = useState(false);
   const unmounted = useRef(false);
+  const [inCheckoutWindow] = useState(
+    () =>
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      window.name === CHECKOUT_WINDOW_NAME &&
+      !!window.opener &&
+      !window.opener.closed
+  );
 
   useEffect(() => () => { unmounted.current = true; }, []);
 
@@ -54,11 +74,24 @@ const PaymentResultScreen = () => {
     });
   }, []);
 
+  // Web: watch the payment window so the copy can say "finish paying there"
+  useEffect(() => {
+    if (Platform.OS !== "web" || stage !== "verifying") return;
+    setWindowOpen(isCheckoutWindowOpen());
+    const timer = setInterval(() => setWindowOpen(isCheckoutWindowOpen()), 1000);
+    return () => clearInterval(timer);
+  }, [stage]);
+
   const runVerify = async (ref: string) => {
     setStage("verifying");
     setErrorMessage(null);
     try {
-      const verified = await verifyUntilSettled(ref, { isCancelled: () => unmounted.current });
+      const verified = await verifyUntilSettled(ref, {
+        isCancelled: () => unmounted.current,
+        // Keep checking while the payer is still in the web payment window
+        checkoutOpen: isCheckoutWindowOpen,
+      });
+      if (verified.payment.status !== "pending") closeCheckoutWindow();
       // Shown now; a payment still pending is activated by the backend's webhook
       await clearPendingPayment();
       if (unmounted.current) return;
@@ -81,21 +114,30 @@ const PaymentResultScreen = () => {
   };
 
   useEffect(() => {
-    if (txnRef) runVerify(txnRef);
+    if (txnRef && !inCheckoutWindow) runVerify(txnRef);
   }, [txnRef]);
+
+  // This page loaded inside the web payment window: the app tab that opened it verifies
+  useEffect(() => {
+    if (inCheckoutWindow) window.close();
+  }, []);
 
   const retry = async (provider?: PaymentProvider) => {
     if (!result) return;
+    // Web: open the payment window inside the tap, before any await, or it's blocked
+    const paymentWindow = openCheckoutWindow();
     setStage("restarting");
     try {
-      const newRef = await startCheckout({
+      const started = await startCheckout({
         plan: result.payment.plan,
         interval: result.payment.interval,
         provider,
+        paymentWindow,
       });
-      if (newRef === txnRef) runVerify(newRef);
-      else setTxnRef(newRef);
+      if (Platform.OS === "web") setTxnRef(started.txnRef);
+      else showCheckout(router, started);
     } catch (error: any) {
+      paymentWindow?.close();
       logger.error("Restarting checkout failed", error);
       setStage("failed");
       const code = getServerErrorCode(error);
@@ -119,6 +161,16 @@ const PaymentResultScreen = () => {
     switch (stage) {
       case "verifying":
       case "restarting":
+        if (stage === "verifying" && windowOpen) {
+          return {
+            icon: null,
+            title: t("Kammala biya a shafin biya", "Finish paying in the payment window"),
+            body: t(
+              "Wannan shafin zai sabunta da kansa idan ka gama, kuma za mu rufe shafin biyan.",
+              "This page updates by itself when you're done, and we'll close the payment window."
+            ),
+          };
+        }
         return {
           icon: null,
           title: stage === "verifying"
@@ -163,13 +215,41 @@ const PaymentResultScreen = () => {
 
   const busy = stage === "verifying" || stage === "restarting";
 
+  const header = (
+    <View style={styles.header}>
+      <View style={{ width: 36 }} />
+      <Text style={styles.headerTitle}>{t("Biya", "Payment")}</Text>
+      <View style={{ width: 36 }} />
+    </View>
+  );
+
+  // Only seen if the browser didn't let this payment window close itself
+  if (inCheckoutWindow) {
+    return (
+      <SafeAreaView style={styles.container}>
+        {header}
+        <View style={styles.body}>
+          <Text style={styles.title}>{t("An gama biya", "Payment finished")}</Text>
+          <Text style={styles.message}>
+            {t("Koma shafin NomaApp don ganin sakamakon.", "Return to the NomaApp tab to see the result.")}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (stage === "success" && result) {
+    return (
+      <SafeAreaView style={styles.container}>
+        {header}
+        <PaymentSuccess result={result} isHausa={isHausa} onContinue={goHome} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={{ width: 36 }} />
-        <Text style={styles.headerTitle}>{t("Biya", "Payment")}</Text>
-        <View style={{ width: 36 }} />
-      </View>
+      {header}
 
       <View style={styles.body}>
         {content.icon ? (

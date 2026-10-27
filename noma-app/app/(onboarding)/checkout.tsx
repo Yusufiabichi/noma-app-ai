@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { startCheckout } from "@/src/services/paymentFlow";
+import { openCheckoutWindow, showCheckout, startCheckout } from "@/src/services/paymentFlow";
 import { BillingInterval, PlanId } from "@/src/api/payments.api";
 import { getServerErrorCode } from "@/src/utils/errors";
 import { useAlert } from '@/src/context/AlertContext';
@@ -44,12 +44,15 @@ const CheckoutScreen = () => {
   const [starting, setStarting] = useState(false);
 
   const handlePay = async () => {
+    // Web: open the payment window inside the tap, before any await, or it's blocked
+    const paymentWindow = openCheckoutWindow();
     setStarting(true);
     try {
-      const txnRef = await startCheckout({ plan: planId, interval: billing });
-      // Whatever happened in the browser, the result screen asks the backend
-      router.replace({ pathname: "/payment", params: { txnRef } });
+      const started = await startCheckout({ plan: planId, interval: billing, paymentWindow });
+      // In-app payment page (phone) or the result screen watching the payment window (web)
+      showCheckout(router, started);
     } catch (error: any) {
+      paymentWindow?.close();
       logger.error('Starting checkout failed', error);
       // The client replaces 5xx codes with a generic one, so read the backend's
       const code = getServerErrorCode(error);

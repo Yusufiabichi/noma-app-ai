@@ -73,6 +73,7 @@ export default function RootLayout(){
                 <Stack.Screen name="recentDiagnosis" options={{headerShown: false,  title: "Pest & Disease Guide"}} />
                 <Stack.Screen name="payment/index" options={{headerShown: false, gestureEnabled: false}} />
                 <Stack.Screen name="payment/complete" options={{headerShown: false, gestureEnabled: false}} />
+                <Stack.Screen name="payment/gateway" options={{headerShown: false, gestureEnabled: false}} />
             </Stack>
             <UpdateCheckerWrapper />
             <ScanResultNotificationsHandler />

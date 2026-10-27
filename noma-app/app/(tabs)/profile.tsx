@@ -9,16 +9,17 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Feather, FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useAuth, setUserData } from '@/src/hooks/useAuth';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { format } from 'date-fns';
+import { useAuth, syncUserFromServer } from '@/src/hooks/useAuth';
 import { useAlert } from '@/src/context/AlertContext';
 import { useLanguage } from '@/src/context/LanguageContext';
-import { getCurrentUser } from '@/src/api/auth.api';
 import { getVerificationStatus } from '@/src/api/expert.api';
 import AdminProfile from '../(admin)/profile';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DailyScansMeter, ScanStatsSummary } from '@/app/components/ProfileScanStats';
 import {
+  computeScansLeft,
   fetchProfileStats,
   getCachedProfileStats,
   ProfileStats,
@@ -155,12 +156,18 @@ const FarmerProfile = ({
     if (fresh) setStats(fresh);
   }, []);
 
+  // Tabs stay mounted, so reload whenever the profile is shown (e.g. after a scan or payment)
+  useFocusEffect(
+    useCallback(() => {
+      loadStats();
+    }, [loadStats])
+  );
+
   useEffect(() => {
     let active = true;
     getCachedProfileStats().then((cached) => {
       if (active && cached) setStats((s) => s ?? cached);
     });
-    loadStats();
 
     const countUnsent = (queue: QueuedScan[]) => setWaitingToSend(queue.filter(isQueueItemActive).length);
     getQueue().then(countUnsent);
@@ -176,7 +183,7 @@ const FarmerProfile = ({
     try {
       await Promise.allSettled([
         loadStats(),
-        Promise.resolve(onRefreshUser?.()),
+        syncUserFromServer().then(() => onRefreshUser?.()),
       ]);
     } finally {
       setRefreshing(false);
@@ -185,13 +192,9 @@ const FarmerProfile = ({
 
   const tier = getEffectiveTier(authUser);
   const dailyLimit = DIAGNOSES_PER_DAY[tier];
-  const serverRemaining = authUser?.subscription?.scansRemaining;
-  const remainingToday =
-    stats?.remainingToday ??
-    (typeof serverRemaining === 'number' ? serverRemaining : null) ??
-    (stats?.today != null && Number.isFinite(dailyLimit)
-      ? Math.max(0, dailyLimit - stats.today)
-      : null);
+  // Same rule the scan screen uses before sending a photo
+  const scansLeft = computeScansLeft(stats, authUser);
+  const remainingToday = scansLeft === Infinity ? null : scansLeft;
 
   const user = {
     name: authUser?.name || 'Guest User',
@@ -199,46 +202,73 @@ const FarmerProfile = ({
     email: authUser?.email || authUser?.phone || 'No contact info',
     role: authUser?.role || 'farmer',
     plan: authUser?.subscription?.plan || 'free',
-    trialDaysRemaining: authUser?.trialDaysRemaining,
   };
 
-  const isPaid = tier === 'premium';
-  const isTrial = user.plan === 'trial';
-  const isExpiredPlan =
-    authUser?.subscription?.status === 'expired' && (user.plan === 'basic' || user.plan === 'premium');
-  const expiredPlanName = user.plan === 'premium' ? 'Premium' : 'Basic';
+  // What the farmer can use right now; a paid plan past its end date counts as expired
+  const planKind: 'premium' | 'basic' | 'trial' | 'expired' | 'free' =
+    (user.plan === 'basic' || user.plan === 'premium') && tier === 'free'
+      ? 'expired'
+      : isTrialActive(authUser)
+      ? 'trial'
+      : tier;
+  const paidPlanName = user.plan === 'premium' ? 'Premium' : 'Basic';
+  const periodEndTime = authUser?.subscription?.currentPeriodEnd
+    ? new Date(authUser.subscription.currentPeriodEnd).getTime()
+    : NaN;
+  const periodEnd = Number.isFinite(periodEndTime) ? format(periodEndTime, 'd MMM yyyy') : null;
+  const trialEndTime = new Date(
+    authUser?.trialEndDate || authUser?.subscription?.trialEndDate || NaN
+  ).getTime();
+  const trialDaysLeft =
+    typeof authUser?.trialDaysRemaining === 'number'
+      ? authUser.trialDaysRemaining
+      : Number.isFinite(trialEndTime)
+      ? Math.max(0, Math.ceil((trialEndTime - Date.now()) / (24 * 60 * 60 * 1000)))
+      : null;
 
-  const planLabel = isExpiredPlan
-    ? isHausa
-      ? `Tsarin ${expiredPlanName} ya kare`
-      : `${expiredPlanName} plan expired`
-    : isPaid ? 'Premium Plan' : isTrial ? 'Trial Plan' : 'Free Plan';
-  const planIcon: React.ComponentProps<typeof FontAwesome5>['name'] = isPaid
-    ? 'crown'
-    : isTrial
-    ? 'hourglass-half'
-    : 'seedling';
-  const planFg = isPaid ? COLORS.primary : isTrial ? COLORS.warning : COLORS.textMuted;
-  const planBg = isPaid ? '#ecfdf5' : isTrial ? COLORS.warningSoft : COLORS.borderSoft;
-  const planBorder = isPaid ? '#bbf7d0' : isTrial ? '#fde68a' : COLORS.border;
+  const PLAN_STYLES = {
+    premium: { icon: 'crown', fg: COLORS.primary, bg: '#ecfdf5', border: '#bbf7d0' },
+    basic: { icon: 'star', fg: COLORS.primary, bg: '#ecfdf5', border: '#bbf7d0' },
+    trial: { icon: 'hourglass-half', fg: COLORS.warning, bg: COLORS.warningSoft, border: '#fde68a' },
+    expired: { icon: 'clock', fg: COLORS.warning, bg: COLORS.warningSoft, border: '#fde68a' },
+    free: { icon: 'seedling', fg: COLORS.textMuted, bg: COLORS.borderSoft, border: COLORS.border },
+  } as const;
+  const planStyle = PLAN_STYLES[planKind];
+  const planIcon = planStyle.icon as React.ComponentProps<typeof FontAwesome5>['name'];
 
-  const planDescription = isExpiredPlan
-    ? isHausa
-      ? 'Ka sabunta tsarinka don ci gaba da amfani da fasalolinsa'
-      : 'Renew to keep your features'
-    : isTrial && (user.trialDaysRemaining ?? 0) > 0
-      ? isHausa
-        ? `Sauran kwanakin gwaji: ${user.trialDaysRemaining}`
-        : `Trial ends in ${user.trialDaysRemaining} day${
-            user.trialDaysRemaining === 1 ? '' : 's'
-          }`
-      : isPaid
-      ? isHausa
-        ? 'Bincike mara iyaka da karin fasali'
-        : 'Unlimited scans & advanced features'
+  const planLabel = {
+    premium: isHausa ? 'Tsarin Premium' : 'Premium Plan',
+    basic: isHausa ? 'Tsarin Basic' : 'Basic Plan',
+    trial: isHausa ? 'Tsarin gwaji' : 'Trial Plan',
+    expired: isHausa ? `Tsarin ${paidPlanName} ya kare` : `${paidPlanName} plan expired`,
+    free: isHausa ? 'Tsarin kyauta' : 'Free Plan',
+  }[planKind];
+
+  const planDescription =
+    planKind === 'premium' || planKind === 'basic'
+      ? periodEnd
+        ? isHausa
+          ? `Yana aiki har zuwa ${periodEnd}`
+          : `Valid until ${periodEnd}`
+        : planKind === 'premium'
+        ? isHausa ? 'Bincike mara iyaka da karin fasali' : 'Unlimited scans & advanced features'
+        : isHausa ? 'Bincike 10 a rana da taimakon kwararru' : '10 scans a day & expert help'
+      : planKind === 'trial'
+      ? trialDaysLeft !== null
+        ? isHausa
+          ? `Sauran kwanakin gwaji: ${trialDaysLeft}`
+          : `Trial ends in ${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'}`
+        : isHausa ? 'Kana amfani da dukkan fasaloli' : 'You have every feature during your trial'
+      : planKind === 'expired'
+      ? periodEnd
+        ? isHausa
+          ? `Ya kare ranar ${periodEnd}. Ka sabunta don ci gaba.`
+          : `Ended on ${periodEnd}. Renew to keep your features.`
+        : isHausa ? 'Ka sabunta tsarinka don ci gaba da amfani da fasalolinsa' : 'Renew to keep your features'
       : isHausa
       ? 'Ka daga tsarinka don karin bincike da taimakon kwararru'
       : 'Upgrade for more daily scans and expert help';
+  const showPlanButton = planKind === 'free' || planKind === 'basic' || planKind === 'expired';
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
@@ -300,30 +330,30 @@ const FarmerProfile = ({
 
         {/* Plan Card */}
         <View
-          style={[styles.planCard, { backgroundColor: planBg, borderColor: planBorder }]}
+          style={[styles.planCard, { backgroundColor: planStyle.bg, borderColor: planStyle.border }]}
         >
           <View style={styles.planIconWrap}>
-            <FontAwesome5 name={planIcon} size={16} color={planFg} />
+            <FontAwesome5 name={planIcon} size={16} color={planStyle.fg} />
           </View>
           <View style={{ flex: 1, marginRight: 10 }}>
-            <Text style={[styles.planTitle, { color: planFg }]}>{planLabel}</Text>
+            <Text style={[styles.planTitle, { color: planStyle.fg }]}>{planLabel}</Text>
             <Text style={styles.planText} numberOfLines={2}>
               {planDescription}
             </Text>
           </View>
-          {!isPaid && (
+          {showPlanButton && (
             <Pressable
               onPress={() => router.push('/(onboarding)/plans')}
               hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel={isExpiredPlan ? 'Renew plan' : 'Upgrade plan'}
+              accessibilityLabel={planKind === 'expired' ? 'Renew plan' : 'Upgrade plan'}
               style={({ pressed }) => [
                 styles.upgradeBtn,
                 pressed && { opacity: 0.85 },
               ]}
             >
               <Text style={styles.upgradeBtnText}>
-                {isExpiredPlan ? (isHausa ? 'Sabunta' : 'Renew') : 'Upgrade'}
+                {planKind === 'expired' ? (isHausa ? 'Sabunta' : 'Renew') : isHausa ? 'Daga tsari' : 'Upgrade'}
               </Text>
             </Pressable>
           )}
@@ -595,24 +625,13 @@ const ProfileScreen: React.FC = () => {
   const { language } = useLanguage();
   const isHausa = language === 'hausa';
 
-  useEffect(() => {
-    const fetchLatestUser = async () => {
-      try {
-        const response = await getCurrentUser();
-        if (response.user) {
-          await setUserData({
-            ...response.user,
-            trialDaysRemaining: response.meta?.trialDaysRemaining,
-            trialEndDate: response.meta?.trialEndDate,
-          });
-          refreshUser();
-        }
-      } catch (error) {
-        console.error('Failed to fetch latest user data', error);
-      }
-    };
-    fetchLatestUser();
-  }, []);
+  // Latest plan from the server each time the profile is shown. syncUserFromServer
+  // merges into the stored user and reads the trial fields from the response's meta.
+  useFocusEffect(
+    useCallback(() => {
+      syncUserFromServer().then(() => refreshUser());
+    }, [refreshUser])
+  );
 
   const handleLogout = useCallback(() => {
     showAlert({

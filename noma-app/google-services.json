@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "770584504692",
+    "project_id": "nomaapp-ai",
+    "storage_bucket": "nomaapp-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770584504692:android:4839448418c679ca572421",
+        "android_client_info": {
+          "package_name": "com.yusufiabichi.mobileapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4rk2HyW3I2LK81MBYFA697RyFSO-C5DM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
